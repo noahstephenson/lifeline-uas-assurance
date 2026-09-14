@@ -11,6 +11,7 @@ node_modules/
 openmct/dist/
 evidence/runs/*
 !evidence/runs/.gitkeep
+!evidence/runs/REFERENCE-T05/
+!evidence/runs/REFERENCE-T05/**
 *.log
 .demo-pids.json
-

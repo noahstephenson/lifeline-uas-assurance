@@ -30,6 +30,9 @@ The convenience launcher is:
 .\scripts\demo.ps1 -Scenario T-05 -Mode Fake
 ```
 
+Use `-Mode Replay` for the committed, synthetic `REFERENCE-T05` bundle. If that bundle
+is intentionally removed, the launcher generates a deterministic local reference run.
+
 `Live` mode additionally requires Ubuntu 24.04 WSL2, PX4 v1.17, Gazebo Harmonic, and the
 `px4` optional dependency. The command path is locked to localhost SITL. Actions require
 both `-AllowSitlActions` at launch and `sitl.actions_enabled: true` in the controlled
