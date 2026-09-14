@@ -1,0 +1,53 @@
+# When the Link Fades but the Mission Matters
+
+*Technical draft for an IEEE AESS Magazine Student Project Highlight*
+
+> **Release gate:** Do not submit this draft until the student and advisor supply authorship details, a genuine project photograph, a human usability review, and a completed PX4/Gazebo evidence bundle. The current results describe deterministic simulation and replay, not real flight or operational safety.
+
+## The package is still moving
+
+A fictional medical-resupply aircraft is partway to its delivery point when its operator link disappears. Return-to-launch sounds like the obvious response. Then navigation confidence falls below the threshold required for a position-dependent recovery. The aircraft still has energy, and the notional package has not arrived, but one of the assumptions behind “go home” is gone.
+
+Project Lifeline was built around that moment. It is an educational, simulation-only mission-assurance workbench for a small uncrewed aircraft system. Its purpose is not to design a new autopilot or claim that a simulated rule makes flight safe. The project asks a narrower systems-engineering question: can a student make a contingency decision explicit, traceable, visible to an operator, and testable before hardware enters the loop?
+
+The scenario uses a fictional route and synthetic health values. It contains no patient data, real military location, communications detail, or operational procedure. The medical-resupply story gives the mission a human reason to matter while keeping every public input generic.
+
+## Turning urgency into constraints
+
+The project begins with a tension rather than a dashboard. A receiver wants the notional package to arrive whenever the mission remains supportable. An operator wants predictable behavior. A reviewer wants position-dependent actions inhibited when navigation is unreliable. A verification lead wants every transition reconstructed from stored evidence. Those needs cannot be collapsed into a single instruction to “complete the mission safely.”
+
+The resulting baseline contains 27 system requirements and nine hazards. Critical inputs carry a value, a source timestamp, a receipt timestamp, and a validity flag. A deterministic assurance engine evaluates them at two hertz. Link loss must persist for three seconds before it can activate a contingency. Recovery from a degraded state requires five continuous healthy seconds. Invalid navigation prevents return. Critical energy takes priority over continuation. Missing or stale critical data becomes `UNKNOWN`, rather than silently retaining a healthy display.
+
+These thresholds are synthetic configuration values for the model. They are not proposed flight-safety limits. Keeping that distinction in the configuration, requirements, and manuscript is part of the engineering work.
+
+## A small executable digital thread
+
+The architecture separates reasoning from integration. Immutable Pydantic models define mission snapshots, engine context, decision records, scenarios, and evidence manifests. The `lifeline.assurance` package imports no PX4, MAVSDK, FastAPI, Open MCT, or filesystem adapter. Given the same snapshot and context, it produces the same state, action, decision code, rationale, rejected alternatives, requirement links, and hazard links.
+
+A YAML scenario harness advances discrete simulation time and injects link, navigation, energy, and freshness conditions. An assertion oracle checks terminal state, required intermediate states, prohibited actions, decision codes, and deadlines. Each completed run writes append-only snapshots and decisions, assertions, a verification matrix, resolved scenario, environment versions, a timeline, and a hash-bearing manifest. If a required export is missing, the CLI and API report the bundle as `INCOMPLETE` even if its original assertions passed.
+
+A FastAPI service exposes the same canonical records as current state, historical telemetry, decisions, verification, and a WebSocket replay stream. NASA Open MCT consumes those interfaces through object, composition, history, and live-subscription providers. The primary view puts mission state beside assurance state, health and freshness, modeled route progress, energy margin, the selected action, the plain-language rationale, rejected alternatives, and the applicable requirement and hazard identifiers. The browser boundary is read-only.
+
+The repository also contains a narrow MAVSDK adapter and a PX4-backed runner. They accept only an explicitly allowlisted loopback endpoint. Vehicle actions require two independent approvals: a controlled configuration flag and a command-line opt-in. The implementation is covered with network-free component tests, but the current workstation does not have the required Ubuntu 24.04/PX4/MAVSDK environment. Therefore this draft does not claim a completed PX4 mission.
+
+## The compound-fault result
+
+The final deterministic campaign executed twelve frozen scenarios, covering nominal delivery, brief and sustained link interruptions, navigation degradation, compound faults, low and critical energy, dwell-boundary behavior, recovery hysteresis, conflicting boundaries, stale telemetry, and replay. All twelve passed their declared assertions. The Python suite contains 27 tests; the pure assurance engine reached 99 percent line coverage. These figures describe the authored model and tests, not general robustness.
+
+T-05 is the clearest example of requirement-linked decision telemetry. The link interruption first moved the assurance state into `WATCH`. When the link-loss dwell expired, the engine recorded `LINK_LOSS_DWELL`. Navigation confidence then became invalid. The engine selected a controlled landing, recorded `NAVIGATION_INVALID`, and explicitly rejected `RETURN`. The run reached `SAFE_STOP` at the modeled terminal point. Its transition occurred at 20.0 seconds, before the frozen 23.0-second deadline. The evidence bundle contains 51 snapshots, four distinct decision records, seven passing assertions, configuration and scenario hashes, and no missing required files.
+
+That result is modest but useful. It does not show that controlled landing is universally correct. It shows that, for the declared scenario and priority table, the model does not issue a position-dependent return after its navigation assumption has failed—and that a reviewer can see exactly which rule produced the response.
+
+## What testing changed
+
+The implementation produced two concrete discrepancies before publication. First, the original demo used port 8000, which was already occupied by an unrelated local service. A readiness probe could have failed or, worse, accepted a response from the wrong application. Lifeline now reserves dedicated loopback ports and considers the service ready only when the health response names the requested evidence run.
+
+Second, the first launcher started a fake scenario and then opened PX4/Gazebo. The simulator could appear connected even though it had not supplied the evidence. That violated the project provenance claim. The corrected architecture routes `--source px4` through a separate MAVSDK-backed runner and records the telemetry source in every evidence environment. Until the real simulator path is exercised, PX4 stays marked as deferred.
+
+Neither issue justified changing a scenario expectation. Both were recorded as discrepancies, corrected at the interface boundary, and followed by regression testing. The transferable lesson is that assurance depends as much on honest provenance and unambiguous interfaces as it does on the decision table.
+
+## What comes next
+
+The deterministic engine, evidence service, replay console, and one-command replay demonstration are reproducible on the verified local environment. The next gates are intentionally practical: install the pinned Node 20 runtime, bring up stock PX4 v1.17 and Gazebo X500 in Ubuntu 24.04 WSL2, prove takeoff and landing before enabling Lifeline actions, run the controlled SITL campaign, and conduct a short usability review with someone unfamiliar with the code. A student project photograph and a claim-by-claim editorial review must follow.
+
+Hardware-in-the-loop, real flight, alternate recovery sites, operator studies, and higher-fidelity estimators remain future work. The current Lifeline contribution is smaller and more defensible: it makes the assumptions behind a modeled contingency response visible enough to challenge, replay, and test.
