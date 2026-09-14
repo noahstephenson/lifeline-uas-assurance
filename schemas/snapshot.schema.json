@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "CriticalValue": {
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Value"
+        },
+        "source_time_s": {
+          "minimum": 0,
+          "title": "Source Time S",
+          "type": "number"
+        },
+        "receipt_time_s": {
+          "minimum": 0,
+          "title": "Receipt Time S",
+          "type": "number"
+        },
+        "valid": {
+          "default": true,
+          "title": "Valid",
+          "type": "boolean"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "source_time_s",
+        "receipt_time_s",
+        "source"
+      ],
+      "title": "CriticalValue",
+      "type": "object"
+    },
+    "MissionState": {
+      "enum": [
+        "INITIALIZING",
+        "PREFLIGHT",
+        "OUTBOUND",
+        "DELIVERY",
+        "RETURNING",
+        "LANDING",
+        "RECOVERED",
+        "SAFE_STOP",
+        "ABORTED"
+      ],
+      "title": "MissionState",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "sim_time_s": {
+      "minimum": 0,
+      "title": "Sim Time S",
+      "type": "number"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "mission_state": {
+      "$ref": "#/$defs/MissionState"
+    },
+    "operator_link_available": {
+      "$ref": "#/$defs/CriticalValue"
+    },
+    "navigation_confidence": {
+      "$ref": "#/$defs/CriticalValue"
+    },
+    "energy_margin_wh": {
+      "$ref": "#/$defs/CriticalValue"
+    },
+    "battery_remaining_pct": {
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Battery Remaining Pct",
+      "type": "number"
+    },
+    "energy_available_wh": {
+      "title": "Energy Available Wh",
+      "type": "number"
+    },
+    "energy_recovery_wh": {
+      "title": "Energy Recovery Wh",
+      "type": "number"
+    },
+    "energy_reserve_wh": {
+      "title": "Energy Reserve Wh",
+      "type": "number"
+    },
+    "route_progress": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Route Progress",
+      "type": "number"
+    },
+    "north_m": {
+      "default": 0.0,
+      "title": "North M",
+      "type": "number"
+    },
+    "east_m": {
+      "default": 0.0,
+      "title": "East M",
+      "type": "number"
+    },
+    "relative_altitude_m": {
+      "minimum": 0,
+      "title": "Relative Altitude M",
+      "type": "number"
+    },
+    "ground_speed_mps": {
+      "minimum": 0,
+      "title": "Ground Speed Mps",
+      "type": "number"
+    },
+    "flight_mode": {
+      "default": "MISSION",
+      "title": "Flight Mode",
+      "type": "string"
+    },
+    "vehicle_connected": {
+      "default": true,
+      "title": "Vehicle Connected",
+      "type": "boolean"
+    },
+    "payload_delivered": {
+      "default": false,
+      "title": "Payload Delivered",
+      "type": "boolean"
+    },
+    "exploratory": {
+      "default": false,
+      "title": "Exploratory",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "run_id",
+    "sequence",
+    "sim_time_s",
+    "mission_state",
+    "operator_link_available",
+    "navigation_confidence",
+    "energy_margin_wh",
+    "battery_remaining_pct",
+    "energy_available_wh",
+    "energy_recovery_wh",
+    "energy_reserve_wh",
+    "route_progress",
+    "relative_altitude_m",
+    "ground_speed_mps"
+  ],
+  "title": "MissionSnapshot",
+  "type": "object"
+}

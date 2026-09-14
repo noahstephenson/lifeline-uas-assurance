@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "AssertionResult": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "expected": {
+          "title": "Expected",
+          "type": "string"
+        },
+        "observed": {
+          "title": "Observed",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "passed",
+        "expected",
+        "observed"
+      ],
+      "title": "AssertionResult",
+      "type": "object"
+    },
+    "VerificationState": {
+      "enum": [
+        "PENDING",
+        "PASS",
+        "FAIL",
+        "ERROR",
+        "INCOMPLETE"
+      ],
+      "title": "VerificationState",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "exploratory": {
+      "title": "Exploratory",
+      "type": "boolean"
+    },
+    "verification_status": {
+      "$ref": "#/$defs/VerificationState"
+    },
+    "scenario_sha256": {
+      "title": "Scenario Sha256",
+      "type": "string"
+    },
+    "configuration_sha256": {
+      "title": "Configuration Sha256",
+      "type": "string"
+    },
+    "software_versions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Software Versions",
+      "type": "object"
+    },
+    "files": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Files",
+      "type": "object"
+    },
+    "assertions": {
+      "items": {
+        "$ref": "#/$defs/AssertionResult"
+      },
+      "title": "Assertions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "scenario_id",
+    "exploratory",
+    "verification_status",
+    "scenario_sha256",
+    "configuration_sha256",
+    "software_versions",
+    "files",
+    "assertions"
+  ],
+  "title": "EvidenceManifest",
+  "type": "object"
+}

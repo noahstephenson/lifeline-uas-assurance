@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+node_modules/
+openmct/dist/
+evidence/runs/*
+!evidence/runs/.gitkeep
+*.log
+.demo-pids.json
+

@@ -1,0 +1,22 @@
+schema_version: "1.0"
+decision_rate_hz: 2.0
+link_activation_dwell_s: 3.0
+recovery_dwell_s: 5.0
+freshness_s:
+  operator_link_available: 2.0
+  navigation_confidence: 2.0
+  energy_margin_wh: 3.0
+navigation:
+  invalid_below: 0.40
+  healthy_at_or_above: 0.65
+  recovery_at_or_above: 0.70
+energy:
+  usable_capacity_wh: 100.0
+  protected_reserve_fraction: 0.20
+  warning_margin_fraction: 0.10
+  recovery_margin_fraction: 0.05
+  critical_margin_wh: 0.0
+sitl:
+  endpoint: "udpin://127.0.0.1:14540"
+  allowed_hosts: ["127.0.0.1", "localhost"]
+  actions_enabled: false

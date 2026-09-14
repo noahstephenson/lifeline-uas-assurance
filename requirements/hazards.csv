@@ -1,0 +1,11 @@
+id,hazard,control,verification
+H-01,Continuation beyond approved link-loss policy,Dwell and phase-aware supervisor,T-02;T-03
+H-02,Position-dependent recovery with invalid navigation,Navigation gate,T-04;T-05
+H-03,Recovery after reserve is consumed,Protected energy margin,T-06;T-07
+H-04,Compound faults produce conflicting commands,Single decision authority,T-05;T-10
+H-05,Mode oscillation,Dwell and hysteresis,T-08
+H-06,Unsafe automatic reversal,Irreversible terminal state,T-09
+H-07,Stale data appears healthy,Age metadata and UNKNOWN,T-11
+H-08,Decision cannot be reproduced,Manifest and hashes,T-12
+H-09,Command reaches unintended hardware,Loopback allowlist and explicit opt-in,Configuration test
+

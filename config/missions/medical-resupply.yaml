@@ -1,0 +1,12 @@
+id: baseline_medical_resupply
+name: Fictional medical-resupply route
+coordinate_frame: local_ned
+delivery_progress: 0.70
+cruise_altitude_m: 25.0
+cruise_speed_mps: 8.0
+route:
+  - {name: launch, north_m: 0.0, east_m: 0.0, altitude_m: 0.0}
+  - {name: checkpoint_alpha, north_m: 120.0, east_m: 35.0, altitude_m: 25.0}
+  - {name: delivery, north_m: 240.0, east_m: 80.0, altitude_m: 25.0}
+  - {name: recovery, north_m: 0.0, east_m: 0.0, altitude_m: 0.0}
+

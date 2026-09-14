@@ -1,0 +1,215 @@
+{
+  "$defs": {
+    "AssuranceState": {
+      "enum": [
+        "NOMINAL",
+        "WATCH",
+        "DEGRADED",
+        "RECOVER",
+        "TERMINATE",
+        "UNKNOWN"
+      ],
+      "title": "AssuranceState",
+      "type": "string"
+    },
+    "MissionState": {
+      "enum": [
+        "INITIALIZING",
+        "PREFLIGHT",
+        "OUTBOUND",
+        "DELIVERY",
+        "RETURNING",
+        "LANDING",
+        "RECOVERED",
+        "SAFE_STOP",
+        "ABORTED"
+      ],
+      "title": "MissionState",
+      "type": "string"
+    },
+    "RecommendedAction": {
+      "enum": [
+        "NONE",
+        "CONTINUE",
+        "RETURN",
+        "CONTROLLED_LAND",
+        "ABORT_RUN"
+      ],
+      "title": "RecommendedAction",
+      "type": "string"
+    },
+    "ScenarioEvent": {
+      "properties": {
+        "at_s": {
+          "minimum": 0,
+          "title": "At S",
+          "type": "number"
+        },
+        "set": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Set",
+          "type": "object"
+        }
+      },
+      "required": [
+        "at_s",
+        "set"
+      ],
+      "title": "ScenarioEvent",
+      "type": "object"
+    },
+    "ScenarioExpectation": {
+      "properties": {
+        "terminal_state": {
+          "$ref": "#/$defs/MissionState"
+        },
+        "required_assurance_states": {
+          "items": {
+            "$ref": "#/$defs/AssuranceState"
+          },
+          "title": "Required Assurance States",
+          "type": "array"
+        },
+        "prohibited_actions": {
+          "items": {
+            "$ref": "#/$defs/RecommendedAction"
+          },
+          "title": "Prohibited Actions",
+          "type": "array"
+        },
+        "required_decision_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Decision Codes",
+          "type": "array"
+        },
+        "transition_deadline_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transition Deadline S"
+        }
+      },
+      "required": [
+        "terminal_state"
+      ],
+      "title": "ScenarioExpectation",
+      "type": "object"
+    },
+    "TraceLinks": {
+      "properties": {
+        "requirements": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "hazards": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hazards",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirements",
+        "hazards"
+      ],
+      "title": "TraceLinks",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^T-\\d{2}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "seed": {
+      "default": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "mission": {
+      "default": "baseline_medical_resupply",
+      "title": "Mission",
+      "type": "string"
+    },
+    "duration_s": {
+      "default": 65,
+      "exclusiveMinimum": 0,
+      "title": "Duration S",
+      "type": "number"
+    },
+    "tick_s": {
+      "default": 0.5,
+      "exclusiveMinimum": 0,
+      "title": "Tick S",
+      "type": "number"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/ScenarioEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "expect": {
+      "$ref": "#/$defs/ScenarioExpectation"
+    },
+    "trace": {
+      "$ref": "#/$defs/TraceLinks"
+    },
+    "replay_of": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Replay Of"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "expect",
+    "trace"
+  ],
+  "title": "ScenarioDefinition",
+  "type": "object"
+}

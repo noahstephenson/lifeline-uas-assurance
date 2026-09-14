@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "AssuranceState": {
+      "enum": [
+        "NOMINAL",
+        "WATCH",
+        "DEGRADED",
+        "RECOVER",
+        "TERMINATE",
+        "UNKNOWN"
+      ],
+      "title": "AssuranceState",
+      "type": "string"
+    },
+    "RecommendedAction": {
+      "enum": [
+        "NONE",
+        "CONTINUE",
+        "RETURN",
+        "CONTROLLED_LAND",
+        "ABORT_RUN"
+      ],
+      "title": "RecommendedAction",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "sequence": {
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "timestamp_s": {
+      "title": "Timestamp S",
+      "type": "number"
+    },
+    "prior_state": {
+      "$ref": "#/$defs/AssuranceState"
+    },
+    "new_state": {
+      "$ref": "#/$defs/AssuranceState"
+    },
+    "recommended_action": {
+      "$ref": "#/$defs/RecommendedAction"
+    },
+    "decision_code": {
+      "title": "Decision Code",
+      "type": "string"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    },
+    "trigger_fields": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Trigger Fields",
+      "type": "array"
+    },
+    "requirement_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Requirement Ids",
+      "type": "array"
+    },
+    "hazard_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Hazard Ids",
+      "type": "array"
+    },
+    "rejected_actions": {
+      "items": {
+        "$ref": "#/$defs/RecommendedAction"
+      },
+      "title": "Rejected Actions",
+      "type": "array"
+    },
+    "input_snapshot_hash": {
+      "title": "Input Snapshot Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "sequence",
+    "timestamp_s",
+    "prior_state",
+    "new_state",
+    "recommended_action",
+    "decision_code",
+    "summary",
+    "trigger_fields",
+    "requirement_ids",
+    "hazard_ids",
+    "input_snapshot_hash"
+  ],
+  "title": "DecisionRecord",
+  "type": "object"
+}

@@ -1,0 +1,7 @@
+id,stakeholder,need
+SN-01,Medical receiver,Deliver the notional package when the mission remains supportable
+SN-02,UAS operator,Make every contingency response predictable and explainable
+SN-03,Safety reviewer,Inhibit position-dependent action when navigation is invalid
+SN-04,Verification reviewer,Trace each requirement to controlled evidence
+SN-05,Student team,Keep the system small enough to understand and defend
+
