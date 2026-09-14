@@ -1,0 +1,17 @@
+schema_version: "1.0"
+id: T-07
+name: critical_energy_during_return
+duration_s: 65
+events:
+  - at_s: 48
+    set: {energy_margin_wh: -1.0}
+expect:
+  terminal_state: SAFE_STOP
+  required_assurance_states: [TERMINATE]
+  prohibited_actions: [CONTINUE]
+  required_decision_codes: [ENERGY_CRITICAL]
+  transition_deadline_s: 49
+trace:
+  requirements: [A-02, A-04]
+  hazards: [H-03]
+

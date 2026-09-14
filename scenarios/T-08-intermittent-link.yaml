@@ -1,0 +1,22 @@
+schema_version: "1.0"
+id: T-08
+name: intermittent_link_near_dwell_boundary
+duration_s: 65
+events:
+  - at_s: 18
+    set: {operator_link_available: false}
+  - at_s: 20
+    set: {operator_link_available: true}
+  - at_s: 24
+    set: {operator_link_available: false}
+  - at_s: 26
+    set: {operator_link_available: true}
+expect:
+  terminal_state: RECOVERED
+  required_assurance_states: [WATCH]
+  prohibited_actions: [RETURN, CONTROLLED_LAND]
+  required_decision_codes: [LINK_LOSS_DWELL, RECOVERY_DWELL]
+trace:
+  requirements: [HM-04, A-05, A-07]
+  hazards: [H-05]
+

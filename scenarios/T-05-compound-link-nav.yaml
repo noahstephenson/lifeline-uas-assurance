@@ -1,0 +1,19 @@
+schema_version: "1.0"
+id: T-05
+name: compound_link_and_navigation_degradation
+duration_s: 50
+events:
+  - at_s: 20
+    set: {operator_link_available: false}
+  - at_s: 22
+    set: {navigation_confidence: 0.25}
+expect:
+  terminal_state: SAFE_STOP
+  required_assurance_states: [WATCH, TERMINATE]
+  prohibited_actions: [RETURN]
+  required_decision_codes: [LINK_LOSS_DWELL, NAVIGATION_INVALID]
+  transition_deadline_s: 23
+trace:
+  requirements: [A-02, A-03, A-08]
+  hazards: [H-02, H-04]
+

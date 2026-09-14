@@ -1,0 +1,18 @@
+schema_version: "1.0"
+id: T-02
+name: brief_operator_link_interruption
+duration_s: 65
+events:
+  - at_s: 20
+    set: {operator_link_available: false}
+  - at_s: 22
+    set: {operator_link_available: true}
+expect:
+  terminal_state: RECOVERED
+  required_assurance_states: [WATCH]
+  prohibited_actions: [RETURN, CONTROLLED_LAND]
+  required_decision_codes: [LINK_LOSS_DWELL, RECOVERY_DWELL]
+trace:
+  requirements: [HM-04, A-05]
+  hazards: [H-01, H-05]
+

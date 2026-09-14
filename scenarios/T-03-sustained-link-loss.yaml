@@ -1,0 +1,17 @@
+schema_version: "1.0"
+id: T-03
+name: sustained_link_loss_healthy_navigation_and_energy
+duration_s: 65
+events:
+  - at_s: 20
+    set: {operator_link_available: false}
+expect:
+  terminal_state: RECOVERED
+  required_assurance_states: [WATCH, DEGRADED, RECOVER]
+  prohibited_actions: [CONTROLLED_LAND]
+  required_decision_codes: [LINK_LOSS_CONTINUE_OUTBOUND, LINK_LOSS_RETURN_AFTER_DELIVERY]
+  transition_deadline_s: 24
+trace:
+  requirements: [HM-04, A-06, A-08]
+  hazards: [H-01]
+

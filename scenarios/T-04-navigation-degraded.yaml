@@ -1,0 +1,17 @@
+schema_version: "1.0"
+id: T-04
+name: navigation_confidence_degraded
+duration_s: 40
+events:
+  - at_s: 20
+    set: {navigation_confidence: 0.25}
+expect:
+  terminal_state: SAFE_STOP
+  required_assurance_states: [TERMINATE]
+  prohibited_actions: [RETURN]
+  required_decision_codes: [NAVIGATION_INVALID]
+  transition_deadline_s: 21
+trace:
+  requirements: [A-02, A-03, A-08]
+  hazards: [H-02]
+

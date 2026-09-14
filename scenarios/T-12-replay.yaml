@@ -1,0 +1,19 @@
+schema_version: "1.0"
+id: T-12
+name: deterministic_replay_of_compound_case
+duration_s: 50
+replay_of: T-05
+events:
+  - at_s: 20
+    set: {operator_link_available: false}
+  - at_s: 22
+    set: {navigation_confidence: 0.25}
+expect:
+  terminal_state: SAFE_STOP
+  required_assurance_states: [WATCH, TERMINATE]
+  prohibited_actions: [RETURN]
+  required_decision_codes: [LINK_LOSS_DWELL, NAVIGATION_INVALID]
+trace:
+  requirements: [OD-05, EV-02, EV-03, EV-04]
+  hazards: [H-08]
+

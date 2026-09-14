@@ -1,0 +1,17 @@
+schema_version: "1.0"
+id: T-11
+name: critical_telemetry_becomes_stale
+duration_s: 40
+events:
+  - at_s: 20
+    set: {freeze_telemetry: true}
+expect:
+  terminal_state: SAFE_STOP
+  required_assurance_states: [UNKNOWN]
+  prohibited_actions: [RETURN, CONTINUE]
+  required_decision_codes: [CRITICAL_INPUT_UNKNOWN]
+  transition_deadline_s: 24
+trace:
+  requirements: [HM-02, HM-03, OD-04]
+  hazards: [H-07]
+

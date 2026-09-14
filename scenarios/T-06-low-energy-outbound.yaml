@@ -1,0 +1,17 @@
+schema_version: "1.0"
+id: T-06
+name: low_energy_before_delivery
+duration_s: 65
+events:
+  - at_s: 20
+    set: {energy_margin_wh: 4.0}
+expect:
+  terminal_state: RECOVERED
+  required_assurance_states: [RECOVER]
+  prohibited_actions: [CONTINUE, CONTROLLED_LAND]
+  required_decision_codes: [ENERGY_RECOVERY_REQUIRED]
+  transition_deadline_s: 21
+trace:
+  requirements: [A-02, A-04]
+  hazards: [H-03]
+
