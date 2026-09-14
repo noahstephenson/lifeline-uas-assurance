@@ -1,0 +1,19 @@
+name: Evidence contracts
+on:
+  push:
+    paths: ["schemas/**", "scenarios/**", "requirements/**", "src/lifeline/models.py"]
+  pull_request:
+    paths: ["schemas/**", "scenarios/**", "requirements/**", "src/lifeline/models.py"]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e ".[dev]"
+      - run: python scripts/generate_schemas.py
+      - run: git diff --exit-code schemas
+      - run: lifeline validate
+
