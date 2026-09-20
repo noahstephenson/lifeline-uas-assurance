@@ -39,10 +39,21 @@ If either default loopback port is occupied, choose another local pair:
 Use `-Mode Replay` for the committed, synthetic `REFERENCE-T05` bundle. If that bundle
 is intentionally removed, the launcher generates a deterministic local reference run.
 
-`Live` mode additionally requires Ubuntu 24.04 WSL2, PX4 v1.17, Gazebo Harmonic, and the
-`px4` optional dependency. The command path is locked to localhost SITL. Actions require
-both `-AllowSitlActions` at launch and `sitl.actions_enabled: true` in the controlled
-configuration.
+Live qualification uses a dedicated Ubuntu 24.04 WSL2 environment so PX4, MAVSDK,
+Lifeline Python, and the API share true loopback. The Windows host runs only the
+read-only Open MCT browser surface. Set up and qualify the pinned environment with:
+
+```powershell
+.\scripts\setup-px4-wsl.ps1
+# Complete Ubuntu's first-launch local-account prompt, then rerun setup as directed.
+.\scripts\qualify-px4.ps1 -Scenario Smoke
+.\scripts\qualify-px4.ps1 -Scenario T-01
+.\scripts\qualify-px4.ps1 -Scenario T-05
+```
+
+`config/baseline.yaml` remains fail-closed. The qualification profile may differ from it
+only by `actions_enabled: true`, and the code independently enforces the loopback endpoint,
+explicit launcher token, nonzero vehicle UUID, and dashboard-before-release interlock.
 
 ## Command contract
 
@@ -54,6 +65,8 @@ contains exactly one JSON object. Success uses `{"ok": true, "data": ...}`; fail
 lifeline --json doctor
 lifeline validate
 lifeline run --scenario T-01 [--source fake|px4]
+lifeline live --scenario T-01 --config config/sitl-qualification.yaml
+lifeline px4-smoke --config config/sitl-qualification.yaml
 lifeline campaign run
 lifeline campaign audit
 lifeline runs list
@@ -67,8 +80,9 @@ lifeline inject --field navigation_confidence --value 0.25 --exploratory
 
 `campaign run` executes the twelve controlled fake-source scenarios and writes an
 aggregate summary plus requirement-coverage table under `evidence/campaigns/`.
-`campaign audit` rechecks every referenced evidence checksum and reports the separate
-PX4 and human-display gates; it does not relabel those deferred gates as passed.
+`campaign audit` rechecks every referenced evidence checksum and reports separate PX4,
+automated-display, discrepancy, and clean-worktree gates. Automated browser qualification
+is not a human usability study.
 
 ## Safety boundary
 

@@ -1,0 +1,11 @@
+{
+  "decision_count": 4,
+  "error": null,
+  "exploratory": false,
+  "run_id": "CAMPAIGN-20260920-C-T02",
+  "scenario_id": "T-02",
+  "scenario_name": "brief_operator_link_interruption",
+  "snapshot_count": 121,
+  "terminal_state": "RECOVERED",
+  "verification_status": "PASS"
+}

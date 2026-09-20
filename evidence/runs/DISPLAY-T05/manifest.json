@@ -1,0 +1,92 @@
+{
+  "artifact_sha256": {
+    "assertions": "819ed7cd33e65773cef8edf724b17c7f8a6b7941e7b56346a4607f14ab94e113",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "135fda4991bfd677142265b2fda595e556ee2f809c4ed1973fda04514b881c6f",
+    "decisions": "57d4aa0eb69f1d5589a3b9fdec889c96e485f0b3b5ab7f9aa4ca4d877281cee9",
+    "environment": "9c8fc9c94fdd94b414d0173fbf4fe72b0fc185b0d764ada936bfc9b7ebfe4228",
+    "scenario": "fd1abed867be10f838a52a7ac40f6d296732feacf4dabfb01720bcec2f564f7c",
+    "snapshots": "8c76d5d32d787528bb4ba0f01a9c662b3ea5ba4230d4a86913e7b4a2f09224fb",
+    "summary": "deb8de03a832adda80e54887a564b8e0124cfb29e93fdbf7e37a60eb13ce7c4a",
+    "timeline": "4d8eab0c59bdadee4f561aea677bf6daf20db077d7c4999decc559e8c2434a4f",
+    "timeline_svg": "ae0480fd78055f71e293cabce726440b180be5189f5ed158cc3a300b6b4c0177",
+    "verification_matrix": "d708fc864067fef5babaa2d2baa9e1bcf3032488c0aa6a2a0c875b4e7be7e053"
+  },
+  "assertions": [
+    {
+      "expected": "SAFE_STOP",
+      "name": "terminal_state",
+      "observed": "SAFE_STOP",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:WATCH",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:TERMINATE",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:RETURN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:LINK_LOSS_DWELL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:NAVIGATION_INVALID",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "<= 23.0",
+      "name": "transition_deadline",
+      "observed": "20.0",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "135fda4991bfd677142265b2fda595e556ee2f809c4ed1973fda04514b881c6f",
+  "exploratory": false,
+  "files": {
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "DISPLAY-T05",
+  "scenario_id": "T-05",
+  "scenario_sha256": "aab52fd3c2c8f27345333e96a59a7c5a6abf2315e75f2a3c4dc16130779bbdc8",
+  "schema_version": "1.0",
+  "software_versions": {
+    "fastapi": "0.141.1",
+    "lifeline": "0.1.0",
+    "mavsdk": "not-installed",
+    "openmct": "4.1.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pydantic": "2.13.5",
+    "python": "3.11.0",
+    "pyyaml": "6.0.3",
+    "source": "fake",
+    "uvicorn": "0.53.0"
+  },
+  "verification_status": "PASS"
+}

@@ -56,5 +56,23 @@ def load_config(path: Path | None = None) -> LifelineConfig:
     return LifelineConfig.model_validate(yaml.safe_load(config_path.read_text(encoding="utf-8")))
 
 
+def validate_sitl_qualification(path: Path | None = None) -> LifelineConfig:
+    baseline = load_config()
+    qualification_path = path or PROJECT_ROOT / "config" / "sitl-qualification.yaml"
+    qualification = load_config(qualification_path)
+    if not qualification.sitl.actions_enabled:
+        raise ValueError("SITL qualification profile must explicitly enable actions")
+    if qualification.sitl.endpoint != "udpin://127.0.0.1:14540":
+        raise ValueError("SITL qualification endpoint must remain loopback-only")
+    if set(qualification.sitl.allowed_hosts) != {"127.0.0.1", "localhost"}:
+        raise ValueError("SITL qualification allowed hosts must remain loopback-only")
+    baseline_data = baseline.model_dump()
+    qualification_data = qualification.model_dump()
+    baseline_data["sitl"]["actions_enabled"] = True
+    if qualification_data != baseline_data:
+        raise ValueError("SITL qualification profile may differ from baseline only by actions_enabled")
+    return qualification
+
+
 def file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()

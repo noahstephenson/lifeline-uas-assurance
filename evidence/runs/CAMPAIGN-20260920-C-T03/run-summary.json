@@ -1,0 +1,11 @@
+{
+  "decision_count": 4,
+  "error": null,
+  "exploratory": false,
+  "run_id": "CAMPAIGN-20260920-C-T03",
+  "scenario_id": "T-03",
+  "scenario_name": "sustained_link_loss_healthy_navigation_and_energy",
+  "snapshot_count": 125,
+  "terminal_state": "RECOVERED",
+  "verification_status": "PASS"
+}

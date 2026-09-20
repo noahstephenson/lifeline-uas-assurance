@@ -6,11 +6,18 @@ const epoch = Date.UTC(2026, 0, 1);
 
 export default function LifelinePlugin(options = {}) {
   const apiBase = options.apiBase || "http://127.0.0.1:8765";
+  const runId = options.runId || null;
+  const query = (parameters = {}) => {
+    const values = new URLSearchParams(parameters);
+    if (runId) values.set("run_id", runId);
+    const rendered = values.toString();
+    return rendered ? `?${rendered}` : "";
+  };
   return function install(openmct) {
     let dictionaryPromise;
     const dictionary = () => {
       if (!dictionaryPromise) {
-        dictionaryPromise = fetch(`${apiBase}/api/v1/metadata`).then((response) => {
+        dictionaryPromise = fetch(`${apiBase}/api/v1/metadata${query()}`).then((response) => {
           if (!response.ok) throw new Error(`metadata request failed: ${response.status}`);
           return response.json();
         });
@@ -68,12 +75,15 @@ export default function LifelinePlugin(options = {}) {
 
     const listeners = new Map();
     let socket;
+    let lastSequence = -1;
     const connect = () => {
       if (socket && socket.readyState <= 1) return;
-      socket = new WebSocket(`${apiBase.replace(/^http/, "ws")}/api/v1/stream`);
+      socket = new WebSocket(`${apiBase.replace(/^http/, "ws")}/api/v1/stream${query({ after_sequence: lastSequence })}`);
       socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
         if (message.message_type !== "snapshot") return;
+        if (Number(message.sequence) <= lastSequence) return;
+        lastSequence = Number(message.sequence);
         for (const [key, callbacks] of listeners.entries()) {
           const point = { id: key, timestamp: epoch + message.sim_time_s * 1000, value: message.payload[key] };
           callbacks.forEach((callback) => callback(point));
@@ -88,7 +98,7 @@ export default function LifelinePlugin(options = {}) {
         const key = domainObject.identifier.key;
         const start = Math.max(0, (requestOptions.start - epoch) / 1000);
         const end = Math.max(start, (requestOptions.end - epoch) / 1000);
-        return fetch(`${apiBase}/api/v1/history?key=${encodeURIComponent(key)}&start=${start}&end=${end}`)
+        return fetch(`${apiBase}/api/v1/history${query({ key, start, end })}`)
           .then((response) => response.json())
           .then((points) => points.map((point) => ({ ...point, timestamp: epoch + point.timestamp })));
       },
@@ -107,6 +117,6 @@ export default function LifelinePlugin(options = {}) {
         };
       }
     });
-    openmct.objectViews.addProvider(createAssuranceViewProvider(apiBase));
+    openmct.objectViews.addProvider(createAssuranceViewProvider(apiBase, { runId }));
   };
 }

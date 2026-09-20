@@ -53,7 +53,7 @@ test("stale data and incomplete evidence are visible without relying on color", 
   const element = { innerHTML: "" };
   view.show(element);
   socket.onmessage({ data: JSON.stringify({
-    message_type: "snapshot",
+    message_type: "snapshot", sequence: 1,
     payload: {
       run_id: "TEST",
       sim_time_s: 4,
@@ -83,7 +83,7 @@ test("replay completion preserves the final snapshot and labels recorded data", 
   const element = { innerHTML: "" };
   view.show(element);
   socket.onmessage({ data: JSON.stringify({
-    message_type: "snapshot",
+    message_type: "snapshot", sequence: 1,
     payload: {
       run_id: "TEST",
       sim_time_s: 23,

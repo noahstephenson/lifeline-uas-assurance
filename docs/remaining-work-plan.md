@@ -14,16 +14,18 @@ guarded PX4 adapter baseline. A gate is closed only by its declared evidence.
 
 Exit: Python, frontend, schema, deterministic campaign, and reference-replay checks pass.
 
-## Tranche B — human display qualification
+## Tranche B — automated display qualification
 
 - Launch T-01, T-05, T-11, and T-12 in the production Open MCT build.
-- Complete `docs/reviews/display-review-template.md` with a reviewer unfamiliar with
-  the code.
+- Run the pinned Playwright/Chromium suite at 1440×900 and 800×1000.
+- Preserve T-01, T-05, T-11, and T-12 fixture hashes, screenshots, assertion results,
+  browser version, and the machine-readable qualification report.
 - Correct discrepancies without changing controlled expected outcomes.
-- Mark OD-01 through OD-04 verified only after the signed review evidence exists.
+- Mark OD-01 through OD-04 verified only after the automated report is hash-complete.
 
 Exit: mission/assurance/health/evidence are legible together; state is distinguishable
-without color; rationale and trace links are understandable; loss of data is unmistakable.
+without color; rationale and trace links are present; loss of data replaces the operational
+view. These are browser assertions, not human-comprehension or usability findings.
 
 ## Tranche C — stock PX4/Gazebo qualification
 

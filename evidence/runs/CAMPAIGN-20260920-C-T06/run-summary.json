@@ -1,0 +1,11 @@
+{
+  "decision_count": 2,
+  "error": null,
+  "exploratory": false,
+  "run_id": "CAMPAIGN-20260920-C-T06",
+  "scenario_id": "T-06",
+  "scenario_name": "low_energy_before_delivery",
+  "snapshot_count": 81,
+  "terminal_state": "RECOVERED",
+  "verification_status": "PASS"
+}

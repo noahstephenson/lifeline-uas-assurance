@@ -20,6 +20,12 @@ export function criticalDataStatus(point = {}) {
 export function createAssuranceViewProvider(apiBase, options = {}) {
   const staleAfterMs = options.staleAfterMs ?? 3000;
   const timers = options.timers ?? globalThis;
+  const runId = options.runId || null;
+  const streamUrl = (afterSequence = -1) => {
+    const values = new URLSearchParams({ after_sequence: String(afterSequence) });
+    if (runId) values.set("run_id", runId);
+    return `${apiBase.replace(/^http/, "ws")}/api/v1/stream?${values}`;
+  };
   return {
     key: "lifeline.assurance.view",
     name: "Mission Assurance",
@@ -32,6 +38,8 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
       let socket;
       let watchdog;
       let replayComplete = false;
+      let destroyed = false;
+      let lastSequence = -1;
       let connectionState = "CONNECTING";
       let lastPoint = {};
       let decisionRows = [];
@@ -104,14 +112,15 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         show(element) {
           container = element;
           render();
-          socket = new WebSocket(`${apiBase.replace(/^http/, "ws")}/api/v1/stream`);
+          socket = new WebSocket(streamUrl(lastSequence));
           socket.onopen = () => {
             connectionState = "LIVE / REPLAY STREAM";
             armWatchdog();
           };
           socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if (message.message_type === "status" && message.status === "replay_complete") {
+            const status = message.status || message.payload?.status;
+            if (message.message_type === "status" && String(status).toLowerCase() === "replay_complete") {
               replayComplete = true;
               connectionState = "REPLAY COMPLETE";
               if (watchdog) timers.clearTimeout(watchdog);
@@ -119,6 +128,8 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
               return;
             }
             if (message.message_type !== "snapshot") return;
+            if (Number(message.sequence) <= lastSequence) return;
+            lastSequence = Number(message.sequence);
             armWatchdog();
             const point = message.payload;
             lastPoint = point;
@@ -127,10 +138,13 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
             render(point);
           };
           socket.onerror = () => renderUnavailable("DATA SOURCE UNAVAILABLE");
-          socket.onclose = () => renderUnavailable("DATA SOURCE DISCONNECTED");
+          socket.onclose = () => {
+            if (!destroyed && !replayComplete) renderUnavailable("DATA SOURCE DISCONNECTED");
+          };
         },
         destroy() {
           if (watchdog) timers.clearTimeout(watchdog);
+          destroyed = true;
           socket?.close();
           container = undefined;
           decisionRows = [];

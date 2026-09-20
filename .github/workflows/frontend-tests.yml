@@ -18,5 +18,14 @@ jobs:
           cache: npm
           cache-dependency-path: openmct/package-lock.json
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm test
+      - run: npm run test:qualification
       - run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: automated-display-qualification
+          path: |
+            evidence/display-qualification/display-qualification.json
+            evidence/display-qualification/screenshots

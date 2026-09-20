@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import math
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from time import monotonic
+from typing import Any
 
 from lifeline.assurance import AssuranceEngine
 from lifeline.config import LifelineConfig
 from lifeline.models import (
+    CommandName,
+    CommandRecord,
     CriticalValue,
     DecisionRecord,
     EngineContext,
@@ -29,6 +34,10 @@ async def run_px4_scenario(
     allow_sitl_actions: bool,
     run_id: str | None = None,
     exploratory: bool = False,
+    start_gate: asyncio.Event | None = None,
+    on_ready: Callable[[str], Any] | None = None,
+    on_snapshot: Callable[[MissionSnapshot, DecisionRecord], Any] | None = None,
+    on_command: Callable[[CommandRecord], Any] | None = None,
 ) -> ScenarioRun:
     """Run a scenario against an explicitly authorized localhost PX4 SITL."""
     if not allow_sitl_actions or not config.sitl.actions_enabled:
@@ -36,15 +45,16 @@ async def run_px4_scenario(
 
     adapter = MavsdkAdapter(config, allow_sitl_actions=allow_sitl_actions)
     await adapter.connect()
+    if not adapter.vehicle_uuid:
+        raise SitlSafetyError("connected SITL must report a nonzero vehicle UUID")
     await adapter.wait_ready()
-    await adapter.upload_fictional_mission()
-    await adapter.arm_and_start()
 
     run_id = run_id or f"LFL-{scenario.id.replace('-', '')}-PX4-{datetime.now(UTC):%Y%m%dT%H%M%SZ}"
     engine = AssuranceEngine(config)
     context = EngineContext()
     snapshots: list[MissionSnapshot] = []
     decisions: list[DecisionRecord] = []
+    commands: list[CommandRecord] = []
     overrides: dict[str, bool | float | str] = {}
     source_times = {"link": 0.0, "nav": 0.0, "energy": 0.0}
     previous_signature: tuple | None = None
@@ -55,6 +65,53 @@ async def run_px4_scenario(
     sequence = 0
     ever_airborne = False
     terminal_requested = False
+    command_sequence = 0
+
+    async def issue(
+        name: CommandName,
+        operation: Awaitable[str],
+        *,
+        decision_sequence: int | None = None,
+        requested_at_s: float = 0.0,
+    ) -> CommandRecord:
+        nonlocal command_sequence
+        try:
+            acknowledgement = await operation
+            record = CommandRecord(
+                sequence=command_sequence,
+                command=name,
+                requested_at_s=max(0.0, requested_at_s),
+                accepted=True,
+                acknowledgement=acknowledgement,
+                completed_at_s=max(0.0, requested_at_s),
+                decision_sequence=decision_sequence,
+                observed_completion_state="ACTION_ACKNOWLEDGED",
+            )
+        except Exception as exc:
+            record = CommandRecord(
+                sequence=command_sequence,
+                command=name,
+                requested_at_s=max(0.0, requested_at_s),
+                accepted=False,
+                acknowledgement="rejected",
+                decision_sequence=decision_sequence,
+                error=f"{type(exc).__name__}: {exc}",
+            )
+            commands.append(record)
+            command_sequence += 1
+            await _notify(on_command, record)
+            raise
+        commands.append(record)
+        command_sequence += 1
+        await _notify(on_command, record)
+        return record
+
+    await issue(CommandName.UPLOAD_MISSION, adapter.upload_fictional_mission())
+    await _notify(on_ready, run_id)
+    if start_gate is not None:
+        await start_gate.wait()
+    await issue(CommandName.ARM, adapter.arm())
+    await issue(CommandName.START_MISSION, adapter.start_mission())
     started_at = monotonic()
 
     while True:
@@ -85,6 +142,9 @@ async def run_px4_scenario(
         energy_recovery = 20.0
         modeled_margin = energy_available - energy_recovery - energy_reserve
         energy_margin = float(overrides.get("energy_margin_wh", modeled_margin))
+        navigation_overridden = "navigation_confidence" in overrides
+        link_overridden = "operator_link_available" in overrides
+        energy_overridden = "energy_margin_wh" in overrides
         navigation = float(overrides.get("navigation_confidence", 0.90))
         link = bool(overrides.get("operator_link_available", sample_valid and sample.connected))
 
@@ -97,13 +157,25 @@ async def run_px4_scenario(
             sim_time_s=now,
             mission_state=mission_state,
             operator_link_available=CriticalValue(
-                value=link, source_time_s=source_times["link"], receipt_time_s=now, valid=sample_valid, source="mavsdk"
+                value=link,
+                source_time_s=source_times["link"],
+                receipt_time_s=now,
+                valid=sample_valid,
+                source="scenario_override" if link_overridden else "mavsdk",
             ),
             navigation_confidence=CriticalValue(
-                value=navigation, source_time_s=source_times["nav"], receipt_time_s=now, valid=sample_valid, source="mavsdk"
+                value=navigation,
+                source_time_s=source_times["nav"],
+                receipt_time_s=now,
+                valid=sample_valid,
+                source="scenario_override" if navigation_overridden else "mavsdk",
             ),
             energy_margin_wh=CriticalValue(
-                value=energy_margin, source_time_s=source_times["energy"], receipt_time_s=now, valid=sample_valid, source="model"
+                value=energy_margin,
+                source_time_s=source_times["energy"],
+                receipt_time_s=now,
+                valid=sample_valid,
+                source="scenario_override" if energy_overridden else "model",
             ),
             battery_remaining_pct=sample.battery_remaining_pct,
             energy_available_wh=energy_available,
@@ -125,13 +197,20 @@ async def run_px4_scenario(
         if signature != previous_signature:
             decisions.append(record)
             previous_signature = signature
+        await _notify(on_snapshot, snapshot, record)
 
         command = record.recommended_action
         if command != previous_command and command in {
             RecommendedAction.RETURN,
             RecommendedAction.CONTROLLED_LAND,
         }:
-            await adapter.execute(command)
+            command_name = CommandName.RETURN if command == RecommendedAction.RETURN else CommandName.CONTROLLED_LAND
+            await issue(
+                command_name,
+                adapter.execute(command),
+                decision_sequence=record.sequence,
+                requested_at_s=now,
+            )
             previous_command = command
             terminal_requested = command == RecommendedAction.CONTROLLED_LAND
 
@@ -144,7 +223,29 @@ async def run_px4_scenario(
         await asyncio.sleep(max(0.0, next_tick - monotonic()))
 
     assertions = evaluate_expectations(scenario, snapshots, decisions)
-    return ScenarioRun(run_id, scenario, snapshots, decisions, assertions, "px4")
+    completed_at = snapshots[-1].sim_time_s if snapshots else 0.0
+    for index, command_record in enumerate(commands):
+        if command_record.command in {CommandName.RETURN, CommandName.CONTROLLED_LAND} and command_record.accepted:
+            commands[index] = command_record.model_copy(
+                update={
+                    "completed_at_s": completed_at,
+                    "observed_completion_state": snapshots[-1].mission_state.value if snapshots else "UNAVAILABLE",
+                }
+            )
+    return ScenarioRun(
+        run_id,
+        scenario,
+        snapshots,
+        decisions,
+        assertions,
+        "px4",
+        commands=commands,
+        configuration=config,
+        environment={
+            "vehicle_uuid": str(adapter.vehicle_uuid or 0),
+            "sitl_endpoint": config.sitl.endpoint,
+        },
+    )
 
 
 def _mission_state(progress: float, airborne: bool, ever_airborne: bool, terminal_requested: bool) -> tuple[MissionState, bool]:
@@ -174,3 +275,11 @@ def _local_position(sample: VehicleSample, home: tuple[float, float] | None) -> 
     north_m = latitude_delta * earth_radius_m
     east_m = longitude_delta * earth_radius_m * math.cos(math.radians(home[0]))
     return north_m, east_m
+
+
+async def _notify(callback: Callable[..., Any] | None, *args: Any) -> None:
+    if callback is None:
+        return
+    result = callback(*args)
+    if inspect.isawaitable(result):
+        await result

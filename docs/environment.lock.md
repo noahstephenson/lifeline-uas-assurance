@@ -3,10 +3,10 @@
 | Component | Baseline |
 |---|---|
 | Windows | Windows 11 host |
-| Python | 3.11.x |
+| Python | 3.11.x–3.12.x (3.12 native in Ubuntu 24.04) |
 | Node.js | 20.x for Open MCT |
 | Ubuntu | 24.04 WSL2 |
-| PX4 | v1.17.x stable |
+| PX4 | v1.17.0, commit `d6f12ad` |
 | Gazebo | PX4-supported Harmonic stack |
 | MAVSDK-Python | 3.17.2 |
 | Open MCT | 4.1.x |

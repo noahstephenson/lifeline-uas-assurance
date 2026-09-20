@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from lifeline.config import load_config
+from lifeline.config import load_config, validate_sitl_qualification
 from lifeline.scenarios import load_scenario, run_px4_scenario
 from lifeline.telemetry import MavsdkAdapter, SitlSafetyError
 
@@ -29,3 +29,19 @@ def test_non_loopback_endpoint_is_rejected():
     config = load_config().model_copy(update={"sitl": load_config().sitl.model_copy(update={"endpoint": "udpout://192.168.1.20:14540"})})
     with pytest.raises(SitlSafetyError):
         MavsdkAdapter(config)
+
+
+def test_qualification_profile_differs_only_by_action_flag(tmp_path):
+    assert validate_sitl_qualification().sitl.actions_enabled
+    profile = load_config().model_copy(
+        update={
+            "decision_rate_hz": 4.0,
+            "sitl": load_config().sitl.model_copy(update={"actions_enabled": True}),
+        }
+    )
+    path = tmp_path / "changed.yaml"
+    import yaml
+
+    path.write_text(yaml.safe_dump(profile.model_dump(mode="json")), encoding="utf-8")
+    with pytest.raises(ValueError, match="only by actions_enabled"):
+        validate_sitl_qualification(path)

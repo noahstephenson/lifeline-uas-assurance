@@ -39,6 +39,9 @@ if (Test-Path -LiteralPath $PidFile) {
 
 Push-Location $ProjectRoot
 try {
+    if ($Mode -eq "Live") {
+        throw "Live qualification is held and concurrent. Use scripts/qualify-px4.ps1 -Scenario $Scenario instead."
+    }
     Assert-PortAvailable $ApiPort
     Assert-PortAvailable $WebPort
     $Doctor = (& $Lifeline --json doctor | ConvertFrom-Json).data

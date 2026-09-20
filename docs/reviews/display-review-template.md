@@ -1,6 +1,8 @@
-# Project Lifeline display review
+# Optional future human display review
 
-This form records human inspection; automated tests do not complete it.
+This worksheet is not a software release gate and has not been completed. The repository's
+current OD gate is automated Playwright display qualification; that must never be described
+as human usability validation.
 
 - Reviewer:
 - Review date:

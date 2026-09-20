@@ -1,7 +1,7 @@
 schema_version: "1.0"
 id: T-01
 name: nominal_delivery_and_recovery
-duration_s: 65
+duration_s: 120
 events: []
 expect:
   terminal_state: RECOVERED
@@ -11,4 +11,3 @@ expect:
 trace:
   requirements: [M-01, M-02, M-03]
   hazards: []
-

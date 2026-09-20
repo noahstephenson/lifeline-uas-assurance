@@ -1,0 +1,11 @@
+{
+  "decision_count": 2,
+  "error": null,
+  "exploratory": false,
+  "run_id": "CAMPAIGN-20260920-C-T11",
+  "scenario_id": "T-11",
+  "scenario_name": "critical_telemetry_becomes_stale",
+  "snapshot_count": 51,
+  "terminal_state": "SAFE_STOP",
+  "verification_status": "PASS"
+}

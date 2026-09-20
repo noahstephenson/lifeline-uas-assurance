@@ -1,0 +1,86 @@
+{
+  "artifact_sha256": {
+    "assertions": "84c8adca49a94a5db55cfea890b2c428940d80c990d5b224b78de7969097ef9e",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "135fda4991bfd677142265b2fda595e556ee2f809c4ed1973fda04514b881c6f",
+    "decisions": "c903930f50592a40964e5954cde26677e4562ce591235d8c6c61d8b95b81037d",
+    "environment": "9c8fc9c94fdd94b414d0173fbf4fe72b0fc185b0d764ada936bfc9b7ebfe4228",
+    "scenario": "6ae253bfa74ead435e27f42cf2c5861b1e495145c0995aeaa01ce6c1c6c63103",
+    "snapshots": "7f34cbda8fd9f8c0a46fe16830f09810d3d204975f1607646003146f4a9dd022",
+    "summary": "a40a5bd5d79eb9f2215214fac2be4628501d12170cced829b80b684cd6c7617f",
+    "timeline": "39810a2dd41a08340fda9148a9be96113f1f6150d854b3338d91b9ecb97bce31",
+    "timeline_svg": "f049c1f0c53c1665f712df0ec4d9297c324d78bd164d65e02e8d70f00bab19ca",
+    "verification_matrix": "33fc97b976c17816418bd526584161f2509a8364b07e1509c9a530f2863cae67"
+  },
+  "assertions": [
+    {
+      "expected": "RECOVERED",
+      "name": "terminal_state",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:RECOVER",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTINUE",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTROLLED_LAND",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:ENERGY_RECOVERY_REQUIRED",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "<= 21.0",
+      "name": "transition_deadline",
+      "observed": "20.0",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "135fda4991bfd677142265b2fda595e556ee2f809c4ed1973fda04514b881c6f",
+  "exploratory": false,
+  "files": {
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "CAMPAIGN-20260920-C-T10",
+  "scenario_id": "T-10",
+  "scenario_sha256": "0c05612213f49245cd0a32d5bc64845a77963be0557ad1d696f4d131d4964613",
+  "schema_version": "1.0",
+  "software_versions": {
+    "fastapi": "0.141.1",
+    "lifeline": "0.1.0",
+    "mavsdk": "not-installed",
+    "openmct": "4.1.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pydantic": "2.13.5",
+    "python": "3.11.0",
+    "pyyaml": "6.0.3",
+    "source": "fake",
+    "uvicorn": "0.53.0"
+  },
+  "verification_status": "PASS"
+}

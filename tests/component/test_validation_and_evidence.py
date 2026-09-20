@@ -60,11 +60,6 @@ def test_controlled_campaign_aggregates_all_scenarios(tmp_path):
     audit = audit_release("TEST-CAMPAIGN", campaigns_root, tmp_path / "runs")
     assert audit["checks"]["controlled_campaign_threshold"]
     assert audit["checks"]["all_campaign_evidence_integrity"]
+    assert audit["checks"]["automated_display_qualification"]
     assert not audit["release_ready"]
-    assert {item["requirement_id"] for item in audit["deferred_requirements"]} == {
-        "M-01",
-        "OD-01",
-        "OD-02",
-        "OD-03",
-        "OD-04",
-    }
+    assert {item["requirement_id"] for item in audit["deferred_requirements"]} == {"M-01"}

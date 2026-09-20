@@ -1,0 +1,7 @@
+name,passed,expected,observed
+terminal_state,True,RECOVERED,RECOVERED
+required_state:RECOVER,True,observed,observed
+prohibited_action:CONTINUE,True,absent,absent
+prohibited_action:CONTROLLED_LAND,True,absent,absent
+required_code:ENERGY_RECOVERY_REQUIRED,True,observed,observed
+transition_deadline,True,<= 21.0,20.0

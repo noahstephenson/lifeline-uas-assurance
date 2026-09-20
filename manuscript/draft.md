@@ -2,7 +2,7 @@
 
 *Technical draft for an IEEE AESS Magazine Student Project Highlight*
 
-> **Release gate:** Do not submit this draft until the student and advisor supply authorship details, a genuine project photograph, a human usability review, and a completed PX4/Gazebo evidence bundle. The current results describe deterministic simulation and replay, not real flight or operational safety.
+> **Release gate:** Do not submit this draft until the student and advisor supply authorship details, a genuine project photograph, and a completed PX4/Gazebo evidence bundle. The display evidence is automated browser qualification, not a human usability study. The current results describe deterministic simulation and replay, not real flight or operational safety.
 
 ## The package is still moving
 
@@ -32,7 +32,7 @@ The repository also contains a narrow MAVSDK adapter and a PX4-backed runner. Th
 
 ## The compound-fault result
 
-The `CAMPAIGN-20260920-B` deterministic campaign executed twelve frozen scenarios, covering nominal delivery, brief and sustained link interruptions, navigation degradation, compound faults, low and critical energy, dwell-boundary behavior, recovery hysteresis, conflicting boundaries, stale telemetry, and replay. All twelve passed their declared assertions and their post-run artifact-integrity checks. The Python suite contains 31 tests; the pure assurance engine reached 99 percent line coverage. Five frontend tests cover untrusted text, stale inputs, service loss, incomplete evidence, and replay completion. These figures describe the authored model and tests, not general robustness.
+The `CAMPAIGN-20260920-C` deterministic campaign executed twelve frozen scenarios after the T-01 timing change, covering nominal delivery, brief and sustained link interruptions, navigation degradation, compound faults, low and critical energy, dwell-boundary behavior, recovery hysteresis, conflicting boundaries, stale telemetry, and replay. All twelve passed their declared assertions and their post-run artifact-integrity checks. The automated suites cover the assurance engine, interfaces, live-session safeguards, evidence integrity, and the production browser display. These figures describe the authored model and tests, not general robustness.
 
 T-05 is the clearest example of requirement-linked decision telemetry. The link interruption first moved the assurance state into `WATCH`. When the link-loss dwell expired, the engine recorded `LINK_LOSS_DWELL`. Navigation confidence then became invalid. The engine selected a controlled landing, recorded `NAVIGATION_INVALID`, and explicitly rejected `RETURN`. The run reached `SAFE_STOP` at the modeled terminal point. Its transition occurred at 20.0 seconds, before the frozen 23.0-second deadline. The evidence bundle contains 51 snapshots, four distinct decision records, seven passing assertions, configuration and scenario hashes, and no missing required files.
 
@@ -40,7 +40,7 @@ That result is modest but useful. It does not show that controlled landing is un
 
 ## What testing changed
 
-The implementation produced four concrete discrepancies before publication. First, the original demo used port 8000, which was already occupied by an unrelated local service. A readiness probe could have failed or, worse, accepted a response from the wrong application. Lifeline now rejects occupied ports and considers the service ready only when the health response names the requested evidence run.
+The implementation produced six concrete discrepancies before publication. First, the original demo used port 8000, which was already occupied by an unrelated local service. A readiness probe could have failed or, worse, accepted a response from the wrong application. Lifeline now rejects occupied ports and considers the service ready only when the health response names the requested evidence run.
 
 Second, the first launcher started a fake scenario and then opened PX4/Gazebo. The simulator could appear connected even though it had not supplied the evidence. That violated the project provenance claim. The corrected architecture routes `--source px4` through a separate MAVSDK-backed runner and records the telemetry source in every evidence environment. Until the real simulator path is exercised, PX4 stays marked as deferred.
 
@@ -48,10 +48,12 @@ Third, the original reference manifest proved that required files existed but di
 
 Fourth, the initially reserved demo ports were later occupied by another legitimate local project. The launcher kept its fail-closed preflight and gained explicit loopback port parameters. A replay smoke test on ports 8875 and 8876 selected `REFERENCE-T05`, reported complete passing evidence, served the dashboard, and injected the chosen API origin into Vite.
 
+Fifth, T-01's original 65-second envelope was too tight for the stock-simulator lifecycle even though it was sufficient for discrete simulation. The controlled duration was extended to 120 seconds without changing expected states or actions, and the complete fake-source campaign was rerun. Sixth, the first production-browser run exposed an Open MCT 4.1 time-conductor configuration error that view-level unit tests could not reveal. Correcting the fixed UTC window allowed the production application to mount; Playwright then exercised the four reference runs at desktop and compact sizes. This was automated display qualification, not a human usability study.
+
 None of these issues justified changing a scenario expectation. All were recorded as discrepancies, corrected at the interface boundary, and followed by regression testing. The transferable lesson is that assurance depends as much on honest provenance and unambiguous interfaces as it does on the decision table.
 
 ## What comes next
 
-The deterministic engine, evidence service, replay console, and one-command replay demonstration are reproducible on the verified local environment. The next gates are intentionally practical: install the pinned Node 20 runtime, bring up stock PX4 v1.17 and Gazebo X500 in Ubuntu 24.04 WSL2, prove takeoff and landing before enabling Lifeline actions, run the controlled SITL campaign, and conduct a short usability review with someone unfamiliar with the code. A student project photograph and a claim-by-claim editorial review must follow.
+The deterministic engine, evidence service, replay console, and one-command replay demonstration are reproducible on the verified local environment. The automated browser display gate is separate from any future human study. The remaining software gate is intentionally practical: bring up stock PX4 v1.17 and Gazebo X500 in Ubuntu 24.04 WSL2, prove takeoff and landing before enabling Lifeline actions, and run PX4-source T-01 and T-05 with complete logs and overlap evidence. A student project photograph and a claim-by-claim editorial review must follow.
 
 Hardware-in-the-loop, real flight, alternate recovery sites, operator studies, and higher-fidelity estimators remain future work. The current Lifeline contribution is smaller and more defensible: it makes the assumptions behind a modeled contingency response visible enough to challenge, replay, and test.

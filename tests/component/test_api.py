@@ -70,6 +70,11 @@ def test_replay_stream_finishes_with_explicit_status(tmp_path, monkeypatch):
     export_run(run, tmp_path)
     with TestClient(create_app(run.run_id)).websocket_connect("/api/v1/stream") as socket:
         messages = [socket.receive_json() for _ in range(len(run.snapshots) + 1)]
-    assert messages[-1] == {"message_type": "status", "status": "replay_complete"}
+    status = messages[-1]
+    assert status["message_type"] == "status"
+    assert status["status"] == "replay_complete"
+    assert status["payload"] == {"status": "replay_complete"}
+    assert status["run_id"] == "TEST-STREAM"
+    assert status["sequence"] == run.snapshots[-1].sequence
     assert messages[-2]["payload"]["mission_state"] == "SAFE_STOP"
     assert messages[-2]["payload"]["evidence_complete"] is True

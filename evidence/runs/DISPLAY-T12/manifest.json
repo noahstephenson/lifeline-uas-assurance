@@ -1,0 +1,86 @@
+{
+  "artifact_sha256": {
+    "assertions": "757d9c099f868343fd42cc8c8b1b457bc973a4c293c3f24ca79f456f9cb7c986",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "135fda4991bfd677142265b2fda595e556ee2f809c4ed1973fda04514b881c6f",
+    "decisions": "7d2196d074bacf06373f446e5fe263c9684e70e79eafc24d1c2aa483a958baa7",
+    "environment": "9c8fc9c94fdd94b414d0173fbf4fe72b0fc185b0d764ada936bfc9b7ebfe4228",
+    "scenario": "e09afb64240913e7870c2dd4dcf5b4c3ac96f6948bb113df97f4dad103035b9e",
+    "snapshots": "d5eca7f669f991bec5b5ce2e7ffbf4effcccdab5eaf28cef28b7ed05ef13511c",
+    "summary": "61a339f1d9fcbb9328ecc11811dd04c3c3104614bba284c6ef35863b8618c059",
+    "timeline": "4d8eab0c59bdadee4f561aea677bf6daf20db077d7c4999decc559e8c2434a4f",
+    "timeline_svg": "f9c85db8668df06b4fa85c2c93982a5c065c67d00a0f0841b14c745e5592c8a0",
+    "verification_matrix": "0c4adfe721c183a6d10cf584c48e38c806c4b83d9db27d57115bd9e0353914e5"
+  },
+  "assertions": [
+    {
+      "expected": "SAFE_STOP",
+      "name": "terminal_state",
+      "observed": "SAFE_STOP",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:WATCH",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:TERMINATE",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:RETURN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:LINK_LOSS_DWELL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:NAVIGATION_INVALID",
+      "observed": "observed",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "135fda4991bfd677142265b2fda595e556ee2f809c4ed1973fda04514b881c6f",
+  "exploratory": false,
+  "files": {
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "DISPLAY-T12",
+  "scenario_id": "T-12",
+  "scenario_sha256": "2c0f5be14c66aaef855bb9c047150452ec07c90ad8f361678e9bd615b01da4d0",
+  "schema_version": "1.0",
+  "software_versions": {
+    "fastapi": "0.141.1",
+    "lifeline": "0.1.0",
+    "mavsdk": "not-installed",
+    "openmct": "4.1.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pydantic": "2.13.5",
+    "python": "3.11.0",
+    "pyyaml": "6.0.3",
+    "source": "fake",
+    "uvicorn": "0.53.0"
+  },
+  "verification_status": "PASS"
+}

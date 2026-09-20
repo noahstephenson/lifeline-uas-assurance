@@ -15,7 +15,17 @@ def generate_timeline_svg(run_id: str) -> Path:
 def render_timeline_svg(run_dir: Path, run_id: str) -> Path:
     rows = list(csv.DictReader((run_dir / "timeline.csv").open(encoding="utf-8")))
     if not rows:
-        raise ValueError("timeline contains no rows")
+        output = run_dir / "timeline.svg"
+        output.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="180">'
+            '<rect width="100%" height="100%" fill="#0b1320"/>'
+            '<text x="40" y="75" fill="#ff7185" font-family="Segoe UI,Arial" font-size="24">'
+            f"Project Lifeline — {run_id}</text>"
+            '<text x="40" y="115" fill="#e8f0fa" font-family="Segoe UI,Arial" font-size="18">'
+            "Run ended before timeline telemetry was available.</text></svg>",
+            encoding="utf-8",
+        )
+        return output
     width, height, left, right = 1200, 620, 110, 40
     top, track_h = 75, 105
     max_t = max(float(row["sim_time_s"]) for row in rows) or 1.0

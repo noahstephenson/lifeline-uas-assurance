@@ -1,0 +1,11 @@
+{
+  "decision_count": 4,
+  "error": null,
+  "exploratory": false,
+  "run_id": "DISPLAY-T05",
+  "scenario_id": "T-05",
+  "scenario_name": "compound_link_and_navigation_degradation",
+  "snapshot_count": 51,
+  "terminal_state": "SAFE_STOP",
+  "verification_status": "PASS"
+}

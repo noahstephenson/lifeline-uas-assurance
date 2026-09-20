@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 from typing import Any
 
-from lifeline.config import PROJECT_ROOT, load_config
+from lifeline.config import PROJECT_ROOT, load_config, validate_sitl_qualification
 from lifeline.scenarios import load_scenarios
 
 
@@ -12,6 +12,8 @@ def validate_project(root: Path | None = None) -> dict[str, Any]:
     root = root or PROJECT_ROOT
     errors: list[str] = []
     load_config(root / "config" / "baseline.yaml")
+    if root == PROJECT_ROOT:
+        validate_sitl_qualification(root / "config" / "sitl-qualification.yaml")
     scenarios = load_scenarios(root / "scenarios")
 
     requirements = _read_ids(root / "requirements" / "system-requirements.csv", errors)

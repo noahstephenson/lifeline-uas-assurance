@@ -1,0 +1,25 @@
+schema_version: '1.0'
+id: T-01
+name: nominal_delivery_and_recovery
+seed: 0
+mission: baseline_medical_resupply
+duration_s: 120.0
+tick_s: 0.5
+events: []
+expect:
+  terminal_state: RECOVERED
+  required_assurance_states:
+  - NOMINAL
+  prohibited_actions:
+  - CONTROLLED_LAND
+  - ABORT_RUN
+  required_decision_codes:
+  - NOMINAL
+  transition_deadline_s: null
+trace:
+  requirements:
+  - M-01
+  - M-02
+  - M-03
+  hazards: []
+replay_of: null

@@ -10,8 +10,9 @@ scenario completion, and deterministic replay. These metrics are not safety vali
 
 The controlled local campaign is executed with `lifeline campaign run`. Its aggregate
 report is advisory: the release audit independently rechecks every run's required files
-and SHA-256 values. The fake-source threshold, human display review, and PX4 SITL
-qualification remain separate gates.
+and SHA-256 values. The fake-source threshold, automated browser display qualification,
+and PX4 SITL qualification remain separate gates. The display gate checks observable
+behavior at two viewports; it is not evidence of a human usability study.
 
 Evidence integrity has three failure classes:
 

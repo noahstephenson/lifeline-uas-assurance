@@ -1,0 +1,9 @@
+name,passed,expected,observed
+terminal_state,True,RECOVERED,RECOVERED
+required_state:WATCH,True,observed,observed
+required_state:DEGRADED,True,observed,observed
+required_state:RECOVER,True,observed,observed
+prohibited_action:CONTROLLED_LAND,True,absent,absent
+required_code:LINK_LOSS_CONTINUE_OUTBOUND,True,observed,observed
+required_code:LINK_LOSS_RETURN_AFTER_DELIVERY,True,observed,observed
+transition_deadline,True,<= 24.0,23.0

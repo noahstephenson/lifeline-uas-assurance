@@ -48,6 +48,16 @@ class VerificationState(StrEnum):
     INCOMPLETE = "INCOMPLETE"
 
 
+class CommandName(StrEnum):
+    UPLOAD_MISSION = "UPLOAD_MISSION"
+    ARM = "ARM"
+    START_MISSION = "START_MISSION"
+    TAKEOFF = "TAKEOFF"
+    LAND = "LAND"
+    RETURN = "RETURN"
+    CONTROLLED_LAND = "CONTROLLED_LAND"
+
+
 class CriticalValue(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -121,6 +131,22 @@ class DecisionRecord(BaseModel):
     hazard_ids: list[str]
     rejected_actions: list[RecommendedAction] = Field(default_factory=list)
     input_snapshot_hash: str
+
+
+class CommandRecord(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    sequence: int = Field(ge=0)
+    command: CommandName
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    requested_at_s: float = Field(ge=0)
+    accepted: bool
+    acknowledgement: str
+    completed_at_s: float | None = Field(default=None, ge=0)
+    decision_sequence: int | None = Field(default=None, ge=0)
+    observed_completion_state: str | None = None
+    error: str | None = None
 
 
 class ScenarioEvent(BaseModel):

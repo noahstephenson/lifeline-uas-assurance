@@ -3,10 +3,13 @@ from __future__ import annotations
 import asyncio
 import math
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from lifeline.config import LifelineConfig
+import yaml
+
+from lifeline.config import PROJECT_ROOT, LifelineConfig
 from lifeline.models import RecommendedAction
 
 
@@ -39,6 +42,7 @@ class MavsdkAdapter:
         self.actions_allowed = bool(allow_sitl_actions and config.sitl.actions_enabled)
         self._validate_loopback_endpoint()
         self._drone: Any | None = None
+        self.vehicle_uuid: int | None = None
 
     def _validate_loopback_endpoint(self) -> None:
         endpoint = self.endpoint.replace("udpin://", "udp://", 1).replace("udpout://", "udp://", 1)
@@ -57,6 +61,9 @@ class MavsdkAdapter:
         async def wait_connected() -> None:
             async for state in self._drone.core.connection_state():
                 if state.is_connected:
+                    if not state.uuid:
+                        raise SitlSafetyError("connected SITL reported an invalid zero UUID")
+                    self.vehicle_uuid = int(state.uuid)
                     return
 
         await asyncio.wait_for(wait_connected(), timeout=timeout_s)
@@ -71,22 +78,33 @@ class MavsdkAdapter:
 
         await asyncio.wait_for(wait_health(), timeout=timeout_s)
 
-    async def upload_fictional_mission(self) -> None:
+    async def upload_fictional_mission(self, mission_path: Path | None = None) -> str:
         self._require_actions()
         self._require_drone()
         from mavsdk.mission import MissionItem, MissionPlan
 
         home = await _first(self._drone.telemetry.home())
-        offsets = [(0.0, 0.0), (120.0, 35.0), (240.0, 80.0), (0.0, 0.0)]
+        mission_path = mission_path or PROJECT_ROOT / "config" / "missions" / "medical-resupply.yaml"
+        mission = yaml.safe_load(mission_path.read_text(encoding="utf-8"))
+        if mission.get("coordinate_frame") != "local_ned":
+            raise SitlSafetyError("qualification mission must use the fictional local_ned frame")
+        offsets = [
+            (
+                float(item["north_m"]),
+                float(item["east_m"]),
+                float(item["altitude_m"]),
+            )
+            for item in mission["route"]
+        ]
         items = []
-        for north_m, east_m in offsets:
+        for north_m, east_m, altitude_m in offsets:
             latitude, longitude = _offset_lat_lon(home.latitude_deg, home.longitude_deg, north_m, east_m)
             items.append(
                 MissionItem(
                     latitude,
                     longitude,
-                    25.0,
-                    8.0,
+                    max(1.0, altitude_m),
+                    float(mission["cruise_speed_mps"]),
                     True,
                     float("nan"),
                     float("nan"),
@@ -101,12 +119,32 @@ class MavsdkAdapter:
             )
         await self._drone.mission.set_return_to_launch_after_mission(True)
         await self._drone.mission.upload_mission(MissionPlan(items))
+        return "accepted:upload_mission"
 
-    async def arm_and_start(self) -> None:
+    async def arm(self) -> str:
         self._require_actions()
         self._require_drone()
         await self._drone.action.arm()
+        return "accepted:arm"
+
+    async def start_mission(self) -> str:
+        self._require_actions()
+        self._require_drone()
         await self._drone.mission.start_mission()
+        return "accepted:start_mission"
+
+    async def takeoff(self, altitude_m: float = 8.0) -> str:
+        self._require_actions()
+        self._require_drone()
+        await self._drone.action.set_takeoff_altitude(altitude_m)
+        await self._drone.action.takeoff()
+        return "accepted:takeoff"
+
+    async def land(self) -> str:
+        self._require_actions()
+        self._require_drone()
+        await self._drone.action.land()
+        return "accepted:land"
 
     async def execute(self, action: RecommendedAction) -> str:
         self._require_actions()

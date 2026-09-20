@@ -4,6 +4,8 @@ import csv
 import json
 import platform
 import re
+import shutil
+import subprocess
 import sys
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -12,7 +14,7 @@ from typing import Any
 import yaml
 
 from lifeline import __version__
-from lifeline.config import PROJECT_ROOT, file_sha256
+from lifeline.config import PROJECT_ROOT, file_sha256, load_config
 from lifeline.figures import render_timeline_svg
 from lifeline.models import EvidenceManifest, VerificationState
 from lifeline.scenarios.loader import scenario_path
@@ -28,35 +30,59 @@ def validate_evidence_id(value: str, *, label: str = "evidence ID") -> str:
     return value
 
 
+def reserve_evidence_directory(run_id: str, output_root: Path | None = None) -> Path:
+    """Create the run directory before external connection work begins."""
+    validate_evidence_id(run_id, label="run ID")
+    run_dir = (output_root or RUNS_DIR) / run_id
+    run_dir.mkdir(parents=True, exist_ok=False)
+    (run_dir / ".reserved").write_text(datetime_now(), encoding="utf-8")
+    return run_dir
+
+
 def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceManifest:
     root = output_root or RUNS_DIR
     validate_evidence_id(run.run_id, label="run ID")
     run_dir = root / run.run_id
-    run_dir.mkdir(parents=True, exist_ok=False)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    if (run_dir / "manifest.json").exists():
+        raise FileExistsError(f"evidence run already finalized: {run.run_id}")
+    unexpected = [item.name for item in run_dir.iterdir() if item.name != ".reserved"]
+    if unexpected:
+        raise FileExistsError(f"evidence run directory is not empty: {run.run_id}")
+    (run_dir / ".reserved").unlink(missing_ok=True)
     scenario_file = scenario_path(run.scenario.id)
-    config_file = PROJECT_ROOT / "config" / "baseline.yaml"
+    resolved_config = run.configuration or load_config()
     passed = all(result.passed for result in run.assertions)
-    status = VerificationState.PASS if passed else VerificationState.FAIL
+    status = VerificationState.ERROR if run.error else VerificationState.PASS if passed else VerificationState.FAIL
 
     files = {
         "summary": "run-summary.json",
         "snapshots": "events.jsonl",
         "decisions": "decisions.jsonl",
+        "commands": "commands.jsonl",
         "assertions": "assertions.csv",
         "verification_matrix": "verification-matrix.csv",
         "environment": "environment.json",
         "scenario": "scenario-resolved.yaml",
+        "configuration": "configuration-resolved.yaml",
         "timeline": "timeline.csv",
         "timeline_svg": "timeline.svg",
         "manifest": "manifest.json",
     }
+    if run.source == "px4":
+        files.update({"px4_log": "px4.log", "api_log": "api.log"})
     _write_jsonl(run_dir / files["snapshots"], run.snapshots)
     _write_jsonl(run_dir / files["decisions"], run.decisions)
+    _write_jsonl(run_dir / files["commands"], run.commands)
     _write_assertions(run_dir / files["assertions"], run.assertions)
     _write_verification_matrix(run_dir / files["verification_matrix"], run)
     _write_timeline(run_dir / files["timeline"], run)
     render_timeline_svg(run_dir, run.run_id)
     (run_dir / files["scenario"]).write_text(yaml.safe_dump(run.scenario.model_dump(mode="json"), sort_keys=False), encoding="utf-8")
+    (run_dir / files["configuration"]).write_text(
+        yaml.safe_dump(resolved_config.model_dump(mode="json"), sort_keys=False),
+        encoding="utf-8",
+    )
     environment = {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
@@ -68,6 +94,8 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         "pydantic": _distribution_version("pydantic"),
         "pyyaml": _distribution_version("pyyaml"),
         "uvicorn": _distribution_version("uvicorn"),
+        **(collect_px4_environment() if run.source == "px4" else {}),
+        **run.environment,
     }
     _write_json(run_dir / files["environment"], environment)
     summary = {
@@ -75,22 +103,25 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         "scenario_id": run.scenario.id,
         "scenario_name": run.scenario.name,
         "verification_status": status.value,
-        "terminal_state": run.snapshots[-1].mission_state.value,
+        "terminal_state": run.snapshots[-1].mission_state.value if run.snapshots else "UNAVAILABLE",
         "snapshot_count": len(run.snapshots),
         "decision_count": len(run.decisions),
-        "exploratory": run.snapshots[0].exploratory,
+        "exploratory": run.snapshots[0].exploratory if run.snapshots else False,
+        "error": run.error,
     }
     _write_json(run_dir / files["summary"], summary)
     artifact_sha256 = {
-        logical_name: file_sha256(run_dir / filename) for logical_name, filename in files.items() if logical_name != "manifest"
+        logical_name: file_sha256(run_dir / filename)
+        for logical_name, filename in files.items()
+        if logical_name != "manifest" and (run_dir / filename).exists()
     }
     manifest = EvidenceManifest(
         run_id=run.run_id,
         scenario_id=run.scenario.id,
-        exploratory=run.snapshots[0].exploratory,
+        exploratory=run.snapshots[0].exploratory if run.snapshots else False,
         verification_status=status,
         scenario_sha256=file_sha256(scenario_file),
-        configuration_sha256=file_sha256(config_file),
+        configuration_sha256=file_sha256(run_dir / files["configuration"]),
         software_versions=environment,
         files=files,
         artifact_sha256=artifact_sha256,
@@ -98,6 +129,30 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
     )
     _write_json(run_dir / files["manifest"], manifest.model_dump(mode="json"))
     return manifest
+
+
+def attach_run_artifact(
+    run_id: str,
+    logical_name: str,
+    source: Path,
+    output_root: Path | None = None,
+) -> dict[str, Any]:
+    allowed = {"px4_log": "px4.log", "api_log": "api.log"}
+    if logical_name not in allowed:
+        raise ValueError(f"unsupported attached artifact: {logical_name}")
+    loaded = load_run(run_id, output_root)
+    run_dir = Path(loaded["directory"])
+    source = source.resolve()
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    destination = run_dir / allowed[logical_name]
+    shutil.copyfile(source, destination)
+    manifest_path = run_dir / "manifest.json"
+    manifest = loaded["manifest"]
+    manifest.setdefault("files", {})[logical_name] = allowed[logical_name]
+    manifest.setdefault("artifact_sha256", {})[logical_name] = file_sha256(destination)
+    _write_json(manifest_path, manifest)
+    return verify_run_integrity(run_id, output_root)
 
 
 def verify_run_integrity(run_id: str, output_root: Path | None = None) -> dict[str, Any]:
@@ -241,3 +296,36 @@ def _openmct_version() -> str:
         return "not-installed"
     data = json.loads(package_lock.read_text(encoding="utf-8"))
     return data.get("packages", {}).get("node_modules/openmct", {}).get("version", "unknown")
+
+
+def datetime_now() -> str:
+    from datetime import UTC, datetime
+
+    return datetime.now(UTC).isoformat()
+
+
+def collect_px4_environment() -> dict[str, str]:
+    return {
+        "wsl_kernel": platform.release(),
+        "ubuntu_release": _ubuntu_release(),
+        "px4_tag": _command_version(["git", "-C", str(Path.home() / "PX4-Autopilot"), "describe", "--tags", "--exact-match"]),
+        "px4_commit": _command_version(["git", "-C", str(Path.home() / "PX4-Autopilot"), "rev-parse", "HEAD"]),
+        "gazebo_version": _command_version(["gz", "sim", "--version"]),
+    }
+
+
+def _ubuntu_release() -> str:
+    path = Path("/etc/os-release")
+    if not path.exists():
+        return "not-wsl"
+    values = dict(line.split("=", 1) for line in path.read_text(encoding="utf-8").splitlines() if "=" in line)
+    return values.get("VERSION_ID", "unknown").strip('"')
+
+
+def _command_version(command: list[str]) -> str:
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
+        value = (result.stdout or result.stderr).strip().splitlines()
+        return value[0] if result.returncode == 0 and value else "unavailable"
+    except (OSError, subprocess.SubprocessError):
+        return "unavailable"

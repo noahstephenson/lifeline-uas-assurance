@@ -14,8 +14,8 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 
 - **Observed:** The initial `Live` script executed a fake scenario before launching PX4/Gazebo.
 - **Risk:** Evidence could be mislabeled or the visual simulator could appear connected when it was not the telemetry source.
-- **Decision:** Add a distinct MAVSDK-backed runner, record `source` in every evidence environment, route `--source px4` through it, and require two independent SITL action guards.
-- **Verification:** Network-free component tests cover PX4 normalization and invalid-navigation landing; the CLI fails closed with the controlled action flag disabled.
+- **Decision:** Add a distinct MAVSDK-backed runner, keep PX4/MAVSDK/API inside Ubuntu 24.04, hold at `READY` until Open MCT connects, release through a one-time localhost token, record `source` in every evidence environment, and require two independent SITL action guards.
+- **Verification:** Network-free component tests cover PX4 normalization, command acknowledgements, invalid-navigation landing, mission hold, reconnect ordering, error evidence, and the fail-closed action flag.
 - **Open item:** A real Ubuntu 24.04/PX4/Gazebo run remains deferred until that environment and MAVSDK are installed. No PX4 completion claim is permitted yet.
 
 ## D-03 — Legacy evidence lacked artifact integrity hashes
@@ -33,3 +33,19 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Keep strict preflight refusal, add explicit `-ApiPort` and `-WebPort` parameters, pass the selected API origin into Vite, and constrain API CORS to localhost origins.
 - **Verification:** The replay smoke test on 8875/8876 returned health `ok`, selected `REFERENCE-T05`, evidence `PASS` and complete, dashboard HTTP 200, and a Vite module containing the selected 8875 API origin.
 - **Scenario impact:** None; transport configuration does not change assurance behavior.
+
+## D-05 — T-01 execution window was shorter than the stock SITL route allowance
+
+- **Observed:** The 65-second T-01 envelope matched the deterministic source but left insufficient integration allowance for PX4 readiness, mission upload, and stock X500 execution.
+- **Risk:** A conforming route could be classified as timed out for integration latency rather than assurance behavior.
+- **Decision:** Extend only T-01's execution envelope from 65 to 120 seconds. Its expected states, actions, terminal result, requirements, and hazards are unchanged.
+- **Verification:** `CAMPAIGN-20260920-C` reran all twelve scenarios after the change; 12/12 passed and every referenced artifact passed integrity checking.
+- **Scenario impact:** Timing allowance only; no expected result was relabeled.
+
+## D-06 — Open MCT 4.1 requires an explicit time-conductor menu
+
+- **Observed:** The first Playwright run stopped before application start because Open MCT 4.1 rejects an empty Conductor configuration.
+- **Risk:** Unit-tested view code could appear healthy while the production application never mounted.
+- **Decision:** Configure a fixed, recorded-mission UTC window and retain the production browser startup in the qualification suite.
+- **Verification:** The focused production-browser case passed after the correction; the full qualification report records all viewport and behavior assertions.
+- **Scenario impact:** None; display initialization does not change assurance outputs.

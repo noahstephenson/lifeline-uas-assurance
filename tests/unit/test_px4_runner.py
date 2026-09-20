@@ -1,5 +1,7 @@
 import asyncio
 
+import pytest
+
 from lifeline.config import load_config
 from lifeline.models import (
     MissionState,
@@ -10,7 +12,7 @@ from lifeline.models import (
     TraceLinks,
 )
 from lifeline.scenarios import px4_runner
-from lifeline.telemetry.mavsdk_adapter import VehicleSample
+from lifeline.telemetry.mavsdk_adapter import SitlSafetyError, VehicleSample
 
 
 class FakeAdapter:
@@ -20,6 +22,7 @@ class FakeAdapter:
         self.tick = 0
         self.landed = False
         self.commands = []
+        self.vehicle_uuid = 4242
         self.instances.append(self)
 
     async def connect(self):
@@ -29,10 +32,13 @@ class FakeAdapter:
         return None
 
     async def upload_fictional_mission(self):
-        return None
+        return "accepted:upload_mission"
 
-    async def arm_and_start(self):
-        return None
+    async def arm(self):
+        return "accepted:arm"
+
+    async def start_mission(self):
+        return "accepted:start_mission"
 
     async def sample(self):
         self.tick += 1
@@ -84,6 +90,9 @@ def test_px4_runner_normalizes_simulator_telemetry(monkeypatch):
     )
     assert run.source == "px4"
     assert run.snapshots[-1].mission_state == MissionState.RECOVERED
+    assert [record.command.value for record in run.commands[:3]] == ["UPLOAD_MISSION", "ARM", "START_MISSION"]
+    assert all(record.accepted for record in run.commands)
+    assert run.environment["vehicle_uuid"] == "4242"
     assert all(result.passed for result in run.assertions)
 
 
@@ -99,4 +108,18 @@ def test_px4_runner_executes_controlled_land_for_invalid_navigation(monkeypatch)
     )
     assert run.snapshots[-1].mission_state == MissionState.SAFE_STOP
     assert RecommendedAction.CONTROLLED_LAND in FakeAdapter.instances[0].commands
+    land = next(record for record in run.commands if record.command.value == "CONTROLLED_LAND")
+    assert land.accepted and land.completed_at_s is not None
+    assert land.observed_completion_state == "SAFE_STOP"
     assert all(result.passed for result in run.assertions)
+
+
+def test_px4_runner_rejects_zero_vehicle_uuid(monkeypatch):
+    class ZeroUuidAdapter(FakeAdapter):
+        def __init__(self, config, *, allow_sitl_actions=False):
+            super().__init__(config, allow_sitl_actions=allow_sitl_actions)
+            self.vehicle_uuid = 0
+
+    monkeypatch.setattr(px4_runner, "MavsdkAdapter", ZeroUuidAdapter)
+    with pytest.raises(SitlSafetyError, match="nonzero vehicle UUID"):
+        asyncio.run(px4_runner.run_px4_scenario(_scenario(), _enabled_config(), allow_sitl_actions=True))

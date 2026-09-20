@@ -1,0 +1,11 @@
+{
+  "decision_count": 2,
+  "error": null,
+  "exploratory": false,
+  "run_id": "CAMPAIGN-20260920-C-T10",
+  "scenario_id": "T-10",
+  "scenario_name": "conflicting_link_navigation_energy_boundary",
+  "snapshot_count": 81,
+  "terminal_state": "RECOVERED",
+  "verification_status": "PASS"
+}

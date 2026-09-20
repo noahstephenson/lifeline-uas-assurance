@@ -4,17 +4,31 @@ import argparse
 import asyncio
 import importlib.util
 import json
+import os
 import platform
+import secrets
 import shutil
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from lifeline import __version__
 from lifeline.campaign import audit_release, run_fake_campaign
-from lifeline.config import PROJECT_ROOT, load_config
-from lifeline.evidence import export_run, list_runs, load_run, verify_run_integrity
+from lifeline.config import PROJECT_ROOT, load_config, validate_sitl_qualification
+from lifeline.evidence import (
+    attach_run_artifact,
+    export_run,
+    list_runs,
+    load_run,
+    reserve_evidence_directory,
+    verify_run_integrity,
+)
 from lifeline.figures import generate_timeline_svg
+from lifeline.models import AssertionResult
 from lifeline.scenarios import load_scenario, run_px4_scenario, run_scenario
+from lifeline.scenarios.runner import ScenarioRun
+from lifeline.smoke import run_px4_smoke
 from lifeline.validation import validate_project
 
 
@@ -30,6 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="execute a controlled scenario")
     run.add_argument("--scenario", required=True, help="scenario ID such as T-05")
     run.add_argument("--source", choices=["fake", "px4"], default="fake")
+    run.add_argument("--config", help="configuration path under config/")
     run.add_argument("--run-id", help="explicit unique evidence run ID")
     run.add_argument("--allow-sitl-actions", action="store_true")
     run.add_argument("--exploratory", action="store_true")
@@ -49,6 +64,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     evidence = sub.add_parser("evidence", help="inspect and verify an evidence bundle")
     evidence.add_argument("--run", required=True, dest="run_id")
+    evidence.add_argument("--attach-name", choices=["px4_log", "api_log"])
+    evidence.add_argument("--file", type=Path)
 
     figure = sub.add_parser("figure", help="generate an SVG assurance timeline")
     figure.add_argument("--run", required=True, dest="run_id")
@@ -61,6 +78,17 @@ def build_parser() -> argparse.ArgumentParser:
     serve = sub.add_parser("serve", help="serve the latest run through the live/history API")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
+
+    live = sub.add_parser("live", help="hold and stream a PX4 scenario until the loopback launcher releases it")
+    live.add_argument("--scenario", required=True)
+    live.add_argument("--config", default="config/sitl-qualification.yaml")
+    live.add_argument("--run-id")
+    live.add_argument("--host", default="127.0.0.1")
+    live.add_argument("--port", type=int, default=8000)
+
+    smoke = sub.add_parser("px4-smoke", help="qualify stock X500 arm, takeoff, altitude, and landing")
+    smoke.add_argument("--config", default="config/sitl-qualification.yaml")
+    smoke.add_argument("--run-id")
 
     inject = sub.add_parser("inject", help="validate a manual exploratory injection request")
     inject.add_argument(
@@ -94,17 +122,31 @@ def dispatch(args: argparse.Namespace) -> Any:
         return result
     if args.command == "run":
         scenario = load_scenario(args.scenario)
-        config = load_config()
+        config = _load_cli_config(args.config, require_qualification=args.source == "px4")
         if args.source == "px4":
-            run = asyncio.run(
-                run_px4_scenario(
-                    scenario,
-                    config,
-                    run_id=args.run_id,
-                    allow_sitl_actions=args.allow_sitl_actions,
-                    exploratory=args.exploratory,
+            run_id = args.run_id or _run_id(scenario.id, "PX4")
+            reserve_evidence_directory(run_id)
+            try:
+                run = asyncio.run(
+                    run_px4_scenario(
+                        scenario,
+                        config,
+                        run_id=run_id,
+                        allow_sitl_actions=args.allow_sitl_actions,
+                        exploratory=args.exploratory,
+                    )
                 )
-            )
+            except Exception as exc:
+                run = ScenarioRun(
+                    run_id=run_id,
+                    scenario=scenario,
+                    snapshots=[],
+                    decisions=[],
+                    assertions=[AssertionResult(name="px4_run_completed", passed=False, expected="complete", observed=str(exc))],
+                    source="px4",
+                    configuration=config,
+                    error=f"{type(exc).__name__}: {exc}",
+                )
         else:
             run = run_scenario(scenario, config, run_id=args.run_id, exploratory=args.exploratory)
         manifest = export_run(run)
@@ -116,6 +158,10 @@ def dispatch(args: argparse.Namespace) -> Any:
             return run_fake_campaign(campaign_id=args.campaign_id)
         return audit_release(args.campaign_id)
     if args.command == "evidence":
+        if bool(args.attach_name) != bool(args.file):
+            raise ValueError("--attach-name and --file must be supplied together")
+        if args.attach_name and args.file:
+            return attach_run_artifact(args.run_id, args.attach_name, args.file)
         loaded = load_run(args.run_id)
         manifest = loaded["manifest"]
         integrity = verify_run_integrity(args.run_id)
@@ -141,6 +187,30 @@ def dispatch(args: argparse.Namespace) -> Any:
 
         uvicorn.run(create_app(selected), host=args.host, port=args.port)
         return {"stopped": True}
+    if args.command == "live":
+        if args.host not in {"127.0.0.1", "localhost", "::1"}:
+            raise ValueError("live qualification API must bind to loopback")
+        scenario = load_scenario(args.scenario)
+        config = _load_cli_config(args.config, require_qualification=True)
+        run_id = args.run_id or _run_id(scenario.id, "LIVE")
+        token = os.getenv("LIFELINE_START_TOKEN")
+        if not token:
+            raise ValueError("LIFELINE_START_TOKEN must be set by the qualification launcher")
+        reserve_evidence_directory(run_id)
+        import uvicorn
+
+        from lifeline.live import LiveSession, create_live_app
+
+        session = LiveSession(scenario, config, run_id=run_id, start_token=token)
+        uvicorn.run(create_live_app(session), host=args.host, port=args.port)
+        return {"stopped": True, "run_id": run_id}
+    if args.command == "px4-smoke":
+        config = _load_cli_config(args.config, require_qualification=True)
+        run_id = args.run_id or _run_id("SMOKE", "PX4")
+        manifest = asyncio.run(run_px4_smoke(config, run_id=run_id))
+        if manifest["verification_status"] != "PASS":
+            raise RuntimeError(f"PX4 smoke failed; evidence bundle finalized as {run_id}")
+        return manifest
     if args.command == "inject":
         value: bool | float
         if args.field == "operator_link_available":
@@ -166,7 +236,7 @@ def doctor() -> dict[str, Any]:
         "lifeline_version": __version__,
         "python": {
             "version": platform.python_version(),
-            "supported": sys.version_info[:2] == (3, 11),
+            "supported": (3, 11) <= sys.version_info[:2] < (3, 13),
         },
         "project_root": str(PROJECT_ROOT),
         "offline_mode": True,
@@ -184,6 +254,24 @@ def doctor() -> dict[str, Any]:
             "endpoint": config.sitl.endpoint,
         },
     }
+
+
+def _load_cli_config(value: str | None, *, require_qualification: bool = False):
+    if value is None:
+        return load_config()
+    path = (PROJECT_ROOT / value).resolve() if not Path(value).is_absolute() else Path(value).resolve()
+    config_root = (PROJECT_ROOT / "config").resolve()
+    if path != config_root and config_root not in path.parents:
+        raise ValueError("configuration must be located under the project config directory")
+    if require_qualification:
+        return validate_sitl_qualification(path)
+    return load_config(path)
+
+
+def _run_id(scenario_id: str, source: str) -> str:
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    suffix = secrets.token_hex(2).upper()
+    return f"LFL-{scenario_id.replace('-', '')}-{source}-{stamp}-{suffix}"
 
 
 def _emit(as_json: bool, ok: bool, data: Any) -> None:

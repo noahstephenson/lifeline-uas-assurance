@@ -43,8 +43,9 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
         return {"status": "ok", "mode": "evidence", "selected_run": selected}
 
     @app.get("/api/v1/metadata")
-    def metadata() -> dict[str, Any]:
-        return {"schema_version": "1.0", "measurements": TELEMETRY_METADATA}
+    def metadata(run_id: str | None = None) -> dict[str, Any]:
+        selected = _require_run(run_id or app.state.default_run_id)
+        return {"schema_version": "1.0", "run_id": selected, "measurements": TELEMETRY_METADATA}
 
     @app.get("/api/v1/runs")
     def runs() -> list[dict[str, Any]]:
@@ -125,7 +126,19 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
                     }
                 )
                 await asyncio.sleep(0.05)
-            await websocket.send_json({"message_type": "status", "status": "replay_complete"})
+            final = snapshots[-1]
+            await websocket.send_json(
+                {
+                    "schema_version": "1.0",
+                    "message_type": "status",
+                    "run_id": selected,
+                    "sequence": final["sequence"],
+                    "sim_time_s": final["sim_time_s"],
+                    "recorded_at": final["recorded_at"],
+                    "status": "replay_complete",
+                    "payload": {"status": "replay_complete"},
+                }
+            )
         finally:
             await websocket.close()
 

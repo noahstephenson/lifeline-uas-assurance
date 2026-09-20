@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from lifeline.assurance import AssuranceEngine
 from lifeline.config import LifelineConfig
 from lifeline.models import (
+    CommandRecord,
     CriticalValue,
     DecisionRecord,
     EngineContext,
@@ -26,6 +27,10 @@ class ScenarioRun:
     decisions: list[DecisionRecord]
     assertions: list
     source: str = "fake"
+    commands: list[CommandRecord] = field(default_factory=list)
+    configuration: LifelineConfig | None = None
+    environment: dict[str, str] = field(default_factory=dict)
+    error: str | None = None
 
 
 def run_scenario(
@@ -128,7 +133,15 @@ def run_scenario(
             break
 
     assertions = evaluate_expectations(scenario, snapshots, decisions)
-    return ScenarioRun(run_id, scenario, snapshots, decisions, assertions, "fake")
+    return ScenarioRun(
+        run_id,
+        scenario,
+        snapshots,
+        decisions,
+        assertions,
+        "fake",
+        configuration=config,
+    )
 
 
 def _mission_state(now: float, forced_return_at: float | None, landing_at: float | None) -> tuple[MissionState, float, bool]:
