@@ -3,7 +3,11 @@ param(
     [string]$Scenario = "T-05",
     [ValidateSet("Fake","Replay","Live")]
     [string]$Mode = "Fake",
-    [switch]$AllowSitlActions
+    [switch]$AllowSitlActions,
+    [ValidateRange(1024,65535)]
+    [int]$ApiPort = 8765,
+    [ValidateRange(1024,65535)]
+    [int]$WebPort = 8766
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,10 +15,9 @@ $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $Lifeline = Join-Path $ProjectRoot ".venv\Scripts\lifeline.exe"
 $Python = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
 $PidFile = Join-Path $ProjectRoot ".demo-pids.json"
-$ApiPort = 8765
-$WebPort = 8766
 $Started = @{}
 $Completed = $false
+$PriorApiBase = $env:VITE_LIFELINE_API_BASE
 
 function Assert-PortAvailable([int]$Port) {
     $Listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
@@ -86,6 +89,7 @@ try {
     ) -WorkingDirectory $ProjectRoot -WindowStyle Hidden -RedirectStandardOutput $ApiOut -RedirectStandardError $ApiErr -PassThru
     $Node = (Get-Command node.exe -ErrorAction Stop).Source
     $Vite = Join-Path $ProjectRoot "openmct\node_modules\vite\bin\vite.js"
+    $env:VITE_LIFELINE_API_BASE = "http://127.0.0.1:$ApiPort"
     $Started.web = Start-Process -FilePath $Node -ArgumentList @(
         $Vite, "--host", "127.0.0.1", "--port", "$WebPort"
     ) -WorkingDirectory (Join-Path $ProjectRoot "openmct") -WindowStyle Hidden -RedirectStandardOutput $WebOut -RedirectStandardError $WebErr -PassThru
@@ -121,6 +125,7 @@ try {
     Write-Host "Project Lifeline is running. Run ID: $RunId"
     Write-Host "Use scripts/stop-demo.ps1 to stop only the recorded demo processes."
 } finally {
+    $env:VITE_LIFELINE_API_BASE = $PriorApiBase
     if (-not $Completed) { Stop-StartedProcesses }
     Pop-Location
 }

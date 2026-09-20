@@ -3,12 +3,16 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from lifeline.evidence.exporter import load_run
-
 
 def generate_timeline_svg(run_id: str) -> Path:
+    from lifeline.evidence.exporter import load_run
+
     run = load_run(run_id)
     run_dir = Path(run["directory"])
+    return render_timeline_svg(run_dir, run_id)
+
+
+def render_timeline_svg(run_dir: Path, run_id: str) -> Path:
     rows = list(csv.DictReader((run_dir / "timeline.csv").open(encoding="utf-8")))
     if not rows:
         raise ValueError("timeline contains no rows")

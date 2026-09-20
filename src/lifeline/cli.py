@@ -7,12 +7,12 @@ import json
 import platform
 import shutil
 import sys
-from pathlib import Path
 from typing import Any
 
 from lifeline import __version__
+from lifeline.campaign import audit_release, run_fake_campaign
 from lifeline.config import PROJECT_ROOT, load_config
-from lifeline.evidence import export_run, list_runs, load_run
+from lifeline.evidence import export_run, list_runs, load_run, verify_run_integrity
 from lifeline.figures import generate_timeline_svg
 from lifeline.scenarios import load_scenario, run_px4_scenario, run_scenario
 from lifeline.validation import validate_project
@@ -30,8 +30,16 @@ def build_parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="execute a controlled scenario")
     run.add_argument("--scenario", required=True, help="scenario ID such as T-05")
     run.add_argument("--source", choices=["fake", "px4"], default="fake")
+    run.add_argument("--run-id", help="explicit unique evidence run ID")
     run.add_argument("--allow-sitl-actions", action="store_true")
     run.add_argument("--exploratory", action="store_true")
+
+    campaign = sub.add_parser("campaign", help="run or audit the controlled scenario campaign")
+    campaign_sub = campaign.add_subparsers(dest="campaign_command", required=True)
+    campaign_run = campaign_sub.add_parser("run", help="run all twelve controlled fake-source scenarios")
+    campaign_run.add_argument("--id", dest="campaign_id")
+    campaign_audit = campaign_sub.add_parser("audit", help="audit release gates against a campaign")
+    campaign_audit.add_argument("--id", dest="campaign_id")
 
     runs = sub.add_parser("runs", help="discover or inspect evidence runs")
     runs_sub = runs.add_subparsers(dest="runs_command", required=True)
@@ -92,26 +100,32 @@ def dispatch(args: argparse.Namespace) -> Any:
                 run_px4_scenario(
                     scenario,
                     config,
+                    run_id=args.run_id,
                     allow_sitl_actions=args.allow_sitl_actions,
                     exploratory=args.exploratory,
                 )
             )
         else:
-            run = run_scenario(scenario, config, exploratory=args.exploratory)
+            run = run_scenario(scenario, config, run_id=args.run_id, exploratory=args.exploratory)
         manifest = export_run(run)
         return manifest.model_dump(mode="json")
     if args.command == "runs":
         return list_runs() if args.runs_command == "list" else load_run(args.run_id)
+    if args.command == "campaign":
+        if args.campaign_command == "run":
+            return run_fake_campaign(campaign_id=args.campaign_id)
+        return audit_release(args.campaign_id)
     if args.command == "evidence":
         loaded = load_run(args.run_id)
-        run_dir = Path(loaded["directory"])
         manifest = loaded["manifest"]
-        missing = [name for name in manifest["files"].values() if not (run_dir / name).exists()]
+        integrity = verify_run_integrity(args.run_id)
         return {
             "run_id": args.run_id,
-            "complete": not missing,
-            "effective_verification_status": "INCOMPLETE" if missing else manifest["verification_status"],
-            "missing": missing,
+            "complete": integrity["complete"],
+            "effective_verification_status": integrity["verification_status"],
+            "missing": integrity["missing"],
+            "mismatched": integrity["mismatched"],
+            "unchecked": integrity["unchecked"],
             "manifest": manifest,
         }
     if args.command == "figure":

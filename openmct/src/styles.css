@@ -5,11 +5,16 @@
 .eyebrow { color: #73d5ff; font-size: 11px; letter-spacing: .18em; }
 .run-chip, .decision-code { border: 1px solid #31506a; border-radius: 999px; padding: 8px 13px; background: #0d1d2b; font-family: Consolas, monospace; }
 .exploratory { margin-bottom: 12px; padding: 10px; border: 1px solid #f4c95d; color: #f4c95d; text-align: center; font-weight: 700; letter-spacing: .08em; }
+.connection-banner, .critical-stale { margin-bottom: 12px; padding: 8px 12px; border: 1px solid #31506a; color: #b8d4e7; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-align: center; }
+.connection-replay.complete { color: #62e4aa; }
+.critical-stale { border-color: #c792ea; color: #e4c5f5; }
 .state-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
 .state-grid article, .panel { border: 1px solid #20364a; background: rgba(9, 24, 37, .92); box-shadow: 0 12px 35px rgba(0,0,0,.22); }
 .state-grid article { padding: 15px 17px; border-top: 3px solid #3b82a0; }
 .state-grid label { display: block; color: #8fa7bb; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
 .state-grid strong { font-size: 18px; }
+.state-grid small { display: block; margin-top: 5px; color: #9bb0c1; }
+.verification-pass { border-top-color: #38d996 !important; }.verification-fail,.verification-incomplete,.verification-error { border-top-color: #ff5d73 !important; }
 .main-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
 .panel { padding: 18px; min-height: 210px; }
 .panel h2 { margin: 0 0 16px; font-size: 14px; color: #adc5d8; text-transform: uppercase; letter-spacing: .09em; }
@@ -24,4 +29,3 @@
 .state-nominal { border-top-color: #38d996 !important; color: #62e4aa; }.state-watch { border-top-color: #56c7ff !important; color: #79d7ff; }.state-degraded,.state-recover { border-top-color: #f4c95d !important; color: #f4c95d; }.state-terminate { border-top-color: #ff5d73 !important; color: #ff7185; }.state-unknown { border-top-color: #c792ea !important; color: #d5a9f0; }
 .lifeline-unavailable { margin: 40px; padding: 30px; border: 2px solid #c792ea; color: #e4c5f5; font-size: 20px; text-align: center; }
 @media (max-width: 900px) { .state-grid, .main-grid { grid-template-columns: 1fr 1fr; } }
-

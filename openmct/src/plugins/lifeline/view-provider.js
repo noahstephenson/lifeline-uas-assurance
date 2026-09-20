@@ -1,11 +1,25 @@
-const escapeHtml = (value) => String(value ?? "—")
+export const escapeHtml = (value) => String(value ?? "—")
   .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
-function stateClass(state) {
+export function stateClass(state) {
   return `state-${String(state || "unknown").toLowerCase()}`;
 }
 
-export function createAssuranceViewProvider(apiBase) {
+export function criticalDataStatus(point = {}) {
+  const checks = [
+    ["operator link", point.operator_link_available_valid, point.operator_link_available_age_s, 2],
+    ["navigation", point.navigation_confidence_valid, point.navigation_confidence_age_s, 2],
+    ["energy", point.energy_margin_wh_valid, point.energy_margin_wh_age_s, 3]
+  ];
+  const failed = checks
+    .filter(([, valid, age, limit]) => valid === false || Number(age ?? 0) > limit)
+    .map(([name]) => name);
+  return { healthy: failed.length === 0, failed };
+}
+
+export function createAssuranceViewProvider(apiBase, options = {}) {
+  const staleAfterMs = options.staleAfterMs ?? 3000;
+  const timers = options.timers ?? globalThis;
   return {
     key: "lifeline.assurance.view",
     name: "Mission Assurance",
@@ -16,24 +30,32 @@ export function createAssuranceViewProvider(apiBase) {
     view() {
       let container;
       let socket;
+      let watchdog;
+      let replayComplete = false;
+      let connectionState = "CONNECTING";
+      let lastPoint = {};
       let decisionRows = [];
       const render = (point = {}) => {
         if (!container) return;
         const nav = Number(point.navigation_confidence ?? 0);
         const energy = Number(point.energy_margin_wh ?? 0);
         const progress = Number(point.route_progress ?? 0);
+        const critical = criticalDataStatus(point);
+        const evidenceStatus = point.verification_status || "PENDING";
         container.innerHTML = `
           <section class="lifeline-shell">
             <header class="lifeline-header">
               <div><span class="eyebrow">SIMULATION · REQUIREMENT-LINKED TELEMETRY</span><h1>Project Lifeline</h1></div>
               <div class="run-chip">${escapeHtml(point.run_id)}</div>
             </header>
+            <div class="connection-banner connection-${connectionState.toLowerCase()}">${escapeHtml(connectionState)}</div>
             ${point.exploratory ? '<div class="exploratory">EXPLORATORY — NOT CONTROLLED VERIFICATION EVIDENCE</div>' : ""}
+            ${critical.healthy ? "" : `<div class="critical-stale">CRITICAL DATA STALE OR INVALID: ${escapeHtml(critical.failed.join(", "))}</div>`}
             <div class="state-grid">
               <article><label>Mission phase</label><strong>${escapeHtml(point.mission_state)}</strong></article>
               <article class="${stateClass(point.assurance_state)}"><label>Assurance state</label><strong>${escapeHtml(point.assurance_state)}</strong></article>
               <article><label>Selected action</label><strong>${escapeHtml(point.recommended_action)}</strong></article>
-              <article><label>Mission time</label><strong>T+${Number(point.sim_time_s || 0).toFixed(1)}s</strong></article>
+              <article class="verification-${String(evidenceStatus).toLowerCase()}"><label>Evidence</label><strong>${escapeHtml(evidenceStatus)}</strong><small>${point.evidence_complete ? "COMPLETE" : `${Number(point.evidence_issue_count || 0)} ISSUE(S)`}</small></article>
             </div>
             <div class="main-grid">
               <article class="panel health-panel">
@@ -69,30 +91,52 @@ export function createAssuranceViewProvider(apiBase) {
             </div>
           </section>`;
       };
+      const renderUnavailable = (reason) => {
+        if (!container || replayComplete) return;
+        connectionState = reason;
+        container.innerHTML = `<div class="lifeline-unavailable">${escapeHtml(reason)} — telemetry is not assumed healthy.</div>`;
+      };
+      const armWatchdog = () => {
+        if (watchdog) timers.clearTimeout(watchdog);
+        watchdog = timers.setTimeout(() => renderUnavailable("DATA SOURCE STALE"), staleAfterMs);
+      };
       return {
         show(element) {
           container = element;
           render();
           socket = new WebSocket(`${apiBase.replace(/^http/, "ws")}/api/v1/stream`);
+          socket.onopen = () => {
+            connectionState = "LIVE / REPLAY STREAM";
+            armWatchdog();
+          };
           socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
+            if (message.message_type === "status" && message.status === "replay_complete") {
+              replayComplete = true;
+              connectionState = "REPLAY COMPLETE";
+              if (watchdog) timers.clearTimeout(watchdog);
+              render(lastPoint);
+              return;
+            }
             if (message.message_type !== "snapshot") return;
+            armWatchdog();
             const point = message.payload;
+            lastPoint = point;
             const last = decisionRows.at(-1);
             if (!last || last.decision_code !== point.decision_code) decisionRows.push(point);
             render(point);
           };
-          socket.onerror = () => {
-            if (container) container.innerHTML = '<div class="lifeline-unavailable">DATA SOURCE UNAVAILABLE — telemetry is not assumed healthy.</div>';
-          };
+          socket.onerror = () => renderUnavailable("DATA SOURCE UNAVAILABLE");
+          socket.onclose = () => renderUnavailable("DATA SOURCE DISCONNECTED");
         },
         destroy() {
+          if (watchdog) timers.clearTimeout(watchdog);
           socket?.close();
           container = undefined;
           decisionRows = [];
+          lastPoint = {};
         }
       };
     }
   };
 }
-

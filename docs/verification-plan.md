@@ -8,3 +8,15 @@ passes only if all declared assertions pass and every required evidence file exi
 Coverage metrics include requirement, state, transition, decision-record completeness,
 scenario completion, and deterministic replay. These metrics are not safety validation.
 
+The controlled local campaign is executed with `lifeline campaign run`. Its aggregate
+report is advisory: the release audit independently rechecks every run's required files
+and SHA-256 values. The fake-source threshold, human display review, and PX4 SITL
+qualification remain separate gates.
+
+Evidence integrity has three failure classes:
+
+- **missing** — a manifest-declared artifact is absent;
+- **mismatched** — an artifact's current SHA-256 differs from the manifest;
+- **unchecked** — a legacy manifest does not declare a hash.
+
+Any class forces the effective result to `INCOMPLETE`.

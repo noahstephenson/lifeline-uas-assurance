@@ -17,7 +17,7 @@ A-08,T-05,H-04,verified
 OD-01,T-01,,deferred-visual-inspection
 OD-02,T-11,H-07,deferred-visual-inspection
 OD-03,T-05,H-04,deferred-visual-inspection
-OD-04,T-11,H-07,deferred-browser-inspection
+OD-04,T-11,H-07,deferred-browser-inspection;verified-frontend-unit
 OD-05,T-12,H-08,verified-replay
 EV-01,T-01;T-12,,verified
 EV-02,T-12,H-08,verified

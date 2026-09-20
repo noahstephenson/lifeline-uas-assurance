@@ -84,6 +84,13 @@
       "title": "Files",
       "type": "object"
     },
+    "artifact_sha256": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Artifact Sha256",
+      "type": "object"
+    },
     "assertions": {
       "items": {
         "$ref": "#/$defs/AssertionResult"

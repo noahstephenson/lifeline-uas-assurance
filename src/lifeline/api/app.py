@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
-from lifeline.evidence.exporter import RUNS_DIR, list_runs, load_run, read_jsonl
+from lifeline.evidence.exporter import RUNS_DIR, list_runs, load_run, read_jsonl, verify_run_integrity
 
 TELEMETRY_METADATA = [
     {"key": "mission_state", "name": "Mission state", "format": "string"},
@@ -31,7 +31,7 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
     app = FastAPI(title="Project Lifeline Evidence API", version="1.0")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://127.0.0.1:8766", "http://localhost:8766"],
+        allow_origin_regex=r"^http://(127\.0\.0\.1|localhost):\d{2,5}$",
         allow_methods=["GET"],
         allow_headers=["*"],
     )
@@ -62,7 +62,7 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
         selected = _require_run(run_id or app.state.default_run_id)
         snapshots = _read_run_file(selected, "events.jsonl")
         decisions = _read_run_file(selected, "decisions.jsonl")
-        return _merge_snapshot(snapshots[-1], decisions)
+        return _merge_snapshot(snapshots[-1], decisions, _verification_summary(selected))
 
     @app.get("/api/v1/history")
     def history(
@@ -76,7 +76,8 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
         selected = _require_run(run_id or app.state.default_run_id)
         snapshots = _read_run_file(selected, "events.jsonl")
         decisions = _read_run_file(selected, "decisions.jsonl")
-        points = [_merge_snapshot(item, decisions) for item in snapshots]
+        verification = _verification_summary(selected)
+        points = [_merge_snapshot(item, decisions, verification) for item in snapshots]
         points = [p for p in points if p["sim_time_s"] >= start and (end is None or p["sim_time_s"] <= end)]
         if key:
             valid = {item["key"] for item in TELEMETRY_METADATA}
@@ -94,11 +95,12 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
     def verification(run_id: str) -> dict[str, Any]:
         loaded = load_run(run_id)
         manifest = dict(loaded["manifest"])
-        run_directory = RUNS_DIR / run_id
-        missing = [name for name in manifest["files"].values() if not (run_directory / name).exists()]
-        manifest["missing_files"] = missing
-        if missing:
-            manifest["verification_status"] = "INCOMPLETE"
+        integrity = verify_run_integrity(run_id)
+        manifest["integrity"] = integrity
+        manifest["missing_files"] = integrity["missing"]
+        manifest["mismatched_files"] = integrity["mismatched"]
+        manifest["unchecked_files"] = integrity["unchecked"]
+        manifest["verification_status"] = integrity["verification_status"]
         return manifest
 
     @app.websocket("/api/v1/stream")
@@ -108,8 +110,9 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
             selected = _require_run(run_id or app.state.default_run_id)
             snapshots = _read_run_file(selected, "events.jsonl")
             decisions_data = _read_run_file(selected, "decisions.jsonl")
+            verification = _verification_summary(selected)
             for snapshot in snapshots:
-                payload = _merge_snapshot(snapshot, decisions_data)
+                payload = _merge_snapshot(snapshot, decisions_data, verification)
                 await websocket.send_json(
                     {
                         "schema_version": "1.0",
@@ -154,7 +157,11 @@ def _read_run_file(run_id: str, name: str) -> list[dict[str, Any]]:
     return read_jsonl(path)
 
 
-def _merge_snapshot(snapshot: dict[str, Any], decisions: list[dict[str, Any]]) -> dict[str, Any]:
+def _merge_snapshot(
+    snapshot: dict[str, Any],
+    decisions: list[dict[str, Any]],
+    verification: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     active = next((item for item in reversed(decisions) if item["sequence"] <= snapshot["sequence"]), None)
     merged = dict(snapshot)
     for key in ["operator_link_available", "navigation_confidence", "energy_margin_wh"]:
@@ -173,7 +180,19 @@ def _merge_snapshot(snapshot: dict[str, Any], decisions: list[dict[str, Any]]) -
                 "rejected_actions": active["rejected_actions"],
             }
         )
+    if verification:
+        merged.update(verification)
     return merged
+
+
+def _verification_summary(run_id: str) -> dict[str, Any]:
+    integrity = verify_run_integrity(run_id)
+    issue_count = len(integrity["missing"]) + len(integrity["mismatched"]) + len(integrity["unchecked"])
+    return {
+        "verification_status": integrity["verification_status"],
+        "evidence_complete": integrity["complete"],
+        "evidence_issue_count": issue_count,
+    }
 
 
 def _value_for_key(point: dict[str, Any], key: str) -> Any:

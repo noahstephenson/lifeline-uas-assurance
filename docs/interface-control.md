@@ -10,9 +10,12 @@
 | IF-06 | Runtime → evidence | snapshot/decision records | each tick/transition | append failure makes evidence incomplete |
 | IF-07 | Evidence API → Open MCT | HTTP + WebSocket | live/history | explicit unavailable indicator |
 
-The one-command demo reserves loopback port 8765 for the API and 8766 for Open MCT.
-Readiness is valid only when the API reports the requested run identifier. The generic
-`lifeline serve` and `lifeline replay` CLI commands retain configurable ports.
+The one-command demo defaults to loopback port 8765 for the API and 8766 for Open MCT,
+with explicit `-ApiPort` and `-WebPort` overrides. It refuses occupied ports, propagates
+the selected API origin into Vite, and accepts browser API access only from localhost
+origins. Readiness is valid only when the API reports the requested run identifier. The
+generic `lifeline serve` and `lifeline replay` CLI commands also retain configurable
+ports.
 
 Every critical field carries units, source time, receipt time, and validity. Simulation
 time is authoritative for policy and replay; UTC receipt time is diagnostic only.

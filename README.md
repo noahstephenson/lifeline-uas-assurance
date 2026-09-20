@@ -30,6 +30,12 @@ The convenience launcher is:
 .\scripts\demo.ps1 -Scenario T-05 -Mode Fake
 ```
 
+If either default loopback port is occupied, choose another local pair:
+
+```powershell
+.\scripts\demo.ps1 -Scenario T-05 -Mode Replay -ApiPort 8875 -WebPort 8876
+```
+
 Use `-Mode Replay` for the committed, synthetic `REFERENCE-T05` bundle. If that bundle
 is intentionally removed, the launcher generates a deterministic local reference run.
 
@@ -48,6 +54,8 @@ contains exactly one JSON object. Success uses `{"ok": true, "data": ...}`; fail
 lifeline --json doctor
 lifeline validate
 lifeline run --scenario T-01 [--source fake|px4]
+lifeline campaign run
+lifeline campaign audit
 lifeline runs list
 lifeline runs show <run-id>
 lifeline evidence --run <run-id>
@@ -56,6 +64,11 @@ lifeline replay --run <run-id>
 lifeline serve [--host 127.0.0.1] [--port 8000]
 lifeline inject --field navigation_confidence --value 0.25 --exploratory
 ```
+
+`campaign run` executes the twelve controlled fake-source scenarios and writes an
+aggregate summary plus requirement-coverage table under `evidence/campaigns/`.
+`campaign audit` rechecks every referenced evidence checksum and reports the separate
+PX4 and human-display gates; it does not relabel those deferred gates as passed.
 
 ## Safety boundary
 

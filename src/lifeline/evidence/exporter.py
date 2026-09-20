@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import platform
+import re
 import sys
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -12,15 +13,24 @@ import yaml
 
 from lifeline import __version__
 from lifeline.config import PROJECT_ROOT, file_sha256
+from lifeline.figures import render_timeline_svg
 from lifeline.models import EvidenceManifest, VerificationState
 from lifeline.scenarios.loader import scenario_path
 from lifeline.scenarios.runner import ScenarioRun
 
 RUNS_DIR = PROJECT_ROOT / "evidence" / "runs"
+EVIDENCE_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+
+
+def validate_evidence_id(value: str, *, label: str = "evidence ID") -> str:
+    if not EVIDENCE_ID_PATTERN.fullmatch(value):
+        raise ValueError(f"{label} must contain only letters, digits, dot, underscore, or hyphen")
+    return value
 
 
 def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceManifest:
     root = output_root or RUNS_DIR
+    validate_evidence_id(run.run_id, label="run ID")
     run_dir = root / run.run_id
     run_dir.mkdir(parents=True, exist_ok=False)
     scenario_file = scenario_path(run.scenario.id)
@@ -37,6 +47,7 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         "environment": "environment.json",
         "scenario": "scenario-resolved.yaml",
         "timeline": "timeline.csv",
+        "timeline_svg": "timeline.svg",
         "manifest": "manifest.json",
     }
     _write_jsonl(run_dir / files["snapshots"], run.snapshots)
@@ -44,6 +55,7 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
     _write_assertions(run_dir / files["assertions"], run.assertions)
     _write_verification_matrix(run_dir / files["verification_matrix"], run)
     _write_timeline(run_dir / files["timeline"], run)
+    render_timeline_svg(run_dir, run.run_id)
     (run_dir / files["scenario"]).write_text(yaml.safe_dump(run.scenario.model_dump(mode="json"), sort_keys=False), encoding="utf-8")
     environment = {
         "python": sys.version.split()[0],
@@ -69,6 +81,9 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         "exploratory": run.snapshots[0].exploratory,
     }
     _write_json(run_dir / files["summary"], summary)
+    artifact_sha256 = {
+        logical_name: file_sha256(run_dir / filename) for logical_name, filename in files.items() if logical_name != "manifest"
+    }
     manifest = EvidenceManifest(
         run_id=run.run_id,
         scenario_id=run.scenario.id,
@@ -78,10 +93,37 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         configuration_sha256=file_sha256(config_file),
         software_versions=environment,
         files=files,
+        artifact_sha256=artifact_sha256,
         assertions=run.assertions,
     )
     _write_json(run_dir / files["manifest"], manifest.model_dump(mode="json"))
     return manifest
+
+
+def verify_run_integrity(run_id: str, output_root: Path | None = None) -> dict[str, Any]:
+    loaded = load_run(run_id, output_root)
+    run_dir = Path(loaded["directory"])
+    manifest = loaded["manifest"]
+    missing = sorted(filename for filename in manifest["files"].values() if not (run_dir / filename).exists())
+    expected_hashes = manifest.get("artifact_sha256", {})
+    mismatched: list[str] = []
+    unchecked: list[str] = []
+    for logical_name, filename in manifest["files"].items():
+        if logical_name == "manifest" or filename in missing:
+            continue
+        expected = expected_hashes.get(logical_name)
+        if not expected:
+            unchecked.append(filename)
+        elif file_sha256(run_dir / filename) != expected:
+            mismatched.append(filename)
+    return {
+        "run_id": run_id,
+        "complete": not missing and not mismatched and not unchecked,
+        "missing": missing,
+        "mismatched": sorted(mismatched),
+        "unchecked": sorted(unchecked),
+        "verification_status": ("INCOMPLETE" if missing or mismatched or unchecked else manifest["verification_status"]),
+    }
 
 
 def list_runs(output_root: Path | None = None) -> list[dict[str, Any]]:
@@ -95,6 +137,7 @@ def list_runs(output_root: Path | None = None) -> list[dict[str, Any]]:
 
 
 def load_run(run_id: str, output_root: Path | None = None) -> dict[str, Any]:
+    validate_evidence_id(run_id, label="run ID")
     root = output_root or RUNS_DIR
     run_dir = (root / run_id).resolve()
     if root.resolve() not in run_dir.parents:

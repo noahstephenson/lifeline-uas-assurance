@@ -189,6 +189,7 @@ class EvidenceManifest(BaseModel):
     configuration_sha256: str
     software_versions: dict[str, str]
     files: dict[str, str]
+    artifact_sha256: dict[str, str] = Field(default_factory=dict)
     assertions: list[AssertionResult]
 
 

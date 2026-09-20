@@ -1,4 +1,15 @@
 {
+  "artifact_sha256": {
+    "assertions": "819ed7cd33e65773cef8edf724b17c7f8a6b7941e7b56346a4607f14ab94e113",
+    "decisions": "0b6009926852fbf1b2073aa9596f712fc2b837c370820d4a3e34625c37f99a2b",
+    "environment": "9c8fc9c94fdd94b414d0173fbf4fe72b0fc185b0d764ada936bfc9b7ebfe4228",
+    "scenario": "fd1abed867be10f838a52a7ac40f6d296732feacf4dabfb01720bcec2f564f7c",
+    "snapshots": "077c18b49a8b97f378f3c94a983a0d6082b2253104be236be2fe97f0a7398e8d",
+    "summary": "af23a51484d112f087e5dc672e44fbbb8805608c9e12a1e062bebb3e8303a737",
+    "timeline": "4d8eab0c59bdadee4f561aea677bf6daf20db077d7c4999decc559e8c2434a4f",
+    "timeline_svg": "d6950da3a24e638b07a02f4d92caea49dc6156c3e75a57bc4dba783d048116cd",
+    "verification_matrix": "666ae2c73f24f35c955dcf7dc97051babe3ef32891e163047ef1c9e6f8c040b5"
+  },
   "assertions": [
     {
       "expected": "SAFE_STOP",
@@ -54,6 +65,7 @@
     "snapshots": "events.jsonl",
     "summary": "run-summary.json",
     "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
     "verification_matrix": "verification-matrix.csv"
   },
   "run_id": "REFERENCE-T05",

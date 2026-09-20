@@ -10,6 +10,8 @@ build/
 node_modules/
 openmct/dist/
 evidence/runs/*
+evidence/campaigns/*
+!evidence/campaigns/.gitkeep
 !evidence/runs/.gitkeep
 !evidence/runs/REFERENCE-T05/
 !evidence/runs/REFERENCE-T05/**
