@@ -41,6 +41,16 @@ function Invoke-WslBash([string]$Command) {
     if ($LASTEXITCODE -ne 0) { throw "WSL command failed with exit code $LASTEXITCODE." }
 }
 
+function ConvertTo-WslMountPath([string]$WindowsPath) {
+    $FullPath = [System.IO.Path]::GetFullPath($WindowsPath)
+    if ($FullPath -notmatch '^(?<Drive>[A-Za-z]):\\(?<Rest>.*)$') {
+        throw "Expected a drive-qualified Windows path, found '$FullPath'."
+    }
+    $DriveName = $Matches.Drive.ToLowerInvariant()
+    $RelativePath = $Matches.Rest.Replace('\', '/')
+    return "/mnt/$DriveName/$RelativePath"
+}
+
 $Drive = Get-PSDrive -Name ([System.IO.Path]::GetPathRoot($ProjectRoot).TrimEnd('\').TrimEnd(':'))
 if ($Drive.Free -lt $MinimumFreeBytes) {
     throw "PX4 setup requires at least 25 GB free; found $([math]::Round($Drive.Free / 1GB, 1)) GB."
@@ -56,8 +66,10 @@ if ($Distributions -notcontains $Distro) {
     exit 10
 }
 
-$UbuntuRelease = (& wsl.exe -d $Distro -- bash -lc ". /etc/os-release && printf '%s' \"`$VERSION_ID\"") -join ""
-if ($UbuntuRelease.Trim() -ne "24.04") { throw "Expected Ubuntu 24.04, found '$UbuntuRelease'." }
+$ReleaseLines = @(& wsl.exe -d $Distro -- cat /etc/os-release)
+$VersionLine = $ReleaseLines | Where-Object { $_ -like "VERSION_ID=*" } | Select-Object -First 1
+$UbuntuRelease = if ($VersionLine) { $VersionLine.Substring("VERSION_ID=".Length).Trim('"') } else { "" }
+if ($UbuntuRelease -ne "24.04") { throw "Expected Ubuntu 24.04, found '$UbuntuRelease'." }
 $DefaultUid = (& wsl.exe -d $Distro -- bash -lc "id -u") -join ""
 if ($DefaultUid.Trim() -eq "0") {
     throw "Ubuntu first-launch account setup is incomplete: the default WSL user is still root."
@@ -81,9 +93,10 @@ if (-not $Finalize) {
 }
 
 Invoke-WslBash "test -f ~/.lifeline-px4-installer-complete"
-$WslProject = (& wsl.exe -d $Distro -- wslpath -a $ProjectRoot) -join ""
-$QuotedProject = $WslProject.Trim().Replace("'", "'`"'`"'")
+$WslProject = ConvertTo-WslMountPath $ProjectRoot
+$QuotedProject = $WslProject.Replace("'", "'`"'`"'")
 Invoke-WslBash "python3 --version | grep -E '^Python 3\.12\.'"
-Invoke-WslBash "python3 -m venv ~/.venvs/lifeline && ~/.venvs/lifeline/bin/python -m pip install --upgrade pip && ~/.venvs/lifeline/bin/pip install -e '$QuotedProject[px4]'"
+Invoke-WslBash "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-venv"
+Invoke-WslBash "python3 -m venv --clear ~/.venvs/lifeline && ~/.venvs/lifeline/bin/python -m pip install --upgrade pip && ~/.venvs/lifeline/bin/pip install -e '$QuotedProject[px4]'"
 Invoke-WslBash "~/.venvs/lifeline/bin/lifeline validate && ~/.venvs/lifeline/bin/lifeline doctor"
 Write-Host "Ubuntu 24.04 PX4 environment is ready. Run scripts/qualify-px4.ps1 -Scenario Smoke next."

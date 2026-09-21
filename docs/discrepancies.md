@@ -57,3 +57,19 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Correct the PowerShell-native escaping, add a repository-wide PowerShell parser gate, and require that gate in CI. The PX4 qualifier now also checks the setup marker, pinned commit, and Node 20 before starting processes, and preserves combined process logs on failed runs when an evidence manifest exists.
 - **Verification:** Both setup and qualification launchers pass the parser gate; Ubuntu 24.04 then installed side-by-side and reached its expected first-launch account prompt.
 - **Scenario impact:** None; launcher parsing and prerequisite checks do not change assurance policy or expected scenario outcomes.
+
+## D-08 — Ubuntu release detection crossed two shell parsers
+
+- **Observed:** After the non-root Ubuntu account was created, setup incorrectly read the release as a backslash because a Bash variable reference passed through PowerShell quoting.
+- **Risk:** A correct Ubuntu 24.04 installation could be rejected before the PX4 download, while a parser-only test would not exercise the cross-shell value.
+- **Decision:** Read `/etc/os-release` directly through WSL and parse the `VERSION_ID` record in PowerShell, avoiding cross-shell variable expansion.
+- **Verification:** The corrected preflight reports Ubuntu 24.04 from the installed Ubuntu 24.04.5 LTS distribution before setup proceeds.
+- **Scenario impact:** None; environment detection does not change assurance behavior or scenario expectations.
+
+## D-09 — Finalization assumed a venv package and delegated path conversion
+
+- **Observed:** The first finalize run found Python 3.12 but no `ensurepip` because `python3-venv` was absent; the direct `wslpath` call also stripped Windows path separators before conversion.
+- **Risk:** The pinned simulator could be installed while the Lifeline/MAVSDK environment remained unusable or referenced the wrong checkout path.
+- **Decision:** Install Ubuntu's `python3-venv` explicitly, recreate the dedicated venv with `--clear`, and convert drive-qualified Windows paths deterministically to `/mnt/<drive>/...` in PowerShell before Bash quoting.
+- **Verification:** Finalization must install the PX4 extra from the mounted repository and pass both `lifeline validate` and `lifeline doctor` inside Ubuntu before qualification begins.
+- **Scenario impact:** None; environment bootstrapping does not change requirements, hazards, or expected assurance outcomes.
