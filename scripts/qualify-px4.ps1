@@ -31,6 +31,16 @@ function Stop-RecordedProcesses {
     }
 }
 
+function ConvertTo-WslMountPath([string]$WindowsPath) {
+    $FullPath = [System.IO.Path]::GetFullPath($WindowsPath)
+    if ($FullPath -notmatch '^(?<Drive>[A-Za-z]):\\(?<Rest>.*)$') {
+        throw "Expected a drive-qualified Windows path, found '$FullPath'."
+    }
+    $DriveName = $Matches.Drive.ToLowerInvariant()
+    $RelativePath = $Matches.Rest.Replace('\', '/')
+    return "/mnt/$DriveName/$RelativePath"
+}
+
 function Merge-ProcessLogs([string]$StandardOutput, [string]$StandardError, [string]$Destination) {
     $Inputs = @($StandardOutput, $StandardError) | Where-Object { Test-Path -LiteralPath $_ }
     if ($Inputs.Count -eq 0) { return }
@@ -43,7 +53,7 @@ function Merge-ProcessLogs([string]$StandardOutput, [string]$StandardError, [str
 
 function Attach-EvidenceLog([string]$LogicalName, [string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) { return }
-    $WslPath = ((& wsl.exe -d $Distro -- wslpath -a $Path) -join "").Trim()
+    $WslPath = ConvertTo-WslMountPath $Path
     & wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline evidence --run '$RunId' --attach-name '$LogicalName' --file '$WslPath'"
     if ($LASTEXITCODE -ne 0) { throw "Failed to attach $LogicalName to evidence." }
 }
@@ -65,8 +75,8 @@ if ($Scenario -ne "Smoke") {
 Assert-PortAvailable $ApiPort
 Assert-PortAvailable $WebPort
 
-$WslProject = ((& wsl.exe -d $Distro -- wslpath -a $ProjectRoot) -join "").Trim()
-$WslLogRoot = ((& wsl.exe -d $Distro -- wslpath -a $LogRoot) -join "").Trim()
+$WslProject = ConvertTo-WslMountPath $ProjectRoot
+$WslLogRoot = ConvertTo-WslMountPath $LogRoot
 $Px4Out = Join-Path $LogRoot "px4.stdout.log"
 $Px4Err = Join-Path $LogRoot "px4.stderr.log"
 $Px4Log = Join-Path $LogRoot "px4.log"

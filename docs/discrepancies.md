@@ -70,6 +70,6 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 
 - **Observed:** The first finalize run found Python 3.12 but no `ensurepip` because `python3-venv` was absent; the direct `wslpath` call also stripped Windows path separators before conversion.
 - **Risk:** The pinned simulator could be installed while the Lifeline/MAVSDK environment remained unusable or referenced the wrong checkout path.
-- **Decision:** Install Ubuntu's `python3-venv` explicitly, recreate the dedicated venv with `--clear`, and convert drive-qualified Windows paths deterministically to `/mnt/<drive>/...` in PowerShell before Bash quoting.
+- **Decision:** Install Ubuntu's `python3-venv` explicitly, recreate the dedicated venv with `--clear`, and convert drive-qualified Windows paths deterministically to `/mnt/<drive>/...` in both setup and qualification before Bash quoting.
 - **Verification:** Finalization must install the PX4 extra from the mounted repository and pass both `lifeline validate` and `lifeline doctor` inside Ubuntu before qualification begins.
 - **Scenario impact:** None; environment bootstrapping does not change requirements, hazards, or expected assurance outcomes.
