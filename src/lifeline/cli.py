@@ -28,7 +28,7 @@ from lifeline.figures import generate_timeline_svg
 from lifeline.models import AssertionResult
 from lifeline.scenarios import load_scenario, run_px4_scenario, run_scenario
 from lifeline.scenarios.runner import ScenarioRun
-from lifeline.smoke import run_px4_smoke
+from lifeline.smoke import finalize_smoke_setup_error, run_px4_smoke
 from lifeline.validation import validate_project
 
 
@@ -89,6 +89,7 @@ def build_parser() -> argparse.ArgumentParser:
     smoke = sub.add_parser("px4-smoke", help="qualify stock X500 arm, takeoff, altitude, and landing")
     smoke.add_argument("--config", default="config/sitl-qualification.yaml")
     smoke.add_argument("--run-id")
+    smoke.add_argument("--setup-error", help=argparse.SUPPRESS)
 
     inject = sub.add_parser("inject", help="validate a manual exploratory injection request")
     inject.add_argument(
@@ -207,7 +208,11 @@ def dispatch(args: argparse.Namespace) -> Any:
     if args.command == "px4-smoke":
         config = _load_cli_config(args.config, require_qualification=True)
         run_id = args.run_id or _run_id("SMOKE", "PX4")
-        manifest = asyncio.run(run_px4_smoke(config, run_id=run_id))
+        manifest = (
+            finalize_smoke_setup_error(config, run_id=run_id, error=args.setup_error)
+            if args.setup_error
+            else asyncio.run(run_px4_smoke(config, run_id=run_id))
+        )
         if manifest["verification_status"] != "PASS":
             raise RuntimeError(f"PX4 smoke failed; evidence bundle finalized as {run_id}")
         return manifest

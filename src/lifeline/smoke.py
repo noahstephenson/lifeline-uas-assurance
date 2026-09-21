@@ -25,6 +25,7 @@ async def run_px4_smoke(
     run_id: str,
     output_root: Path | None = None,
     adapter_factory: type[MavsdkAdapter] = MavsdkAdapter,
+    connect_timeout_s: float = 30.0,
 ) -> dict[str, Any]:
     """Exercise stock SITL and always leave a hash-verifiable smoke bundle."""
     validate_evidence_id(run_id, label="run ID")
@@ -70,7 +71,7 @@ async def run_px4_smoke(
 
     try:
         adapter = adapter_factory(config, allow_sitl_actions=True)
-        await adapter.connect()
+        await asyncio.wait_for(adapter.connect(), timeout=connect_timeout_s)
         await adapter.wait_ready()
         await issue(CommandName.ARM, adapter.arm())
         await issue(CommandName.TAKEOFF, adapter.takeoff(8.0))
@@ -85,6 +86,26 @@ async def run_px4_smoke(
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
     return _finalize_smoke(run_dir, run_id, config, adapter, commands, observations, status, error)
+
+
+def finalize_smoke_setup_error(
+    config: LifelineConfig,
+    *,
+    run_id: str,
+    error: str,
+    output_root: Path | None = None,
+) -> dict[str, Any]:
+    """Finalize a launch/setup failure before the MAVSDK adapter can connect."""
+    validate_evidence_id(run_id, label="run ID")
+    root = output_root or RUNS_DIR
+    run_dir = root / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    if (run_dir / "manifest.json").exists():
+        raise FileExistsError(f"smoke evidence already finalized: {run_id}")
+    config_path = run_dir / "configuration-resolved.yaml"
+    if not config_path.exists():
+        config_path.write_text(yaml.safe_dump(config.model_dump(mode="json"), sort_keys=False), encoding="utf-8")
+    return _finalize_smoke(run_dir, run_id, config, None, [], [], "ERROR", error)
 
 
 async def _observe_takeoff(adapter: MavsdkAdapter, observations: list[dict[str, Any]], timeout_s: float = 45.0) -> float:

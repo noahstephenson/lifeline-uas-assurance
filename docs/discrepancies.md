@@ -73,3 +73,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Install Ubuntu's `python3-venv` explicitly, recreate the dedicated venv with `--clear`, and convert drive-qualified Windows paths deterministically to `/mnt/<drive>/...` in both setup and qualification before Bash quoting.
 - **Verification:** Finalization must install the PX4 extra from the mounted repository and pass both `lifeline validate` and `lifeline doctor` inside Ubuntu before qualification begins.
 - **Scenario impact:** None; environment bootstrapping does not change requirements, hazards, or expected assurance outcomes.
+
+## D-10 — Smoke launch target and connection wait were not fail-bounded
+
+- **Observed:** The first smoke attempt requested the nonexistent `px4_sitl` make alias for the pinned tag; PX4 exited immediately while MAVSDK continued waiting for a vehicle.
+- **Risk:** A launch failure could hang qualification and leave only a partial directory instead of a finalized `ERROR` evidence bundle.
+- **Decision:** Use the verified `px4_sitl_default gz_x500` target, detect early simulator exit, bound MAVSDK connection to 30 seconds, propagate non-pass smoke status as a nonzero CLI exit, and provide a launcher-only path to finalize setup errors.
+- **Verification:** Component tests cover immediate connection failure, bounded connection timeout, and finalization of a pre-existing reserved smoke directory. The interrupted first attempt is retained as an `ERROR` bundle with its PX4 log.
+- **Scenario impact:** None; the smoke harness changed, not the assurance policy or controlled scenario expectations.

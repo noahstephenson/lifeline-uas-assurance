@@ -91,11 +91,16 @@ $Failure = $null
 
 try {
     $Started.px4 = Start-Process -FilePath "wsl.exe" -ArgumentList @(
-        "-d", $Distro, "--", "bash", "-lc", "cd ~/PX4-Autopilot && make px4_sitl gz_x500"
+        "-d", $Distro, "--", "bash", "-lc", "cd ~/PX4-Autopilot && make px4_sitl_default gz_x500"
     ) -WorkingDirectory $ProjectRoot -WindowStyle Hidden -RedirectStandardOutput $Px4Out -RedirectStandardError $Px4Err -PassThru
 
     if ($Scenario -eq "Smoke") {
         Start-Sleep -Seconds 8
+        if ($Started.px4.HasExited) {
+            $LaunchError = "PX4/Gazebo exited before MAVSDK connection with code $($Started.px4.ExitCode)"
+            & wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline px4-smoke --config '$WslProject/config/sitl-qualification.yaml' --run-id '$RunId' --setup-error '$LaunchError'"
+            throw $LaunchError
+        }
         $SmokeCommand = "export LIFELINE_UBUNTU_RELEASE=24.04 LIFELINE_PX4_TAG=v1.17.0 LIFELINE_PX4_COMMIT=d6f12ad; ~/.venvs/lifeline/bin/lifeline px4-smoke --config '$WslProject/config/sitl-qualification.yaml' --run-id '$RunId'"
         & wsl.exe -d $Distro -- bash -lc $SmokeCommand
         if ($LASTEXITCODE -ne 0) { throw "PX4 smoke qualification failed. Evidence run: $RunId" }
