@@ -81,3 +81,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Use the verified `px4_sitl_default gz_x500` target, detect early simulator exit, bound MAVSDK connection to 30 seconds, propagate non-pass smoke status as a nonzero CLI exit, and provide a launcher-only path to finalize setup errors.
 - **Verification:** Component tests cover immediate connection failure, bounded connection timeout, and finalization of a pre-existing reserved smoke directory. The interrupted first attempt is retained as an `ERROR` bundle with its PX4 log.
 - **Scenario impact:** None; the smoke harness changed, not the assurance policy or controlled scenario expectations.
+
+## D-11 — Background WSL launch flattened the shell command boundary
+
+- **Observed:** The second smoke attempt used the corrected make target, but `Start-Process -ArgumentList` flattened the multiword `bash -lc` payload. Bash changed no directory and Make ran against the Lifeline checkout, which accurately reported that `px4_sitl_default` did not exist there.
+- **Risk:** Foreground setup checks could pass while the equivalent background PX4 or live-API launch ran in a different working directory or parsed a partial command.
+- **Decision:** Remove shell command strings from background process launches. Pass the PX4 checkout with WSL's explicit `--cd` option and pass the live token and CLI arguments as separate `env`/executable arguments. Resolve and validate the non-root WSL home once.
+- **Verification:** A dry-run using `wsl.exe --cd /home/noah/PX4-Autopilot -- make -n px4_sitl_default gz_x500` resolved the intended CMake target. A regression test locks both structured background launch forms and excludes the former `bash -lc` pattern.
+- **Scenario impact:** None; process invocation changed, not the assurance model or scenario expectations.

@@ -54,15 +54,19 @@ function Merge-ProcessLogs([string]$StandardOutput, [string]$StandardError, [str
 function Attach-EvidenceLog([string]$LogicalName, [string]$Path) {
     if (-not (Test-Path -LiteralPath $Path)) { return }
     $WslPath = ConvertTo-WslMountPath $Path
-    & wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline evidence --run '$RunId' --attach-name '$LogicalName' --file '$WslPath'"
+    & wsl.exe -d $Distro -- $WslLifeline evidence --run $RunId --attach-name $LogicalName --file $WslPath
     if ($LASTEXITCODE -ne 0) { throw "Failed to attach $LogicalName to evidence." }
 }
 
 $Distributions = @(& wsl.exe --list --quiet) -replace "`0", ""
 if ($Distributions -notcontains $Distro) { throw "$Distro is not installed. Run scripts/setup-px4-wsl.ps1." }
-& wsl.exe -d $Distro -- bash -lc "test -f ~/.lifeline-px4-installer-complete && test -x ~/.venvs/lifeline/bin/lifeline"
+$WslHome = ((& wsl.exe -d $Distro -- sh -c 'printf %s "$HOME"') -join "").Trim()
+if (-not $WslHome.StartsWith("/home/") -or $WslHome -match '\s') { throw "Unexpected WSL home path '$WslHome'." }
+$WslLifeline = "$WslHome/.venvs/lifeline/bin/lifeline"
+& wsl.exe -d $Distro -- test -f "$WslHome/.lifeline-px4-installer-complete"
+if ($LASTEXITCODE -eq 0) { & wsl.exe -d $Distro -- test -x $WslLifeline }
 if ($LASTEXITCODE -ne 0) { throw "The Ubuntu PX4 environment is incomplete. Run scripts/setup-px4-wsl.ps1 -Finalize." }
-$Px4Commit = ((& wsl.exe -d $Distro -- bash -lc "cd ~/PX4-Autopilot && git rev-parse --short=7 HEAD") -join "").Trim()
+$Px4Commit = ((& wsl.exe -d $Distro -- git -C "$WslHome/PX4-Autopilot" rev-parse --short=7 HEAD) -join "").Trim()
 if ($Px4Commit -ne "d6f12ad") { throw "PX4 commit mismatch: expected d6f12ad, found '$Px4Commit'." }
 if ($Scenario -ne "Smoke") {
     if (-not (Test-Path (Join-Path $ProjectRoot "openmct\node_modules\vite\bin\vite.js"))) {
@@ -91,24 +95,24 @@ $Failure = $null
 
 try {
     $Started.px4 = Start-Process -FilePath "wsl.exe" -ArgumentList @(
-        "-d", $Distro, "--", "bash", "-lc", "cd ~/PX4-Autopilot && make px4_sitl_default gz_x500"
+        "-d", $Distro, "--cd", "$WslHome/PX4-Autopilot", "--", "make", "px4_sitl_default", "gz_x500"
     ) -WorkingDirectory $ProjectRoot -WindowStyle Hidden -RedirectStandardOutput $Px4Out -RedirectStandardError $Px4Err -PassThru
 
     if ($Scenario -eq "Smoke") {
         Start-Sleep -Seconds 8
         if ($Started.px4.HasExited) {
             $LaunchError = "PX4/Gazebo exited before MAVSDK connection with code $($Started.px4.ExitCode)"
-            & wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline px4-smoke --config '$WslProject/config/sitl-qualification.yaml' --run-id '$RunId' --setup-error '$LaunchError'"
+            & wsl.exe -d $Distro -- $WslLifeline px4-smoke --config "$WslProject/config/sitl-qualification.yaml" --run-id $RunId --setup-error $LaunchError
             throw $LaunchError
         }
-        $SmokeCommand = "export LIFELINE_UBUNTU_RELEASE=24.04 LIFELINE_PX4_TAG=v1.17.0 LIFELINE_PX4_COMMIT=d6f12ad; ~/.venvs/lifeline/bin/lifeline px4-smoke --config '$WslProject/config/sitl-qualification.yaml' --run-id '$RunId'"
-        & wsl.exe -d $Distro -- bash -lc $SmokeCommand
+        & wsl.exe -d $Distro -- env LIFELINE_UBUNTU_RELEASE=24.04 LIFELINE_PX4_TAG=v1.17.0 LIFELINE_PX4_COMMIT=d6f12ad $WslLifeline px4-smoke --config "$WslProject/config/sitl-qualification.yaml" --run-id $RunId
         if ($LASTEXITCODE -ne 0) { throw "PX4 smoke qualification failed. Evidence run: $RunId" }
     } else {
 
-    $LiveCommand = "export LIFELINE_START_TOKEN='$Token'; ~/.venvs/lifeline/bin/lifeline live --scenario '$Scenario' --config '$WslProject/config/sitl-qualification.yaml' --run-id '$RunId' --host 127.0.0.1 --port '$ApiPort'"
     $Started.api = Start-Process -FilePath "wsl.exe" -ArgumentList @(
-        "-d", $Distro, "--", "bash", "-lc", $LiveCommand
+        "-d", $Distro, "--", "env", "LIFELINE_START_TOKEN=$Token", $WslLifeline,
+        "live", "--scenario", $Scenario, "--config", "$WslProject/config/sitl-qualification.yaml",
+        "--run-id", $RunId, "--host", "127.0.0.1", "--port", "$ApiPort"
     ) -WorkingDirectory $ProjectRoot -WindowStyle Hidden -RedirectStandardOutput $ApiOut -RedirectStandardError $ApiErr -PassThru
 
     $Vite = Join-Path $ProjectRoot "openmct\node_modules\vite\bin\vite.js"
