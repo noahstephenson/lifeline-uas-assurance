@@ -1,5 +1,5 @@
 requirement_id,test_ids,hazard_ids,status
-M-01,T-01,,deferred-px4-environment
+M-01,T-01,,verified-px4-sitl
 M-02,T-01,,verified-fake
 M-03,T-01;T-05,,verified-fake
 HM-01,T-02;T-04;T-06,,verified

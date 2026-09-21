@@ -2,7 +2,7 @@
 
 *Technical draft for an IEEE AESS Magazine Student Project Highlight*
 
-> **Release gate:** Do not submit this draft until the student and advisor supply authorship details, a genuine project photograph, and a completed PX4/Gazebo evidence bundle. The display evidence is automated browser qualification, not a human usability study. The current results describe deterministic simulation and replay, not real flight or operational safety.
+> **Release gate:** The software qualification evidence is complete. Do not submit this draft until the student and advisor supply authorship details and a genuine project photograph. The display evidence is automated browser qualification, not a human usability study. The results describe deterministic simulation, PX4 software-in-the-loop, and replay—not real flight or operational safety.
 
 ## The package is still moving
 
@@ -28,13 +28,13 @@ A YAML scenario harness advances discrete simulation time and injects link, navi
 
 A FastAPI service exposes the same canonical records as current state, historical telemetry, decisions, verification, and a WebSocket replay stream. NASA Open MCT consumes those interfaces through object, composition, history, and live-subscription providers. The primary view puts mission state beside assurance state, health and freshness, modeled route progress, energy margin, the selected action, the plain-language rationale, rejected alternatives, and the applicable requirement and hazard identifiers. The browser boundary is read-only.
 
-The repository also contains a narrow MAVSDK adapter and a PX4-backed runner. They accept only an explicitly allowlisted loopback endpoint. Vehicle actions require two independent approvals: a controlled configuration flag and a command-line opt-in. The implementation is covered with network-free component tests, but the current workstation does not have the required Ubuntu 24.04/PX4/MAVSDK environment. Therefore this draft does not claim a completed PX4 mission.
+The repository also contains a narrow MAVSDK adapter and a PX4-backed runner. They accept only an explicitly allowlisted loopback endpoint. Vehicle actions require two independent approvals: a controlled configuration flag and a launcher-held qualification profile. The final environment used Ubuntu 24.04 under WSL2, PX4 v1.17.0 at commit `d6f12ad`, Gazebo Sim 8.15.0, MAVSDK-Python 3.17.2, and the stock X500. A smoke run armed, climbed above five meters, landed, and recorded a nonzero vehicle UUID. PX4-source T-01 then reached `RECOVERED` with 192 snapshots and dashboard overlap. These are software-in-the-loop results only.
 
 ## The compound-fault result
 
 The `CAMPAIGN-20260920-C` deterministic campaign executed twelve frozen scenarios after the T-01 timing change, covering nominal delivery, brief and sustained link interruptions, navigation degradation, compound faults, low and critical energy, dwell-boundary behavior, recovery hysteresis, conflicting boundaries, stale telemetry, and replay. All twelve passed their declared assertions and their post-run artifact-integrity checks. The automated suites cover the assurance engine, interfaces, live-session safeguards, evidence integrity, and the production browser display. These figures describe the authored model and tests, not general robustness.
 
-T-05 is the clearest example of requirement-linked decision telemetry. The link interruption first moved the assurance state into `WATCH`. When the link-loss dwell expired, the engine recorded `LINK_LOSS_DWELL`. Navigation confidence then became invalid. The engine selected a controlled landing, recorded `NAVIGATION_INVALID`, and explicitly rejected `RETURN`. The run reached `SAFE_STOP` at the modeled terminal point. Its transition occurred at 20.0 seconds, before the frozen 23.0-second deadline. The evidence bundle contains 51 snapshots, four distinct decision records, seven passing assertions, configuration and scenario hashes, and no missing required files.
+T-05 is the clearest example of requirement-linked decision telemetry. In the final PX4-source run, MAVSDK remained the physical telemetry source while the scenario controller applied the declared link and navigation faults to the assurance inputs. Link loss moved the assurance state into `WATCH` and recorded `LINK_LOSS_DWELL`. Navigation confidence then became invalid. The engine selected controlled landing, recorded `NAVIGATION_INVALID`, and explicitly rejected `RETURN`. PX4 acknowledged the land command, and the run reached `SAFE_STOP`. The first required transition occurred at 20.069 seconds, before the frozen 23.0-second deadline. Bundle `LFL-T05-PX4-20260921T095622Z-00F1` contains 95 snapshots, four distinct decision records, seven passing assertions, configuration and scenario hashes, dashboard overlap, both required logs, and no integrity defects.
 
 That result is modest but useful. It does not show that controlled landing is universally correct. It shows that, for the declared scenario and priority table, the model does not issue a position-dependent return after its navigation assumption has failed—and that a reviewer can see exactly which rule produced the response.
 
@@ -42,7 +42,7 @@ That result is modest but useful. It does not show that controlled landing is un
 
 The implementation produced fifteen concrete discrepancies before publication. First, the original demo used port 8000, which was already occupied by an unrelated local service. A readiness probe could have failed or, worse, accepted a response from the wrong application. Lifeline now rejects occupied ports and considers the service ready only when the health response names the requested evidence run.
 
-Second, the first launcher started a fake scenario and then opened PX4/Gazebo. The simulator could appear connected even though it had not supplied the evidence. That violated the project provenance claim. The corrected architecture routes `--source px4` through a separate MAVSDK-backed runner and records the telemetry source in every evidence environment. Until the real simulator path is exercised, PX4 stays marked as deferred.
+Second, the first launcher started a fake scenario and then opened PX4/Gazebo. The simulator could appear connected even though it had not supplied the evidence. That violated the project provenance claim. The corrected architecture routes PX4 qualification through a separate MAVSDK-backed runner and records the telemetry source, vehicle UUID, environment, dashboard overlap, commands, and logs in every live bundle.
 
 Third, the original reference manifest proved that required files existed but did not prove that their contents were unchanged. The exporter now records SHA-256 values for every required artifact, and negative tests demonstrate that a modified event stream becomes `INCOMPLETE`.
 
@@ -54,6 +54,6 @@ None of these issues justified changing a scenario expectation. All were recorde
 
 ## What comes next
 
-The deterministic engine, evidence service, replay console, and one-command replay demonstration are reproducible on the verified local environment. The automated browser display gate is separate from any future human study. The remaining software gate is intentionally practical: bring up stock PX4 v1.17 and Gazebo X500 in Ubuntu 24.04 WSL2, prove takeoff and landing before enabling Lifeline actions, and run PX4-source T-01 and T-05 with complete logs and overlap evidence. A student project photograph and a claim-by-claim editorial review must follow.
+The deterministic engine, evidence service, replay console, automated browser display gate, stock-X500 smoke test, and PX4-source T-01 and T-05 runs are reproducible on the verified local environment. The display gate remains separate from any future human study. The remaining publication work is human-owned: add student/advisor attribution, select a genuine project photograph, and perform the final editorial read without expanding the software claims.
 
 Hardware-in-the-loop, real flight, alternate recovery sites, operator studies, and higher-fidelity estimators remain future work. The current Lifeline contribution is smaller and more defensible: it makes the assumptions behind a modeled contingency response visible enough to challenge, replay, and test.

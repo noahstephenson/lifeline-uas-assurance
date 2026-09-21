@@ -1,9 +1,9 @@
-# Remaining build plan
+# Release-gate closure
 
-This plan begins from the deterministic assurance, evidence API, Open MCT replay, and
-guarded PX4 adapter baseline. A gate is closed only by its declared evidence.
+The software qualification plan is complete. A gate is closed only by its declared
+evidence; the run identifiers below make that closure reproducible.
 
-## Tranche A — controlled evidence and console resilience
+## Tranche A — controlled evidence and console resilience — complete
 
 - Add aggregate T-01–T-12 campaign execution and requirement coverage.
 - Hash every manifest-declared artifact and recheck it during API, CLI, and release audit.
@@ -14,7 +14,9 @@ guarded PX4 adapter baseline. A gate is closed only by its declared evidence.
 
 Exit: Python, frontend, schema, deterministic campaign, and reference-replay checks pass.
 
-## Tranche B — automated display qualification
+Evidence: `CAMPAIGN-20260920-C`, 12/12 controlled fake-source scenarios passing.
+
+## Tranche B — automated display qualification — complete
 
 - Launch T-01, T-05, T-11, and T-12 in the production Open MCT build.
 - Run the pinned Playwright/Chromium suite at 1440×900 and 800×1000.
@@ -27,7 +29,10 @@ Exit: mission/assurance/health/evidence are legible together; state is distingui
 without color; rationale and trace links are present; loss of data replaces the operational
 view. These are browser assertions, not human-comprehension or usability findings.
 
-## Tranche C — stock PX4/Gazebo qualification
+Evidence: `evidence/display-qualification/display-qualification.json`, 15/15 browser
+assertions and eight hash-checked screenshots.
+
+## Tranche C — stock PX4/Gazebo qualification — complete
 
 - Use Ubuntu 24.04 WSL2, PX4 v1.17, Gazebo Harmonic, and the X500 model.
 - Prove stock manual takeoff and landing before enabling Lifeline actions.
@@ -38,7 +43,12 @@ view. These are browser assertions, not human-comprehension or usability finding
 Exit: M-01 has a complete PX4-source evidence bundle. A simulator window alone is not
 evidence that PX4 supplied Lifeline telemetry.
 
-## Tranche D — publication release
+Evidence: smoke `LFL-SMOKE-PX4-20260921T022921Z-A837`, T-01
+`LFL-T01-PX4-20260921T094403Z-1CE3`, and T-05
+`LFL-T05-PX4-20260921T095622Z-00F1`. Each records the nonzero vehicle UUID, loopback
+endpoint, pinned environment, command acknowledgements, and required logs.
+
+## Tranche D — publication release — software complete; editorial inputs pending
 
 - Resolve or explicitly retain every discrepancy.
 - Add student/advisor attribution and a genuine project photograph.
@@ -47,3 +57,7 @@ evidence that PX4 supplied Lifeline telemetry.
 
 Exit: every result claim resolves to a complete bundle and the simulation-only disclaimer
 is prominent.
+
+Software status: the claim audit and release audit pass from a clean commit. Remaining
+human-owned editorial inputs are student/advisor attribution and a genuine project
+photograph; neither is a software verification result.

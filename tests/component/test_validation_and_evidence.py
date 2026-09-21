@@ -62,4 +62,5 @@ def test_controlled_campaign_aggregates_all_scenarios(tmp_path):
     assert audit["checks"]["all_campaign_evidence_integrity"]
     assert audit["checks"]["automated_display_qualification"]
     assert not audit["release_ready"]
-    assert {item["requirement_id"] for item in audit["deferred_requirements"]} == {"M-01"}
+    assert audit["deferred_requirements"] == []
+    assert not audit["checks"]["px4_sitl_qualification"]
