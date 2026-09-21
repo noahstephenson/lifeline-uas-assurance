@@ -15,8 +15,7 @@
     "openmct": "4.1.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.55.0",
-    "@playwright/test": "1.55.0",
+    "@playwright/test": "1.55.1",
     "vite": "^6.1.0"
   },
   "engines": {

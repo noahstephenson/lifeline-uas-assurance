@@ -15,4 +15,6 @@ jobs:
       - run: ruff check .
       - run: pytest --cov=lifeline --cov-report=term-missing
       - run: lifeline validate
-
+      - name: Parse PowerShell launchers
+        shell: pwsh
+        run: ./scripts/test-powershell-syntax.ps1

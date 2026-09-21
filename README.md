@@ -51,6 +51,9 @@ read-only Open MCT browser surface. Set up and qualify the pinned environment wi
 .\scripts\qualify-px4.ps1 -Scenario T-05
 ```
 
+The setup script also installs a checksum-verified, project-local Node 20.20.2 runtime;
+it does not replace the host's global Node installation.
+
 `config/baseline.yaml` remains fail-closed. The qualification profile may differ from it
 only by `actions_enabled: true`, and the code independently enforces the loopback endpoint,
 explicit launcher token, nonzero vehicle UUID, and dashboard-before-release interlock.

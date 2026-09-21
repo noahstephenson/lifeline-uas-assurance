@@ -49,3 +49,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Configure a fixed, recorded-mission UTC window and retain the production browser startup in the qualification suite.
 - **Verification:** The focused production-browser case passed after the correction; the full qualification report records all viewport and behavior assertions.
 - **Scenario impact:** None; display initialization does not change assurance outputs.
+
+## D-07 — WSL setup path quoting was not parser-qualified
+
+- **Observed:** The first Ubuntu 24.04 setup invocation stopped before system changes because PowerShell rejected the Bash single-quote escape used for the mounted project path.
+- **Risk:** A documented one-command environment setup could fail before reaching its deliberate account-creation checkpoint.
+- **Decision:** Correct the PowerShell-native escaping, add a repository-wide PowerShell parser gate, and require that gate in CI. The PX4 qualifier now also checks the setup marker, pinned commit, and Node 20 before starting processes, and preserves combined process logs on failed runs when an evidence manifest exists.
+- **Verification:** Both setup and qualification launchers pass the parser gate; Ubuntu 24.04 then installed side-by-side and reached its expected first-launch account prompt.
+- **Scenario impact:** None; launcher parsing and prerequisite checks do not change assurance policy or expected scenario outcomes.

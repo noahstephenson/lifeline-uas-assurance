@@ -10,9 +10,10 @@ param(
 $ErrorActionPreference = "Stop"
 $Distro = "Ubuntu-24.04"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
+$PortableNode = Join-Path $ProjectRoot ".tools\node-v20.20.2-win-x64\node.exe"
 $EvidenceRoot = Join-Path $ProjectRoot "evidence\runs"
 $Started = @{}
-$Stamp = Get-Date -Format "yyyyMMddTHHmmssZ"
+$Stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $Suffix = [guid]::NewGuid().ToString("N").Substring(0, 4).ToUpperInvariant()
 $RunId = if ($Scenario -eq "Smoke") { "LFL-SMOKE-PX4-$Stamp-$Suffix" } else { "LFL-$($Scenario.Replace('-', ''))-PX4-$Stamp-$Suffix" }
 $LogRoot = Join-Path $ProjectRoot ".qualification-logs\$RunId"
@@ -30,24 +31,53 @@ function Stop-RecordedProcesses {
     }
 }
 
+function Merge-ProcessLogs([string]$StandardOutput, [string]$StandardError, [string]$Destination) {
+    $Inputs = @($StandardOutput, $StandardError) | Where-Object { Test-Path -LiteralPath $_ }
+    if ($Inputs.Count -eq 0) { return }
+    $Content = foreach ($InputPath in $Inputs) {
+        "===== $([System.IO.Path]::GetFileName($InputPath)) ====="
+        Get-Content -LiteralPath $InputPath -ErrorAction SilentlyContinue
+    }
+    Set-Content -LiteralPath $Destination -Value $Content -Encoding utf8
+}
+
+function Attach-EvidenceLog([string]$LogicalName, [string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return }
+    $WslPath = ((& wsl.exe -d $Distro -- wslpath -a $Path) -join "").Trim()
+    & wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline evidence --run '$RunId' --attach-name '$LogicalName' --file '$WslPath'"
+    if ($LASTEXITCODE -ne 0) { throw "Failed to attach $LogicalName to evidence." }
+}
+
 $Distributions = @(& wsl.exe --list --quiet) -replace "`0", ""
 if ($Distributions -notcontains $Distro) { throw "$Distro is not installed. Run scripts/setup-px4-wsl.ps1." }
-if (-not (Test-Path (Join-Path $ProjectRoot "openmct\node_modules\vite\bin\vite.js"))) {
-    throw "Open MCT dependencies are missing. Run npm ci in openmct with Node 20."
+& wsl.exe -d $Distro -- bash -lc "test -f ~/.lifeline-px4-installer-complete && test -x ~/.venvs/lifeline/bin/lifeline"
+if ($LASTEXITCODE -ne 0) { throw "The Ubuntu PX4 environment is incomplete. Run scripts/setup-px4-wsl.ps1 -Finalize." }
+$Px4Commit = ((& wsl.exe -d $Distro -- bash -lc "cd ~/PX4-Autopilot && git rev-parse --short=7 HEAD") -join "").Trim()
+if ($Px4Commit -ne "d6f12ad") { throw "PX4 commit mismatch: expected d6f12ad, found '$Px4Commit'." }
+if ($Scenario -ne "Smoke") {
+    if (-not (Test-Path (Join-Path $ProjectRoot "openmct\node_modules\vite\bin\vite.js"))) {
+        throw "Open MCT dependencies are missing. Run npm ci in openmct with Node 20."
+    }
+    $Node = if (Test-Path -LiteralPath $PortableNode) { $PortableNode } else { (Get-Command node.exe -ErrorAction Stop).Source }
+    $NodeVersion = (& $Node --version).Trim()
+    if ($NodeVersion -notmatch '^v20\.') { throw "Open MCT qualification requires Node 20; found $NodeVersion." }
 }
 Assert-PortAvailable $ApiPort
 Assert-PortAvailable $WebPort
 
 $WslProject = ((& wsl.exe -d $Distro -- wslpath -a $ProjectRoot) -join "").Trim()
 $WslLogRoot = ((& wsl.exe -d $Distro -- wslpath -a $LogRoot) -join "").Trim()
-$Px4Out = Join-Path $LogRoot "px4.log"
-$Px4Err = Join-Path $LogRoot "px4.err.log"
-$ApiOut = Join-Path $LogRoot "api.log"
-$ApiErr = Join-Path $LogRoot "api.err.log"
+$Px4Out = Join-Path $LogRoot "px4.stdout.log"
+$Px4Err = Join-Path $LogRoot "px4.stderr.log"
+$Px4Log = Join-Path $LogRoot "px4.log"
+$ApiOut = Join-Path $LogRoot "api.stdout.log"
+$ApiErr = Join-Path $LogRoot "api.stderr.log"
+$ApiLog = Join-Path $LogRoot "api.log"
 $WebOut = Join-Path $LogRoot "openmct.log"
 $WebErr = Join-Path $LogRoot "openmct.err.log"
 $Token = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).TrimEnd('=').Replace('+','-').Replace('/','_')
 $PriorApiBase = $env:VITE_LIFELINE_API_BASE
+$Failure = $null
 
 try {
     $Started.px4 = Start-Process -FilePath "wsl.exe" -ArgumentList @(
@@ -66,7 +96,6 @@ try {
         "-d", $Distro, "--", "bash", "-lc", $LiveCommand
     ) -WorkingDirectory $ProjectRoot -WindowStyle Hidden -RedirectStandardOutput $ApiOut -RedirectStandardError $ApiErr -PassThru
 
-    $Node = (Get-Command node.exe -ErrorAction Stop).Source
     $Vite = Join-Path $ProjectRoot "openmct\node_modules\vite\bin\vite.js"
     $env:VITE_LIFELINE_API_BASE = "http://127.0.0.1:$ApiPort"
     $Started.web = Start-Process -FilePath $Node -ArgumentList @($Vite, "--host", "127.0.0.1", "--port", "$WebPort") `
@@ -104,19 +133,34 @@ try {
     }
     if ($Terminal.status -ne "COMPLETE") { throw "Live qualification ended as $($Terminal.status): $($Terminal.error)" }
     }
+} catch {
+    $Failure = $_
 } finally {
     $env:VITE_LIFELINE_API_BASE = $PriorApiBase
     Stop-RecordedProcesses
 }
 
-$WslPx4Log = "$WslLogRoot/px4.log"
-$WslApiLog = "$WslLogRoot/api.log"
-& wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline evidence --run '$RunId' --attach-name px4_log --file '$WslPx4Log'"
-if ($LASTEXITCODE -ne 0) { throw "Failed to attach PX4 log to evidence." }
+Merge-ProcessLogs $Px4Out $Px4Err $Px4Log
+Merge-ProcessLogs $ApiOut $ApiErr $ApiLog
+$ManifestPath = Join-Path (Join-Path $EvidenceRoot $RunId) "manifest.json"
+$AttachmentFailure = $null
+if (Test-Path -LiteralPath $ManifestPath) {
+    try {
+        Attach-EvidenceLog "px4_log" $Px4Log
+        if ($Scenario -ne "Smoke") { Attach-EvidenceLog "api_log" $ApiLog }
+    } catch {
+        $AttachmentFailure = $_
+    }
+}
+
+if ($Failure) {
+    if ($AttachmentFailure) { Write-Warning $AttachmentFailure.Exception.Message }
+    throw $Failure
+}
+if ($AttachmentFailure) { throw $AttachmentFailure }
+if (-not (Test-Path -LiteralPath $ManifestPath)) { throw "Qualification produced no evidence manifest for $RunId." }
 if ($Scenario -eq "Smoke") {
     Write-Host "PX4 smoke qualification passed. Evidence run: $RunId"
     return
 }
-& wsl.exe -d $Distro -- bash -lc "~/.venvs/lifeline/bin/lifeline evidence --run '$RunId' --attach-name api_log --file '$WslApiLog'"
-if ($LASTEXITCODE -ne 0) { throw "Failed to attach API log to evidence." }
 Write-Host "PX4 qualification completed. Scenario: $Scenario; evidence run: $RunId"
