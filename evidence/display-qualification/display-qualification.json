@@ -3,8 +3,8 @@
   "qualification_method": "automated browser display qualification",
   "human_usability_study": false,
   "verification_status": "PASS",
-  "generated_at": "2026-09-21T11:33:42.958Z",
-  "commit": "bd647fb7bed04ede39daf8bca2cd42b68c7a674e",
+  "generated_at": "2026-09-21T11:48:44.469Z",
+  "commit": "8e8d9d198d498fcc99eaad2ce14de26406d9152d",
   "playwright_version": "1.55.1",
   "browser": {
     "name": "chromium",
@@ -35,105 +35,105 @@
       "name": " /  / display-qualification.spec.js / DISPLAY-T01 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 11337,
+      "duration_ms": 11830,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T01 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9498,
+      "duration_ms": 9684,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T05 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5658,
+      "duration_ms": 5433,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T05 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5362,
+      "duration_ms": 5534,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T11 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5684,
+      "duration_ms": 5725,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T11 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5310,
+      "duration_ms": 5638,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T12 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5466,
+      "duration_ms": 5774,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T12 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5193,
+      "duration_ms": 5617,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-01 keeps mission, assurance, health, energy, evidence, and time visible",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9342,
+      "duration_ms": 9711,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-02 explains unknown and stale critical data without color",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5201,
+      "duration_ms": 5197,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-03 shows the T-05 decision basis and rejected RETURN",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5252,
+      "duration_ms": 5876,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-04 failed WebSocket replaces operational content with unavailable text",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2153,
+      "duration_ms": 2137,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5038,
+      "duration_ms": 5063,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / untrusted rationale and identifier are rendered as text, never HTML",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2038,
+      "duration_ms": 1834,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / the dashboard exposes no control surface or control request",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9029,
+      "duration_ms": 9224,
       "error": null
     }
   ]
