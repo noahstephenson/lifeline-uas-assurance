@@ -89,3 +89,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Remove shell command strings from background process launches. Pass the PX4 checkout with WSL's explicit `--cd` option and pass the live token and CLI arguments as separate `env`/executable arguments. Resolve and validate the non-root WSL home once.
 - **Verification:** A dry-run using `wsl.exe --cd /home/noah/PX4-Autopilot -- make -n px4_sitl_default gz_x500` resolved the intended CMake target. A regression test locks both structured background launch forms and excludes the former `bash -lc` pattern.
 - **Scenario impact:** None; process invocation changed, not the assurance model or scenario expectations.
+
+## D-12 — MAVSDK 3.17 connection state no longer carries the vehicle UUID
+
+- **Observed:** The third smoke attempt launched PX4/Gazebo and established MAVLink, but the adapter read `state.uuid`. MAVSDK-Python 3.17.2's generated `ConnectionState` contains only `is_connected`, so the attempt ended before arming with an `AttributeError` and a complete `ERROR` bundle.
+- **Risk:** A connection could be present while Lifeline could neither prove the intended simulator identity nor reach the stock-X500 qualification actions.
+- **Decision:** Keep connection readiness on `Core.connection_state()` and obtain the former discovery UUID from `Info.get_identification().legacy_uid`, the supported 3.17.2 identity API. Continue to reject zero UUIDs before enabling commands.
+- **Verification:** Unit fakes reproduce the 3.17.2 connection-state shape, prove a nonzero legacy UUID is recorded, and prove zero is rejected. The next live smoke run must record the actual nonzero UUID in its hashed environment artifact.
+- **Scenario impact:** None; simulator identity acquisition changed, not assurance behavior or expected scenario results.

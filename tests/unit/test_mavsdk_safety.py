@@ -1,4 +1,6 @@
 import asyncio
+import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -29,6 +31,47 @@ def test_non_loopback_endpoint_is_rejected():
     config = load_config().model_copy(update={"sitl": load_config().sitl.model_copy(update={"endpoint": "udpout://192.168.1.20:14540"})})
     with pytest.raises(SitlSafetyError):
         MavsdkAdapter(config)
+
+
+class _ConnectedCore:
+    async def connection_state(self):
+        yield SimpleNamespace(is_connected=True)
+
+
+class _Info:
+    def __init__(self, legacy_uid):
+        self.legacy_uid = legacy_uid
+
+    async def get_identification(self):
+        return SimpleNamespace(legacy_uid=self.legacy_uid, hardware_uid="0" * 32)
+
+
+class _System:
+    legacy_uid = 4242
+
+    def __init__(self):
+        self.core = _ConnectedCore()
+        self.info = _Info(self.legacy_uid)
+
+    async def connect(self, *, system_address):
+        assert system_address == "udpin://127.0.0.1:14540"
+
+
+def test_connect_uses_mavsdk_identification_legacy_uuid(monkeypatch):
+    monkeypatch.setitem(sys.modules, "mavsdk", SimpleNamespace(System=_System))
+    adapter = MavsdkAdapter(validate_sitl_qualification(), allow_sitl_actions=True)
+    asyncio.run(adapter.connect(timeout_s=0.1))
+    assert adapter.vehicle_uuid == 4242
+
+
+def test_connect_rejects_zero_identification_uuid(monkeypatch):
+    class ZeroUuidSystem(_System):
+        legacy_uid = 0
+
+    monkeypatch.setitem(sys.modules, "mavsdk", SimpleNamespace(System=ZeroUuidSystem))
+    adapter = MavsdkAdapter(validate_sitl_qualification(), allow_sitl_actions=True)
+    with pytest.raises(SitlSafetyError, match="zero legacy UUID"):
+        asyncio.run(adapter.connect(timeout_s=0.1))
 
 
 def test_qualification_profile_differs_only_by_action_flag(tmp_path):

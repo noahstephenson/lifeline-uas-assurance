@@ -61,12 +61,13 @@ class MavsdkAdapter:
         async def wait_connected() -> None:
             async for state in self._drone.core.connection_state():
                 if state.is_connected:
-                    if not state.uuid:
-                        raise SitlSafetyError("connected SITL reported an invalid zero UUID")
-                    self.vehicle_uuid = int(state.uuid)
                     return
 
         await asyncio.wait_for(wait_connected(), timeout=timeout_s)
+        identification = await asyncio.wait_for(self._drone.info.get_identification(), timeout=timeout_s)
+        if not identification.legacy_uid:
+            raise SitlSafetyError("connected SITL reported an invalid zero legacy UUID")
+        self.vehicle_uuid = int(identification.legacy_uid)
 
     async def wait_ready(self, timeout_s: float = 45.0) -> None:
         self._require_drone()
