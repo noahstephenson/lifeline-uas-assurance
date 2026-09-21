@@ -3,12 +3,12 @@
   "qualification_method": "automated browser display qualification",
   "human_usability_study": false,
   "verification_status": "PASS",
-  "generated_at": "2026-09-20T16:36:40.581Z",
-  "commit": "ff47976533d4b6b776d944755fa05ddecb8c8c86",
-  "playwright_version": "1.55.0",
+  "generated_at": "2026-09-21T00:25:33.950Z",
+  "commit": "93c618488f4ae976d7539a536d807c35104da031",
+  "playwright_version": "1.55.1",
   "browser": {
     "name": "chromium",
-    "version": "140.0.7339.16"
+    "version": "140.0.7339.186"
   },
   "viewports": [
     "1440x900",
@@ -35,105 +35,105 @@
       "name": " /  / display-qualification.spec.js / DISPLAY-T01 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 13315,
+      "duration_ms": 11817,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T01 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9516,
+      "duration_ms": 9538,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T05 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5876,
+      "duration_ms": 5782,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T05 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5469,
+      "duration_ms": 5269,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T11 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5645,
+      "duration_ms": 5432,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T11 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5575,
+      "duration_ms": 5201,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T12 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5907,
+      "duration_ms": 6380,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-T12 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5514,
+      "duration_ms": 5897,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-01 keeps mission, assurance, health, energy, evidence, and time visible",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9700,
+      "duration_ms": 10021,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-02 explains unknown and stale critical data without color",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5277,
+      "duration_ms": 5350,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-03 shows the T-05 decision basis and rejected RETURN",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5351,
+      "duration_ms": 5253,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-04 failed WebSocket replaces operational content with unavailable text",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2066,
+      "duration_ms": 2027,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5209,
+      "duration_ms": 5031,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / untrusted rationale and identifier are rendered as text, never HTML",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2257,
+      "duration_ms": 2181,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / the dashboard exposes no control surface or control request",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9138,
+      "duration_ms": 9217,
       "error": null
     }
   ]
