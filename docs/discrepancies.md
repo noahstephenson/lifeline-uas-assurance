@@ -113,3 +113,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Request position, velocity, battery, and in-air telemetry at 2 Hz through the pinned MAVSDK API; warm persistent streams before mission release; calculate each snapshot time after reads; prevent catch-up bursts; and require both hash completeness and effective `PASS` before the qualifier exits successfully.
 - **Verification:** Tests confirm all four critical stream rates are requested at 2 Hz, critical source time never exceeds receipt time, and the launcher contains an explicit effective-status gate. The original T-05 `FAIL` bundle remains unchanged and T-05 must be rerun.
 - **Scenario impact:** None; the scripted events at 20 and 22 seconds, required `WATCH`/`TERMINATE` states, required decision codes, deadline, and prohibited `RETURN` remain controlled inputs.
+
+## D-15 — Evidence gate read the wrong CLI envelope field
+
+- **Observed:** The corrected T-05 rerun produced hash-complete `PASS` evidence with all controlled assertions satisfied, but the newly fail-closed launcher exited nonzero because it tested a nonexistent `success` field. The stable Lifeline JSON envelope uses `ok`.
+- **Risk:** A valid qualification could be reported as an orchestration failure, making the release gate irreproducible even though the evidence itself remained correct and inspectable.
+- **Decision:** Bind the PowerShell gate to `ok`, `data.complete`, and `data.effective_verification_status` exactly as emitted by `lifeline --json evidence`.
+- **Verification:** The launcher contract test requires the `ok` field and the effective `PASS` check. The existing T-05 bundle remains valid evidence, and a fresh T-05 launcher run must exit successfully.
+- **Scenario impact:** None; no model, event, expectation, decision, or evidence content changed.
