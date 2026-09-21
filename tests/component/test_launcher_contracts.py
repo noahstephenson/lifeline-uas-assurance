@@ -8,3 +8,4 @@ def test_qualifier_keeps_wsl_process_arguments_structured():
     assert '"--cd", "$WslHome/PX4-Autopilot", "--", "make"' in script
     assert '"--", "env", "LIFELINE_START_TOKEN=$Token"' in script
     assert '"--", "bash", "-lc", "cd ~/PX4-Autopilot' not in script
+    assert 'effective_verification_status -ne "PASS"' in script

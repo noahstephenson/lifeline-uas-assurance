@@ -107,18 +107,19 @@ async def run_px4_scenario(
         return record
 
     await issue(CommandName.UPLOAD_MISSION, adapter.upload_fictional_mission())
+    await adapter.sample()
+    await adapter.mission_progress()
+    await adapter.in_air()
     await _notify(on_ready, run_id)
     if start_gate is not None:
         await start_gate.wait()
     await issue(CommandName.ARM, adapter.arm())
     await issue(CommandName.START_MISSION, adapter.start_mission())
     started_at = monotonic()
+    next_tick = started_at
 
     while True:
-        now = round(monotonic() - started_at, 3)
-        while event_index < len(scenario.events) and scenario.events[event_index].at_s <= now:
-            overrides.update(scenario.events[event_index].set)
-            event_index += 1
+        await asyncio.sleep(max(0.0, next_tick - monotonic()))
 
         sample_valid = True
         try:
@@ -132,6 +133,11 @@ async def run_px4_scenario(
             sample_valid = False
             sample = last_sample or _unavailable_sample()
             current, total, airborne = 0, 0, False
+
+        now = round(monotonic() - started_at, 3)
+        while event_index < len(scenario.events) and scenario.events[event_index].at_s <= now:
+            overrides.update(scenario.events[event_index].set)
+            event_index += 1
 
         ever_airborne = ever_airborne or airborne
         progress = max(0.0, min(1.0, current / total if total else 0.0))
@@ -224,8 +230,7 @@ async def run_px4_scenario(
             break
         if now >= scenario.duration_s:
             break
-        next_tick = started_at + sequence * scenario.tick_s
-        await asyncio.sleep(max(0.0, next_tick - monotonic()))
+        next_tick = monotonic() + scenario.tick_s
 
     assertions = evaluate_expectations(scenario, snapshots, decisions)
     completed_at = snapshots[-1].sim_time_s if snapshots else 0.0

@@ -191,6 +191,12 @@ if ($Failure) {
 }
 if ($AttachmentFailure) { throw $AttachmentFailure }
 if (-not (Test-Path -LiteralPath $ManifestPath)) { throw "Qualification produced no evidence manifest for $RunId." }
+$EvidenceJson = ((& wsl.exe -d $Distro -- $WslLifeline --json evidence --run $RunId) -join "`n")
+if ($LASTEXITCODE -ne 0) { throw "Qualification evidence audit command failed for $RunId." }
+$EvidenceAudit = $EvidenceJson | ConvertFrom-Json
+if (-not $EvidenceAudit.success -or -not $EvidenceAudit.data.complete -or $EvidenceAudit.data.effective_verification_status -ne "PASS") {
+    throw "Qualification evidence did not pass: run=$RunId status=$($EvidenceAudit.data.effective_verification_status) complete=$($EvidenceAudit.data.complete)"
+}
 if ($Scenario -eq "Smoke") {
     Write-Host "PX4 smoke qualification passed. Evidence run: $RunId"
     return

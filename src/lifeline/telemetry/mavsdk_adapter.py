@@ -53,6 +53,7 @@ class MavsdkAdapter:
         self._stream_values: dict[str, Any] = {}
         self._stream_received_at: dict[str, float] = {}
         self._stream_errors: dict[str, BaseException] = {}
+        self._rates_configured = False
 
     def _validate_loopback_endpoint(self) -> None:
         endpoint = self.endpoint.replace("udpin://", "udp://", 1).replace("udpout://", "udp://", 1)
@@ -81,6 +82,17 @@ class MavsdkAdapter:
 
     async def wait_ready(self, timeout_s: float = 45.0) -> None:
         self._require_drone()
+        if not self._rates_configured:
+            await asyncio.wait_for(
+                asyncio.gather(
+                    self._drone.telemetry.set_rate_position(2.0),
+                    self._drone.telemetry.set_rate_velocity_ned(2.0),
+                    self._drone.telemetry.set_rate_battery(2.0),
+                    self._drone.telemetry.set_rate_in_air(2.0),
+                ),
+                timeout=10.0,
+            )
+            self._rates_configured = True
 
         async def wait_health() -> None:
             async for health in self._drone.telemetry.health():

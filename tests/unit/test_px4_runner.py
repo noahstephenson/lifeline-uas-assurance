@@ -93,6 +93,9 @@ def test_px4_runner_normalizes_simulator_telemetry(monkeypatch):
     assert [record.command.value for record in run.commands[:3]] == ["UPLOAD_MISSION", "ARM", "START_MISSION"]
     assert all(record.accepted for record in run.commands)
     assert run.environment["vehicle_uuid"] == "4242"
+    assert all(
+        snapshot.energy_margin_wh.source_time_s <= snapshot.energy_margin_wh.receipt_time_s for snapshot in run.snapshots
+    )
     assert all(result.passed for result in run.assertions)
 
 

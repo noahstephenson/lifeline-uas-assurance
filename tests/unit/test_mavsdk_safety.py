@@ -110,6 +110,32 @@ def test_telemetry_subscriptions_are_persistent_and_cached():
     assert calls == {"position": 1, "battery": 1, "velocity": 1, "mode": 1, "progress": 1, "in_air": 1}
 
 
+def test_wait_ready_requests_two_hz_critical_telemetry():
+    rates: dict[str, float] = {}
+
+    async def set_rate(name, value):
+        rates[name] = value
+
+    async def health():
+        yield SimpleNamespace(is_global_position_ok=True, is_home_position_ok=True)
+
+    telemetry = SimpleNamespace(
+        set_rate_position=lambda value: set_rate("position", value),
+        set_rate_velocity_ned=lambda value: set_rate("velocity", value),
+        set_rate_battery=lambda value: set_rate("battery", value),
+        set_rate_in_air=lambda value: set_rate("in_air", value),
+        health=health,
+    )
+
+    async def exercise():
+        adapter = MavsdkAdapter(validate_sitl_qualification(), allow_sitl_actions=True)
+        adapter._drone = SimpleNamespace(telemetry=telemetry)
+        await adapter.wait_ready(timeout_s=0.1)
+
+    asyncio.run(exercise())
+    assert rates == {"position": 2.0, "velocity": 2.0, "battery": 2.0, "in_air": 2.0}
+
+
 def test_qualification_profile_differs_only_by_action_flag(tmp_path):
     assert validate_sitl_qualification().sitl.actions_enabled
     profile = load_config().model_copy(
