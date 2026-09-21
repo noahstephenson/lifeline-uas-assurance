@@ -85,6 +85,7 @@ def build_parser() -> argparse.ArgumentParser:
     live.add_argument("--run-id")
     live.add_argument("--host", default="127.0.0.1")
     live.add_argument("--port", type=int, default=8000)
+    live.add_argument("--setup-error", help=argparse.SUPPRESS)
 
     smoke = sub.add_parser("px4-smoke", help="qualify stock X500 arm, takeoff, altitude, and landing")
     smoke.add_argument("--config", default="config/sitl-qualification.yaml")
@@ -194,6 +195,11 @@ def dispatch(args: argparse.Namespace) -> Any:
         scenario = load_scenario(args.scenario)
         config = _load_cli_config(args.config, require_qualification=True)
         run_id = args.run_id or _run_id(scenario.id, "LIVE")
+        if args.setup_error:
+            from lifeline.live import finalize_live_setup_error
+
+            manifest = finalize_live_setup_error(scenario, config, run_id=run_id, error=args.setup_error)
+            raise RuntimeError(f"live PX4 run failed; evidence bundle finalized as {run_id}: {manifest['verification_status']}")
         token = os.getenv("LIFELINE_START_TOKEN")
         if not token:
             raise ValueError("LIFELINE_START_TOKEN must be set by the qualification launcher")

@@ -110,7 +110,8 @@ try {
     } else {
 
     $Started.api = Start-Process -FilePath "wsl.exe" -ArgumentList @(
-        "-d", $Distro, "--", "env", "LIFELINE_START_TOKEN=$Token", $WslLifeline,
+        "-d", $Distro, "--", "env", "LIFELINE_START_TOKEN=$Token",
+        "LIFELINE_UBUNTU_RELEASE=24.04", "LIFELINE_PX4_TAG=v1.17.0", "LIFELINE_PX4_COMMIT=d6f12ad", $WslLifeline,
         "live", "--scenario", $Scenario, "--config", "$WslProject/config/sitl-qualification.yaml",
         "--run-id", $RunId, "--host", "127.0.0.1", "--port", "$ApiPort"
     ) -WorkingDirectory $ProjectRoot -WindowStyle Hidden -RedirectStandardOutput $ApiOut -RedirectStandardError $ApiErr -PassThru
@@ -162,6 +163,17 @@ try {
 Merge-ProcessLogs $Px4Out $Px4Err $Px4Log
 Merge-ProcessLogs $ApiOut $ApiErr $ApiLog
 $ManifestPath = Join-Path (Join-Path $EvidenceRoot $RunId) "manifest.json"
+$SetupFinalizationFailure = $null
+if ($Failure -and $Scenario -ne "Smoke" -and -not (Test-Path -LiteralPath $ManifestPath)) {
+    try {
+        $FailureText = "Qualification launcher failure: $($Failure.Exception.Message)"
+        & wsl.exe -d $Distro -- env LIFELINE_UBUNTU_RELEASE=24.04 LIFELINE_PX4_TAG=v1.17.0 LIFELINE_PX4_COMMIT=d6f12ad $WslLifeline live `
+            --scenario $Scenario --config "$WslProject/config/sitl-qualification.yaml" --run-id $RunId --setup-error $FailureText
+        if (-not (Test-Path -LiteralPath $ManifestPath)) { throw "Live error finalizer produced no manifest for $RunId." }
+    } catch {
+        $SetupFinalizationFailure = $_
+    }
+}
 $AttachmentFailure = $null
 if (Test-Path -LiteralPath $ManifestPath) {
     try {
@@ -173,6 +185,7 @@ if (Test-Path -LiteralPath $ManifestPath) {
 }
 
 if ($Failure) {
+    if ($SetupFinalizationFailure) { Write-Warning $SetupFinalizationFailure.Exception.Message }
     if ($AttachmentFailure) { Write-Warning $AttachmentFailure.Exception.Message }
     throw $Failure
 }

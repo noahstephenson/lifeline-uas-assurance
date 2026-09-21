@@ -3,8 +3,8 @@ import asyncio
 import pytest
 
 from lifeline.config import validate_sitl_qualification
-from lifeline.evidence import verify_run_integrity
-from lifeline.live import LiveSession, LiveStatus
+from lifeline.evidence import reserve_evidence_directory, verify_run_integrity
+from lifeline.live import LiveSession, LiveStatus, finalize_live_setup_error
 from lifeline.scenarios import load_scenario, run_scenario
 from lifeline.scenarios.runner import ScenarioRun
 
@@ -84,3 +84,18 @@ def test_live_connection_failure_finalizes_error_evidence(monkeypatch, tmp_path)
         assert (tmp_path / "LIVE-ERROR" / "run-summary.json").read_text(encoding="utf-8").find('"ERROR"') > 0
 
     asyncio.run(exercise())
+
+
+def test_live_launcher_failure_finalizes_reserved_error_bundle(tmp_path):
+    reserve_evidence_directory("LIVE-LAUNCHER-ERROR", tmp_path)
+    manifest = finalize_live_setup_error(
+        load_scenario("T-01"),
+        validate_sitl_qualification(),
+        run_id="LIVE-LAUNCHER-ERROR",
+        error="launcher deadline exceeded",
+        evidence_root=tmp_path,
+    )
+    assert manifest["verification_status"] == "ERROR"
+    integrity = verify_run_integrity("LIVE-LAUNCHER-ERROR", tmp_path)
+    assert integrity["verification_status"] == "INCOMPLETE"
+    assert integrity["missing"] == ["api.log", "px4.log"]

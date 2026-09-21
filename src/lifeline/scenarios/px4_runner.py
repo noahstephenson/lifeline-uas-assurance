@@ -76,7 +76,7 @@ async def run_px4_scenario(
     ) -> CommandRecord:
         nonlocal command_sequence
         try:
-            acknowledgement = await operation
+            acknowledgement = await asyncio.wait_for(operation, timeout=30.0)
             record = CommandRecord(
                 sequence=command_sequence,
                 command=name,
@@ -149,7 +149,12 @@ async def run_px4_scenario(
         link = bool(overrides.get("operator_link_available", sample_valid and sample.connected))
 
         if sample_valid and not bool(overrides.get("freeze_telemetry", False)):
-            source_times = {"link": now, "nav": now, "energy": now}
+            received_at = sample.received_at_monotonic_s or monotonic()
+            source_times = {
+                "link": _relative_source_time(sample.link_received_at_monotonic_s, received_at, started_at),
+                "nav": _relative_source_time(sample.navigation_received_at_monotonic_s, received_at, started_at),
+                "energy": _relative_source_time(sample.energy_received_at_monotonic_s, received_at, started_at),
+            }
 
         snapshot = MissionSnapshot(
             run_id=run_id,
@@ -275,6 +280,10 @@ def _local_position(sample: VehicleSample, home: tuple[float, float] | None) -> 
     north_m = latitude_delta * earth_radius_m
     east_m = longitude_delta * earth_radius_m * math.cos(math.radians(home[0]))
     return north_m, east_m
+
+
+def _relative_source_time(value: float, fallback: float, started_at: float) -> float:
+    return max(0.0, round((value or fallback) - started_at, 3))
 
 
 async def _notify(callback: Callable[..., Any] | None, *args: Any) -> None:

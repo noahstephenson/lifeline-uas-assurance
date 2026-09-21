@@ -227,6 +227,37 @@ class LiveSession:
         }
 
 
+def finalize_live_setup_error(
+    scenario: ScenarioDefinition,
+    config: LifelineConfig,
+    *,
+    run_id: str,
+    error: str,
+    evidence_root: Path | None = None,
+) -> dict[str, Any]:
+    """Finalize a reserved live run when orchestration stops before the API can export it."""
+    run = ScenarioRun(
+        run_id=run_id,
+        scenario=scenario,
+        snapshots=[],
+        decisions=[],
+        assertions=[
+            AssertionResult(
+                name="live_session_completed",
+                passed=False,
+                expected="PX4 session completes and produces required evidence",
+                observed=error,
+            )
+        ],
+        source="px4",
+        commands=[],
+        configuration=config,
+        environment={"dashboard_px4_time_overlap": "false"},
+        error=error,
+    )
+    return export_run(run, evidence_root).model_dump(mode="json")
+
+
 def create_live_app(session: LiveSession) -> FastAPI:
     app = FastAPI(title="Project Lifeline Live Qualification API", version="1.0")
     app.add_middleware(

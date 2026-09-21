@@ -97,3 +97,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Keep connection readiness on `Core.connection_state()` and obtain the former discovery UUID from `Info.get_identification().legacy_uid`, the supported 3.17.2 identity API. Continue to reject zero UUIDs before enabling commands.
 - **Verification:** Unit fakes reproduce the 3.17.2 connection-state shape, prove a nonzero legacy UUID is recorded, and prove zero is rejected. The next live smoke run must record the actual nonzero UUID in its hashed environment artifact.
 - **Scenario impact:** None; simulator identity acquisition changed, not assurance behavior or expected scenario results.
+
+## D-13 — Repeated one-shot mission-progress subscriptions stalled the live runner
+
+- **Observed:** The first live T-01 mission uploaded, armed, flew, and returned while Open MCT was connected, but the evidence loop stopped at sequence 4 after mission progress reached completion. Reopening MAVSDK generators on every decision tick left the runner waiting for a new mission-progress event that would never occur. The launcher's 240-second deadline then stopped the session before its API process could export a manifest.
+- **Risk:** Physical simulator activity and dashboard visibility could appear successful while the authoritative evidence sequence stopped, violating the 2 Hz decision-loop and fail-visible evidence requirements.
+- **Decision:** Maintain one background subscription per MAVSDK telemetry stream and read its timestamped cache at each decision tick. Bound command acknowledgements to 30 seconds, derive freshness from the oldest cached vehicle field, and add a launcher-side live-error finalizer when an API process cannot finalize itself.
+- **Verification:** Unit tests prove each stream factory is invoked once across repeated reads, cached samples carry a monotonic receipt time, command/stream waits are bounded, and a pre-reserved live run becomes an `ERROR` bundle requiring both simulator and API logs. T-01 must be rerun from the beginning; the stalled attempt cannot qualify M-01.
+- **Scenario impact:** None; T-01 expectations remain `RECOVERED` with the existing 120-second envelope. The change repairs telemetry transport and evidence finalization rather than the assurance policy.

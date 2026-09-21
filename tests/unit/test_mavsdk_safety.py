@@ -74,6 +74,42 @@ def test_connect_rejects_zero_identification_uuid(monkeypatch):
         asyncio.run(adapter.connect(timeout_s=0.1))
 
 
+def test_telemetry_subscriptions_are_persistent_and_cached():
+    calls: dict[str, int] = {}
+
+    async def stream(name, value):
+        calls[name] = calls.get(name, 0) + 1
+        yield value
+        await asyncio.Event().wait()
+
+    telemetry = SimpleNamespace(
+        position=lambda: stream("position", SimpleNamespace(latitude_deg=47.0, longitude_deg=-122.0, relative_altitude_m=8.0)),
+        battery=lambda: stream("battery", SimpleNamespace(remaining_percent=0.8)),
+        velocity_ned=lambda: stream("velocity", SimpleNamespace(north_m_s=3.0, east_m_s=4.0)),
+        flight_mode=lambda: stream("mode", "MISSION"),
+        in_air=lambda: stream("in_air", True),
+    )
+    mission = SimpleNamespace(mission_progress=lambda: stream("progress", SimpleNamespace(current=2, total=4)))
+
+    async def exercise():
+        adapter = MavsdkAdapter(validate_sitl_qualification(), allow_sitl_actions=True)
+        adapter._drone = SimpleNamespace(telemetry=telemetry, mission=mission)
+        first = await adapter.sample()
+        second = await adapter.sample()
+        assert first == second
+        assert await adapter.mission_progress() == (2, 4)
+        assert await adapter.mission_progress() == (2, 4)
+        assert await adapter.in_air()
+        assert await adapter.in_air()
+        assert first.received_at_monotonic_s > 0
+        assert first.link_received_at_monotonic_s > 0
+        assert first.navigation_received_at_monotonic_s > 0
+        assert first.energy_received_at_monotonic_s > 0
+
+    asyncio.run(exercise())
+    assert calls == {"position": 1, "battery": 1, "velocity": 1, "mode": 1, "progress": 1, "in_air": 1}
+
+
 def test_qualification_profile_differs_only_by_action_flag(tmp_path):
     assert validate_sitl_qualification().sitl.actions_enabled
     profile = load_config().model_copy(

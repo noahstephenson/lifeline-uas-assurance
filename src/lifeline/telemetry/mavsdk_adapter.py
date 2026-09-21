@@ -4,6 +4,7 @@ import asyncio
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from time import monotonic
 from typing import Any
 from urllib.parse import urlparse
 
@@ -26,6 +27,10 @@ class VehicleSample:
     battery_remaining_pct: float
     ground_speed_mps: float
     flight_mode: str
+    received_at_monotonic_s: float = 0.0
+    link_received_at_monotonic_s: float = 0.0
+    navigation_received_at_monotonic_s: float = 0.0
+    energy_received_at_monotonic_s: float = 0.0
 
 
 class MavsdkAdapter:
@@ -43,6 +48,11 @@ class MavsdkAdapter:
         self._validate_loopback_endpoint()
         self._drone: Any | None = None
         self.vehicle_uuid: int | None = None
+        self._stream_tasks: dict[str, asyncio.Task[None]] = {}
+        self._stream_events: dict[str, asyncio.Event] = {}
+        self._stream_values: dict[str, Any] = {}
+        self._stream_received_at: dict[str, float] = {}
+        self._stream_errors: dict[str, BaseException] = {}
 
     def _validate_loopback_endpoint(self) -> None:
         endpoint = self.endpoint.replace("udpin://", "udp://", 1).replace("udpout://", "udp://", 1)
@@ -162,12 +172,16 @@ class MavsdkAdapter:
 
     async def sample(self) -> VehicleSample:
         self._require_drone()
-        position, battery, velocity, mode = await asyncio.gather(
-            _first(self._drone.telemetry.position()),
-            _first(self._drone.telemetry.battery()),
-            _first(self._drone.telemetry.velocity_ned()),
-            _first(self._drone.telemetry.flight_mode()),
+        position_result, battery_result, velocity_result, mode_result = await asyncio.gather(
+            self._stream_value("position", self._drone.telemetry.position),
+            self._stream_value("battery", self._drone.telemetry.battery),
+            self._stream_value("velocity_ned", self._drone.telemetry.velocity_ned),
+            self._stream_value("flight_mode", self._drone.telemetry.flight_mode),
         )
+        position, position_at = position_result
+        battery, battery_at = battery_result
+        velocity, velocity_at = velocity_result
+        mode, mode_at = mode_result
         speed = math.hypot(velocity.north_m_s, velocity.east_m_s)
         return VehicleSample(
             connected=True,
@@ -177,16 +191,45 @@ class MavsdkAdapter:
             battery_remaining_pct=max(0.0, min(100.0, battery.remaining_percent * 100.0)),
             ground_speed_mps=max(0.0, speed),
             flight_mode=str(mode),
+            received_at_monotonic_s=min(position_at, battery_at, velocity_at, mode_at),
+            link_received_at_monotonic_s=position_at,
+            navigation_received_at_monotonic_s=min(position_at, velocity_at),
+            energy_received_at_monotonic_s=battery_at,
         )
 
     async def mission_progress(self) -> tuple[int, int]:
         self._require_drone()
-        progress = await _first(self._drone.mission.mission_progress())
+        progress, _ = await self._stream_value("mission_progress", self._drone.mission.mission_progress)
         return progress.current, progress.total
 
     async def in_air(self) -> bool:
         self._require_drone()
-        return bool(await _first(self._drone.telemetry.in_air()))
+        value, _ = await self._stream_value("in_air", self._drone.telemetry.in_air)
+        return bool(value)
+
+    async def _stream_value(self, key: str, factory: Any, timeout_s: float = 5.0) -> tuple[Any, float]:
+        if key not in self._stream_tasks:
+            event = asyncio.Event()
+            self._stream_events[key] = event
+            self._stream_tasks[key] = asyncio.create_task(self._consume_stream(key, factory()), name=f"mavsdk-{key}")
+        await asyncio.wait_for(self._stream_events[key].wait(), timeout=timeout_s)
+        if key in self._stream_errors:
+            error = self._stream_errors[key]
+            raise RuntimeError(f"MAVSDK {key} stream failed: {type(error).__name__}: {error}") from error
+        return self._stream_values[key], self._stream_received_at[key]
+
+    async def _consume_stream(self, key: str, stream: Any) -> None:
+        try:
+            async for value in stream:
+                self._stream_values[key] = value
+                self._stream_received_at[key] = monotonic()
+                self._stream_events[key].set()
+            raise RuntimeError("stream ended")
+        except asyncio.CancelledError:
+            raise
+        except BaseException as exc:
+            self._stream_errors[key] = exc
+            self._stream_events[key].set()
 
     def _require_drone(self) -> None:
         if self._drone is None:
