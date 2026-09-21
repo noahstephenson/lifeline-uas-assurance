@@ -33,3 +33,8 @@ Private preservation completed on 2026-09-21: the exact original PX4 archive has
 `6f63fffec85e45c4c45aa4b772107d4bda70c89530fa89dc462d68e2ca0ffb1d`; the 48-bundle
 historical unhashed-development archive hashes to
 `d9e82db8bdfdef856cfeeacd4d7db80664d6027a3930f2e0fd5cd46ec5fcd541`.
+
+After metadata is complete, `python scripts/build_release_package.py` creates the exact
+curated ZIP and checksum file used by the strict release workflow. During local release
+preparation, `--allow-incomplete-metadata` permits a package dry run while leaving the
+strict audit false.
