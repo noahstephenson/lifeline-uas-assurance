@@ -1,0 +1,11 @@
+{
+  "decision_count": 1,
+  "error": null,
+  "exploratory": false,
+  "run_id": "LFL-T01-PX4-20260921T094403Z-1CE3",
+  "scenario_id": "T-01",
+  "scenario_name": "nominal_delivery_and_recovery",
+  "snapshot_count": 192,
+  "terminal_state": "RECOVERED",
+  "verification_status": "PASS"
+}

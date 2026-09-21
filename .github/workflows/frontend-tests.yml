@@ -22,6 +22,7 @@ jobs:
       - run: npm test
       - run: npm run test:qualification
       - run: npm run build
+      - run: npm audit --audit-level=high
       - uses: actions/upload-artifact@v4
         if: always()
         with:

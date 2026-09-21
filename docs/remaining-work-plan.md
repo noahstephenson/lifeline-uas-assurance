@@ -58,6 +58,8 @@ endpoint, pinned environment, command acknowledgements, and required logs.
 Exit: every result claim resolves to a complete bundle and the simulation-only disclaimer
 is prominent.
 
-Software status: the claim audit and release audit pass from a clean commit. Remaining
+Software status: all executable software and evidence gates pass locally. The strict
+release audit intentionally remains false until citation ownership and repository URL are
+supplied, the resulting commit passes hosted checks, and the tag is created. Remaining
 human-owned editorial inputs are student/advisor attribution and a genuine project
-photograph; neither is a software verification result.
+photograph; none is a software verification result.

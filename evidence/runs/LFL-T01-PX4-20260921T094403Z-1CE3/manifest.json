@@ -1,0 +1,98 @@
+{
+  "artifact_sha256": {
+    "api_log": "3abbc30b48e23858670d3a43e8eddaa66bda2afd70cf8466650786e2e3437460",
+    "assertions": "2797656a91d97b2dd5583ee0b9070714a571f14d4b43c6511108aac40385b20b",
+    "commands": "b6351c8f4b10e04eb49da317ed22d8fa653d0d6701ca6406c2dbe869aaf1d969",
+    "configuration": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "decisions": "7566e4a530cdaf92801c47c1242eb66b818c30e9b7a31ba938aff85f43dec61f",
+    "environment": "e89e35210905f50e9e56a393f26d2abd841d4a87c1fe0f48e99ed6d019c5f7d6",
+    "public_export": "26b4837b3af8814fab057c3d3a2f2bbf561411d3e4c6bda67b3c8b04011593fc",
+    "px4_log": "ad51d6e1b5390e79257be7ac3ae7ea7df0904de49a1eda3640553dcf33c844e9",
+    "scenario": "50b3264d098a99b4d693fa5cccb9d5eb5836ba9028a474d53de8b0418fbf7e3b",
+    "snapshots": "0aa846be6924da33bbe634ff713d84478f410628fa563ca9ea67097e7fefedd3",
+    "summary": "8a296c04dae4ae684996074939ed4a25651f1b00b179850984ffca7f42d6e0cc",
+    "timeline": "e8bb108e4410c48980b98f421ee9ff8bd4247513892dff8bfdf917afdd0bb2e6",
+    "timeline_svg": "35549634945c742abdca167eb1fce4c8cc247b9b382042364c2314c736574f5a",
+    "verification_matrix": "f0668bbbd52084364f7e5e2df3efecda73526b44cd58e11babc89f05e6507124"
+  },
+  "assertions": [
+    {
+      "expected": "RECOVERED",
+      "name": "terminal_state",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:NOMINAL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTROLLED_LAND",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:ABORT_RUN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:NOMINAL",
+      "observed": "observed",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+  "exploratory": false,
+  "files": {
+    "api_log": "api.log",
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "public_export": "public-export.json",
+    "px4_log": "px4.log",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "LFL-T01-PX4-20260921T094403Z-1CE3",
+  "scenario_id": "T-01",
+  "scenario_sha256": "a3f52eb4b7dc603dbc63f6ca260adb1e2f4e284098de1a807b17eed40570e38d",
+  "schema_version": "1.0",
+  "software_versions": {
+    "dashboard_connected_at": "2026-09-21T09:44:42.234537+00:00",
+    "dashboard_px4_time_overlap": "true",
+    "evidence_variant": "sanitized-public-export",
+    "fastapi": "0.141.1",
+    "gazebo_version": "Gazebo Sim, version 8.15.0",
+    "lifeline": "0.1.0",
+    "mavsdk": "3.17.2",
+    "mission_released_at": "2026-09-21T09:44:42.646223+00:00",
+    "openmct": "4.1.0",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "px4_commit": "d6f12ad1c4f70ad3230afd7d86e971421e02fef4",
+    "px4_tag": "v1.17.0",
+    "pydantic": "2.13.5",
+    "python": "3.12.3",
+    "pyyaml": "6.0.3",
+    "sitl_endpoint": "udpin://127.0.0.1:14540",
+    "source": "px4",
+    "source_manifest_sha256": "4a9980cda814a3392577f699337def54161a86e1e0197b33b8a39d959e7bcb51",
+    "ubuntu_release": "24.04",
+    "uvicorn": "0.53.0",
+    "vehicle_uuid": "5283920058631409231",
+    "wsl_kernel": "6.18.33.2-microsoft-standard-WSL2"
+  },
+  "verification_status": "PASS"
+}

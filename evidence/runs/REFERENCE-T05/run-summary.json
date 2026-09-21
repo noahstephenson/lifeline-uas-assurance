@@ -1,5 +1,6 @@
 {
   "decision_count": 4,
+  "error": null,
   "exploratory": false,
   "run_id": "REFERENCE-T05",
   "scenario_id": "T-05",

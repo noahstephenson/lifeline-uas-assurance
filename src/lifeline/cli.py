@@ -18,6 +18,7 @@ from lifeline.campaign import audit_release, run_fake_campaign
 from lifeline.config import PROJECT_ROOT, load_config, validate_sitl_qualification
 from lifeline.evidence import (
     attach_run_artifact,
+    export_public_run,
     export_run,
     list_runs,
     load_run,
@@ -55,6 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     campaign_run.add_argument("--id", dest="campaign_id")
     campaign_audit = campaign_sub.add_parser("audit", help="audit release gates against a campaign")
     campaign_audit.add_argument("--id", dest="campaign_id")
+    campaign_audit.add_argument("--exported-tree", action="store_true", help="audit a git archive or clean exported tree")
 
     runs = sub.add_parser("runs", help="discover or inspect evidence runs")
     runs_sub = runs.add_subparsers(dest="runs_command", required=True)
@@ -66,6 +68,7 @@ def build_parser() -> argparse.ArgumentParser:
     evidence.add_argument("--run", required=True, dest="run_id")
     evidence.add_argument("--attach-name", choices=["px4_log", "api_log"])
     evidence.add_argument("--file", type=Path)
+    evidence.add_argument("--export-public", type=Path, dest="export_public")
 
     figure = sub.add_parser("figure", help="generate an SVG assurance timeline")
     figure.add_argument("--run", required=True, dest="run_id")
@@ -158,8 +161,12 @@ def dispatch(args: argparse.Namespace) -> Any:
     if args.command == "campaign":
         if args.campaign_command == "run":
             return run_fake_campaign(campaign_id=args.campaign_id)
-        return audit_release(args.campaign_id)
+        return audit_release(args.campaign_id, exported_tree=args.exported_tree)
     if args.command == "evidence":
+        if args.export_public and (args.attach_name or args.file):
+            raise ValueError("--export-public cannot be combined with --attach-name or --file")
+        if args.export_public:
+            return export_public_run(args.run_id, args.export_public)
         if bool(args.attach_name) != bool(args.file):
             raise ValueError("--attach-name and --file must be supplied together")
         if args.attach_name and args.file:

@@ -1,14 +1,16 @@
 {
   "artifact_sha256": {
-    "assertions": "819ed7cd33e65773cef8edf724b17c7f8a6b7941e7b56346a4607f14ab94e113",
+    "assertions": "eea8f390116e888ddb8fc28abde1fc005cb6aed927dcb4f57006b0cdc760eb0f",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
     "decisions": "0b6009926852fbf1b2073aa9596f712fc2b837c370820d4a3e34625c37f99a2b",
-    "environment": "9c8fc9c94fdd94b414d0173fbf4fe72b0fc185b0d764ada936bfc9b7ebfe4228",
-    "scenario": "fd1abed867be10f838a52a7ac40f6d296732feacf4dabfb01720bcec2f564f7c",
-    "snapshots": "077c18b49a8b97f378f3c94a983a0d6082b2253104be236be2fe97f0a7398e8d",
-    "summary": "af23a51484d112f087e5dc672e44fbbb8805608c9e12a1e062bebb3e8303a737",
-    "timeline": "4d8eab0c59bdadee4f561aea677bf6daf20db077d7c4999decc559e8c2434a4f",
-    "timeline_svg": "d6950da3a24e638b07a02f4d92caea49dc6156c3e75a57bc4dba783d048116cd",
-    "verification_matrix": "666ae2c73f24f35c955dcf7dc97051babe3ef32891e163047ef1c9e6f8c040b5"
+    "environment": "2f321b94768f7bc4270b794950d463bbc9c8cc32f57de7a03560857eeaeb8755",
+    "scenario": "32aba8d901e20ebb435ae301681403756af69dfa403acf32cb61b9b07ca886c5",
+    "snapshots": "ebd9f1a25e95827fe3f11a3388c4f03004590c130cbf3de54b17f85e33068bcc",
+    "summary": "43a4ee7c192109fa2252d62a778b8dc1f12e75940ed4eeec18fdb5f5ab33dba3",
+    "timeline": "d4a271259dc277b4173266949c35cd2d8eed209aaf0c19f2bb53b6693593816a",
+    "timeline_svg": "7450dc9b6b8ee544dc6e46b19b0302c42b18305411d018261040d218a5b2fa61",
+    "verification_matrix": "235dd0f4a75283e04cb0f12590b9f98a238775ef0b506e2ce5c5ae21b2766d57"
   },
   "assertions": [
     {
@@ -54,10 +56,12 @@
       "passed": true
     }
   ],
-  "configuration_sha256": "663a73fdf81c61faadf35fd7fba2a7147254043fbf3dc66f7a8466581974d6cf",
+  "configuration_sha256": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
   "exploratory": false,
   "files": {
     "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
     "decisions": "decisions.jsonl",
     "environment": "environment.json",
     "manifest": "manifest.json",

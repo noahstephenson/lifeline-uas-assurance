@@ -1,0 +1,8 @@
+{
+  "error": null,
+  "kind": "px4-smoke",
+  "landed": true,
+  "peak_altitude_m": 7.414000511169434,
+  "run_id": "LFL-SMOKE-PX4-20260921T022921Z-A837",
+  "verification_status": "PASS"
+}

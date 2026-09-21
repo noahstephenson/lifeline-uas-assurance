@@ -1,0 +1,32 @@
+{
+  "created_at": "2026-09-21T10:33:30.902788+00:00",
+  "export_type": "sanitized-public-export",
+  "original_artifact_sha256": {
+    "commands.jsonl": "16563b500a59c3a5d702a89b1739c05ac9e1c84da20644270690d6cc090b51ce",
+    "configuration-resolved.yaml": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "environment.json": "7ead7b04681d038be02aa85028257a84f6922ffdbcc779aafe990f1643d753ab",
+    "observations.jsonl": "65d39e722134261a4b602216b9a5621c8cae7b9d7c78362aed1350bc7c9b789a",
+    "px4.log": "e8471c0a28d4680c23e61abde34bc90d3e383beba2158b965a32c7c49e05d57c",
+    "smoke-summary.json": "d364f7477e94f0b41504fdd65b4614d33fa175a99587e9a2d67e839ef127b45b"
+  },
+  "public_artifact_sha256": {
+    "commands.jsonl": "16563b500a59c3a5d702a89b1739c05ac9e1c84da20644270690d6cc090b51ce",
+    "configuration-resolved.yaml": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "environment.json": "7ead7b04681d038be02aa85028257a84f6922ffdbcc779aafe990f1643d753ab",
+    "observations.jsonl": "65d39e722134261a4b602216b9a5621c8cae7b9d7c78362aed1350bc7c9b789a",
+    "px4.log": "a040789883dc99599106def62b156d0606fdea5a020f3ea9863a4abfff7694fb",
+    "smoke-summary.json": "d364f7477e94f0b41504fdd65b4614d33fa175a99587e9a2d67e839ef127b45b"
+  },
+  "redaction_count": 7,
+  "redactions": [
+    {
+      "artifact": "px4.log",
+      "count": 7,
+      "replacement": "/home/<user>",
+      "rule": "linux-home-directory"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_manifest_sha256": "e7ac9b2fc70b12b3be241f211bef37e26a72c60caf7a3862c04ff9864d188975",
+  "source_run_id": "LFL-SMOKE-PX4-20260921T022921Z-A837"
+}

@@ -1,8 +1,10 @@
+import json
+
 import pytest
 
 from lifeline.campaign import audit_release, run_fake_campaign
 from lifeline.config import load_config
-from lifeline.evidence import export_run, load_run, verify_run_integrity
+from lifeline.evidence import attach_run_artifact, export_public_run, export_run, load_run, verify_run_integrity
 from lifeline.scenarios import load_scenario, run_scenario
 from lifeline.validation import validate_project
 
@@ -31,6 +33,47 @@ def test_modified_evidence_is_incomplete(tmp_path):
     integrity = verify_run_integrity(run.run_id, tmp_path)
     assert integrity["verification_status"] == "INCOMPLETE"
     assert integrity["mismatched"] == ["events.jsonl"]
+
+
+def test_public_export_redacts_home_and_preserves_source(tmp_path):
+    source_root = tmp_path / "source"
+    public_root = tmp_path / "public"
+    run = run_scenario(load_scenario("T-01"), load_config(), run_id="TEST-PUBLIC")
+    export_run(run, source_root)
+    source_log = tmp_path / "px4-source.log"
+    source_log.write_text("built from /home/student/PX4-Autopilot on 127.0.0.1\n", encoding="utf-8")
+    attach_run_artifact(run.run_id, "px4_log", source_log, source_root)
+    source_manifest_before = (source_root / run.run_id / "manifest.json").read_bytes()
+
+    result = export_public_run(run.run_id, public_root, source_root)
+
+    assert result["integrity"]["complete"]
+    assert (source_root / run.run_id / "manifest.json").read_bytes() == source_manifest_before
+    assert "/home/<user>" in (public_root / run.run_id / "px4.log").read_text(encoding="utf-8")
+    assert "/home/student" not in (public_root / run.run_id / "px4.log").read_text(encoding="utf-8")
+    manifest = load_run(run.run_id, public_root)["manifest"]
+    provenance = result["provenance"]
+    assert manifest["software_versions"]["evidence_variant"] == "sanitized-public-export"
+    assert manifest["software_versions"]["source_manifest_sha256"] == provenance["source_manifest_sha256"]
+    assert provenance["redaction_count"] == 1
+
+
+@pytest.mark.parametrize(
+    "unsafe_text, expected",
+    [
+        ("uplink udpin://192.168.1.40:14540\n", "non-loopback endpoint"),
+        ('{"latitude_deg": 38.0}\n', "geographic coordinate field"),
+    ],
+)
+def test_public_export_rejects_operational_data(tmp_path, unsafe_text, expected):
+    source_root = tmp_path / "source"
+    run = run_scenario(load_scenario("T-01"), load_config(), run_id="TEST-REJECT")
+    export_run(run, source_root)
+    source_log = tmp_path / "px4-source.log"
+    source_log.write_text(unsafe_text, encoding="utf-8")
+    attach_run_artifact(run.run_id, "px4_log", source_log, source_root)
+    with pytest.raises(ValueError, match=expected):
+        export_public_run(run.run_id, tmp_path / "public", source_root)
 
 
 def test_evidence_ids_cannot_escape_the_runs_directory(tmp_path):
@@ -64,3 +107,25 @@ def test_controlled_campaign_aggregates_all_scenarios(tmp_path):
     assert not audit["release_ready"]
     assert audit["deferred_requirements"] == []
     assert not audit["checks"]["px4_sitl_qualification"]
+
+
+def test_untracked_evidence_cannot_satisfy_px4_gate(tmp_path):
+    runs_root = tmp_path / "runs"
+    run = run_scenario(load_scenario("T-01"), load_config(), run_id="LOCAL-ONLY-PX4")
+    export_run(run, runs_root)
+    manifest_path = runs_root / run.run_id / "manifest.json"
+    manifest = load_run(run.run_id, runs_root)["manifest"]
+    manifest["software_versions"].update(
+        {
+            "source": "px4",
+            "evidence_variant": "sanitized-public-export",
+            "dashboard_px4_time_overlap": "true",
+            "vehicle_uuid": "1234",
+        }
+    )
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    audit = audit_release(runs_root=runs_root)
+
+    assert audit["qualifying_px4_runs"] == []
+    assert not audit["checks"]["tracked_px4_evidence"]

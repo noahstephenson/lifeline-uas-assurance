@@ -24,6 +24,12 @@ evidence/campaigns/*
 !evidence/runs/DISPLAY-T11/**
 !evidence/runs/DISPLAY-T12/
 !evidence/runs/DISPLAY-T12/**
+!evidence/runs/LFL-SMOKE-PX4-20260921T022921Z-A837/
+!evidence/runs/LFL-SMOKE-PX4-20260921T022921Z-A837/**
+!evidence/runs/LFL-T01-PX4-20260921T094403Z-1CE3/
+!evidence/runs/LFL-T01-PX4-20260921T094403Z-1CE3/**
+!evidence/runs/LFL-T05-PX4-20260921T095622Z-00F1/
+!evidence/runs/LFL-T05-PX4-20260921T095622Z-00F1/**
 !evidence/campaigns/CAMPAIGN-20260920-C/
 !evidence/campaigns/CAMPAIGN-20260920-C/**
 !evidence/runs/CAMPAIGN-20260920-C-T01/
@@ -54,4 +60,10 @@ openmct/test-results/
 test-results/
 .qualification-logs/
 *.log
+!evidence/runs/LFL-SMOKE-PX4-20260921T022921Z-A837/px4.log
+!evidence/runs/LFL-SMOKE-PX4-20260921T022921Z-A837/api.log
+!evidence/runs/LFL-T01-PX4-20260921T094403Z-1CE3/px4.log
+!evidence/runs/LFL-T01-PX4-20260921T094403Z-1CE3/api.log
+!evidence/runs/LFL-T05-PX4-20260921T095622Z-00F1/px4.log
+!evidence/runs/LFL-T05-PX4-20260921T095622Z-00F1/api.log
 .demo-pids.json

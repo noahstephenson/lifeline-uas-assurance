@@ -1,5 +1,6 @@
 from .exporter import (
     attach_run_artifact,
+    export_public_run,
     export_run,
     list_runs,
     load_run,
@@ -10,6 +11,7 @@ from .exporter import (
 
 __all__ = [
     "attach_run_artifact",
+    "export_public_run",
     "export_run",
     "list_runs",
     "load_run",

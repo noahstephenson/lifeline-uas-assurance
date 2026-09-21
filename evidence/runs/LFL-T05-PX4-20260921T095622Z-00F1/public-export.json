@@ -1,0 +1,46 @@
+{
+  "created_at": "2026-09-21T10:33:35.765349+00:00",
+  "export_type": "sanitized-public-export",
+  "original_artifact_sha256": {
+    "api.log": "ff2b688e2f897bbccd594fcec82a1e07f7f9f7e0bba6047c8f9ec89c45ddd9c9",
+    "assertions.csv": "dd9ea4e23fb02b0da343e4b5b3ca2e56ea9f0d4ab6f63ffa2d7fe11eb45ff257",
+    "commands.jsonl": "18bdd68c81c289ae3ef8e6900c22f81fa7120b4bcacdfd42401ae5e743371d7b",
+    "configuration-resolved.yaml": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "decisions.jsonl": "b464e12baabc9fc737dc44a2092a00fa78944a9d715ffa2c60b84907f20970ae",
+    "environment.json": "efd47b3ea01aa6e6427478c1526204f761800087e271c0563f1b8d1ae0deadbc",
+    "events.jsonl": "fdf719295b28c67783d045963dcc77fc9a34d332d1b7e790fda6bbb35270dcd2",
+    "px4.log": "7e718387e2b7c624ea123c117550175d9b08b918df74ffb01c9854abf01df719",
+    "run-summary.json": "92b36a6b151a8c52f1a6b18cc0fe05dd59bff5b70413a44e303fd15453db8ed0",
+    "scenario-resolved.yaml": "32aba8d901e20ebb435ae301681403756af69dfa403acf32cb61b9b07ca886c5",
+    "timeline.csv": "bdaec3ada74b7d2090d1cdaf078398ecffe1043cf52fc4ccae27a5bd3d2e6270",
+    "timeline.svg": "a6353fc74661f27f9277294017954d08db5b30693e021a4e78492f48c6eecd57",
+    "verification-matrix.csv": "573d5f9765c0efb39c32425b98aa2f23b2331dab43186172c14f69c1961d5ecf"
+  },
+  "public_artifact_sha256": {
+    "api.log": "e29e14b2df80113ba844c980ce993152674c3a1e577ade39225133fbfd304b60",
+    "assertions.csv": "da992fe36b035bd6e97eea4e05e310699a749b8f8db29520f3f70d0bdbcef57e",
+    "commands.jsonl": "18bdd68c81c289ae3ef8e6900c22f81fa7120b4bcacdfd42401ae5e743371d7b",
+    "configuration-resolved.yaml": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "decisions.jsonl": "b464e12baabc9fc737dc44a2092a00fa78944a9d715ffa2c60b84907f20970ae",
+    "environment.json": "efd47b3ea01aa6e6427478c1526204f761800087e271c0563f1b8d1ae0deadbc",
+    "events.jsonl": "fdf719295b28c67783d045963dcc77fc9a34d332d1b7e790fda6bbb35270dcd2",
+    "px4.log": "4030297e5eb3801989c47973032d0c919e9e9e03803629228e52b47df14602b0",
+    "run-summary.json": "92b36a6b151a8c52f1a6b18cc0fe05dd59bff5b70413a44e303fd15453db8ed0",
+    "scenario-resolved.yaml": "32aba8d901e20ebb435ae301681403756af69dfa403acf32cb61b9b07ca886c5",
+    "timeline.csv": "2a14ba10c20acbb79e0e397454f41c0b7b25bab1a5673f4fc4f2a6e2d9378d9b",
+    "timeline.svg": "a6353fc74661f27f9277294017954d08db5b30693e021a4e78492f48c6eecd57",
+    "verification-matrix.csv": "9b263e021c93af406d2249c921f2a4c3627ef90f0c665163de33e86719e577f6"
+  },
+  "redaction_count": 7,
+  "redactions": [
+    {
+      "artifact": "px4.log",
+      "count": 7,
+      "replacement": "/home/<user>",
+      "rule": "linux-home-directory"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_manifest_sha256": "973719b66632e46ff9f18afcb2b57fb3d615be1dc981f9a9cde157b6f06508e5",
+  "source_run_id": "LFL-T05-PX4-20260921T095622Z-00F1"
+}

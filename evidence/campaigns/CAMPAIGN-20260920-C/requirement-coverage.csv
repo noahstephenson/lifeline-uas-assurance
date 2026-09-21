@@ -1,5 +1,5 @@
 requirement_id,declared_status,scenario_ids,scenario_evidence_status
-M-01,deferred-px4-environment,T-01,deferred
+M-01,verified-px4-sitl,T-01,scenario-evidence-pass
 M-02,verified-fake,T-01,scenario-evidence-pass
 M-03,verified-fake,T-01;T-05,scenario-evidence-pass
 HM-01,verified,T-02;T-04;T-06,scenario-evidence-pass

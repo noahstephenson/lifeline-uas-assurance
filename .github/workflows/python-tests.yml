@@ -13,8 +13,12 @@ jobs:
           cache: pip
       - run: python -m pip install -e ".[dev]"
       - run: ruff check .
-      - run: pytest --cov=lifeline --cov-report=term-missing
+      - run: pytest --cov=lifeline --cov-report=term-missing --cov-fail-under=70
+      - run: python scripts/generate_schemas.py
+      - run: git diff --exit-code schemas
       - run: lifeline validate
       - name: Parse PowerShell launchers
         shell: pwsh
         run: ./scripts/test-powershell-syntax.ps1
+      - name: Verify evidence from fresh Git archive
+        run: python scripts/verify_release_export.py --allow-incomplete-metadata

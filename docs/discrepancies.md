@@ -121,3 +121,11 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Bind the PowerShell gate to `ok`, `data.complete`, and `data.effective_verification_status` exactly as emitted by `lifeline --json evidence`.
 - **Verification:** The launcher contract test requires the `ok` field and the effective `PASS` check. The existing T-05 bundle remains valid evidence, and a fresh T-05 launcher run must exit successfully.
 - **Scenario impact:** None; no model, event, expectation, decision, or evidence content changed.
+
+## D-16 — Workstation line endings and ignored PX4 runs broke clone reproducibility
+
+- **Observed:** All 17 previously committed synthetic bundles passed in the Windows checkout but failed after `git archive` because text conversion changed hashed JSONL bytes. The three passing PX4 bundles were ignored and absent from an export. Forty-eight older September 14 development bundles were unhashed and cluttered local discovery.
+- **Risk:** A workstation-local audit could claim release readiness that a reviewer could not reproduce from the published repository.
+- **Decision:** Declare LF as the repository text format, emit LF-stable evidence, regenerate the controlled campaign and display fixtures, require a fresh-archive audit, and allow only tracked sanitized PX4 derivatives with provenance to satisfy the public gate. Preserve the three exact originals in a private checksummed archive. Archive the 48 legacy bundles separately and remove them from active discovery.
+- **Verification:** The original-qualification archive SHA-256 is `6f63fffec85e45c4c45aa4b772107d4bda70c89530fa89dc462d68e2ca0ffb1`; the legacy archive SHA-256 is `d9e82db8bdfdef856cfeeacd4d7db80664d6027a3930f2e0fd5cd46ec5fcd541`. Public export tests cover redaction, non-loopback rejection, coordinate rejection, source immutability, and derivative integrity. The release verifier audits a new `git archive` rather than the working tree.
+- **Scenario impact:** None; all twelve scenario definitions and expected outcomes are unchanged.
