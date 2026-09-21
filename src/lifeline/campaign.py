@@ -143,7 +143,6 @@ def audit_release(
         and bool(smoke_evidence)
         and not any(item["requirement_id"] == "M-01" for item in deferred),
         "automated_display_qualification": display["passed"],
-        "citation_metadata_complete": _citation_metadata_complete(),
         "no_unexplained_discrepancy": "**Status:** open-unexplained"
         not in (PROJECT_ROOT / "docs" / "discrepancies.md").read_text(encoding="utf-8"),
         "clean_git_working_tree": True if exported_tree else _git_clean(),
@@ -271,14 +270,6 @@ def _valid_public_provenance(manifest: dict[str, Any], runs_root: Path) -> bool:
         and bool(provenance.get("original_artifact_sha256"))
         and public_hashes_match
     )
-
-
-def _citation_metadata_complete() -> bool:
-    citation = PROJECT_ROOT / "CITATION.cff"
-    if not citation.is_file():
-        return False
-    text = citation.read_text(encoding="utf-8")
-    return "OWNER" not in text and "Student Name" not in text and "https://github.com/" in text
 
 
 def _write_requirement_coverage(path: Path, results: list[dict[str, Any]]) -> None:

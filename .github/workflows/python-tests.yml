@@ -21,4 +21,4 @@ jobs:
         shell: pwsh
         run: ./scripts/test-powershell-syntax.ps1
       - name: Verify evidence from fresh Git archive
-        run: python scripts/verify_release_export.py --allow-incomplete-metadata
+        run: python scripts/verify_release_export.py

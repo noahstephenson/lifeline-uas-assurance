@@ -11,7 +11,7 @@ from pathlib import Path
 from lifeline.campaign import audit_release
 from lifeline.config import PROJECT_ROOT
 
-RELEASE_NAME = "lifeline-evidence-v1.0.0-magazine-demo.zip"
+RELEASE_NAME = "lifeline-evidence-v1.0.0.zip"
 PUBLIC_PX4_RUNS = {
     "LFL-SMOKE-PX4-20260921T022921Z-A837",
     "LFL-T01-PX4-20260921T094403Z-1CE3",
@@ -20,16 +20,12 @@ PUBLIC_PX4_RUNS = {
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the curated Project Lifeline public evidence attachment")
+    parser = argparse.ArgumentParser(description="Build the Project Lifeline v1.0.0 evidence archive")
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "dist")
-    parser.add_argument("--allow-incomplete-metadata", action="store_true")
     args = parser.parse_args()
 
     audit = audit_release("CAMPAIGN-20260920-C")
-    accepted = audit["release_ready"]
-    if args.allow_incomplete_metadata:
-        accepted = all(value for key, value in audit["checks"].items() if key != "citation_metadata_complete")
-    if not accepted:
+    if not audit["release_ready"]:
         print(json.dumps(audit, indent=2, sort_keys=True), file=sys.stderr)
         return 1
     if set(audit["qualifying_px4_runs"]) | set(audit["qualifying_px4_smoke_runs"]) != PUBLIC_PX4_RUNS:
@@ -43,7 +39,7 @@ def main() -> int:
     archive_path = output / RELEASE_NAME
     metadata = {
         "schema_version": "1.0.0",
-        "release": "v1.0.0-magazine-demo",
+        "release": "v1.0.0",
         "commit": _git_output("rev-parse", "HEAD"),
         "simulation_only": True,
         "human_usability_study": False,

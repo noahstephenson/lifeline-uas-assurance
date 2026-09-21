@@ -1,6 +1,6 @@
 # Contribution log
 
-This log preserves human engineering ownership rather than counting lines of code. Student and advisor identities remain intentionally blank until supplied.
+This log records engineering decisions and verification work rather than counting lines of code.
 
 | Date | Contributor | Artifact or decision | Review reference | Lesson or open item |
 |---|---|---|---|---|
@@ -19,3 +19,4 @@ This log preserves human engineering ownership rather than counting lines of cod
 | 2026-09-21 | Codex, directed by repository owner | Corrected D-14 critical telemetry rates, runtime timestamp ordering, and fail-closed qualification status | Retained complete T-05 FAIL bundle; 2 Hz rate, timestamp, and launcher-status tests | Process completion and evidence completeness are necessary but insufficient; controlled assertions must also pass |
 | 2026-09-21 | Codex, directed by repository owner | Corrected D-15 qualifier binding to the stable CLI JSON envelope | Retained hash-complete passing T-05 evidence; launcher contract asserts `ok`, completeness, and effective PASS | Machine-readable interfaces need direct contract tests, including top-level envelope fields |
 | 2026-09-21 | Codex, directed by repository owner | Corrected D-16 clone portability and public-evidence provenance | LF-stable regenerated campaign/display evidence, sanitized tracked PX4 derivatives, private archive hashes, and fresh-archive audit | Release evidence must be tested from exported Git bytes, not only from the authoring checkout |
+| 2026-09-21 | Codex, directed by repository owner | Converted the repository to a standard v1.0.0 student engineering project and removed the separate writing deliverables | Retired-identifier scan, strict technical audit, and fresh-archive verification | Technical readiness should depend only on executable engineering evidence |

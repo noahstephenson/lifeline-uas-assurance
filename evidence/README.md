@@ -19,5 +19,5 @@ personal filesystem paths.
 Aggregate campaign reports are written under `evidence/campaigns/<campaign-id>/` and
 are ignored by Git. They reference the individual run bundles and never replace them.
 
-`python scripts/verify_release_export.py --allow-incomplete-metadata` creates and audits a
-fresh `git archive` of `HEAD`. Omit the flag for the strict tagged-release gate.
+`python scripts/verify_release_export.py` creates and strictly audits a fresh
+`git archive` of `HEAD`.

@@ -25,4 +25,4 @@ EV-03,verified,T-12,scenario-evidence-pass
 EV-04,verified-negative-test,T-12,scenario-evidence-pass
 SS-01,verified-unit,T-01,scenario-evidence-pass
 SS-02,verified-inspection,T-01,scenario-evidence-pass
-SS-03,verified-publication-review,T-01,scenario-evidence-pass
+SS-03,verified-content-audit,T-01,scenario-evidence-pass

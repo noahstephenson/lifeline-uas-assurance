@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.0-magazine-demo — pending
+## v1.0.0 — pending
 
 ### Added
 
@@ -21,6 +21,3 @@ usability study, operational-safety evidence, certification, or Army endorsement
 
 - Open MCT's upstream legacy CSS emits build warnings.
 - Vite reports the expected Open MCT bundle-size warning.
-
-The release date, publication author, advisor, and final repository URL will be filled
-only when the corresponding human inputs exist and the release tag is created.

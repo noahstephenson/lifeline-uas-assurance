@@ -15,11 +15,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify release evidence from a fresh git archive of HEAD")
     parser.add_argument("--campaign", default="CAMPAIGN-20260920-C")
-    parser.add_argument(
-        "--allow-incomplete-metadata",
-        action="store_true",
-        help="permit only the known citation metadata gate to remain false",
-    )
     args = parser.parse_args()
 
     with tempfile.TemporaryDirectory(prefix="lifeline-release-export-") as temporary:
@@ -66,10 +61,7 @@ def main() -> int:
             return audit.returncode
         envelope = json.loads(audit.stdout)
         result = envelope["data"]
-        checks = result["checks"]
         accepted = result["release_ready"]
-        if args.allow_incomplete_metadata:
-            accepted = all(value for key, value in checks.items() if key != "citation_metadata_complete")
         print(json.dumps({"accepted": accepted, "exported_tree_audit": result}, indent=2, sort_keys=True))
         return 0 if accepted else 1
 

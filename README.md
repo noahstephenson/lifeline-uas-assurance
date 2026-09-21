@@ -1,67 +1,104 @@
 # Project Lifeline
 
-Project Lifeline is an educational, simulation-only mission-assurance workbench for a
-fictional medical-resupply UAS. It connects deterministic contingency logic, scenario
-injection, requirement-linked evidence, a live API, Open MCT telemetry, and optional PX4
-software-in-the-loop (SITL).
+Project Lifeline is a student-built systems-engineering and simulation project for a
+fictional medical-resupply drone. It connects a deterministic assurance engine to
+scripted fault scenarios, PX4/Gazebo software-in-the-loop, a read-only Open MCT
+dashboard, and requirement-linked evidence that can be replayed and independently
+checked.
 
 > Project Lifeline is an independent educational simulation using fictional mission data.
 > It is not an Army system, is not endorsed by the U.S. Army, does not model a fielded
 > operational capability, and is not intended to support real flight or medical decisions.
 
-## Quick start: deterministic simulation
+![Project Lifeline T-05 dashboard](evidence/display-qualification/screenshots/DISPLAY-T05-desktop.png)
+
+## What the project demonstrates
+
+- A pure Python assurance engine with explicit states, priorities, dwell timers, and
+  irreversible decisions.
+- Twelve deterministic scenarios covering link, navigation, energy, and stale-data
+  conditions.
+- A visible PX4 v1.17.0 and Gazebo Harmonic X500 simulation.
+- A read-only Open MCT console for live telemetry, decisions, rejected alternatives,
+  requirements, hazards, and historical replay.
+- Append-only evidence bundles with SHA-256 integrity checks and sanitized public
+  derivatives.
+- Automated Python, schema, PowerShell, browser, replay, and fresh-archive qualification.
+
+## Architecture
+
+```text
+PX4 SITL + Gazebo X500
+          |
+       MAVLink
+          |
+MAVSDK adapter -> canonical telemetry -> assurance engine
+                                           |
+                              evidence recorder + FastAPI
+                                           |
+                               Open MCT live/replay console
+```
+
+The assurance package stays independent of PX4, FastAPI, Open MCT, and filesystem
+adapters. Browser access is read-only, while simulator actions require a loopback-only
+endpoint, an enabled qualification profile, and an explicit launcher token.
+
+## T-05 compound-fault example
+
+T-05 begins as a normal outbound mission, then injects modeled link loss and navigation
+degradation into the assurance inputs. Because navigation is invalid, the engine rejects
+`RETURN`, selects `CONTROLLED_LAND`, and records the triggering fields, rejected
+alternative, requirements, hazards, and action acknowledgement. The simulated vehicle
+finishes in `SAFE_STOP`.
+
+The injected assurance-input faults are distinct from the physical MAVSDK telemetry
+source. This is modeled behavior in software-in-the-loop, not a real-flight result.
+
+## Quick start
 
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\python -m pip install -e ".[dev]"
 .\.venv\Scripts\lifeline --json doctor
 .\.venv\Scripts\lifeline validate
-.\.venv\Scripts\lifeline run --scenario T-05
-.\.venv\Scripts\lifeline serve
-```
-
-For the visible dashboard, use the convenience launcher below and open
-<http://127.0.0.1:8766/>. Evidence is written to `evidence/runs/<run-id>/`.
-`lifeline serve` alone exposes the JSON API; it is not the visual console.
-
-The convenience launcher is:
-
-```powershell
 .\scripts\demo.ps1 -Scenario T-05 -Mode Fake
 ```
 
-If either default loopback port is occupied, choose another local pair:
+Open <http://127.0.0.1:8766/> after the launcher reports readiness. Evidence is written
+to `evidence/runs/<run-id>/`.
+
+Replay the committed synthetic reference without PX4 or Gazebo:
+
+```powershell
+.\scripts\demo.ps1 -Scenario T-05 -Mode Replay
+```
+
+If the default loopback ports are occupied:
 
 ```powershell
 .\scripts\demo.ps1 -Scenario T-05 -Mode Replay -ApiPort 8875 -WebPort 8876
 ```
 
-Use `-Mode Replay` for the committed, synthetic `REFERENCE-T05` bundle. If that bundle
-is intentionally removed, the launcher generates a deterministic local reference run.
+## PX4/Gazebo qualification
 
-Live qualification uses a dedicated Ubuntu 24.04 WSL2 environment so PX4, MAVSDK,
-Lifeline Python, and the API share true loopback. The Windows host runs only the
-read-only Open MCT browser surface. Set up and qualify the pinned environment with:
+The live configuration uses Ubuntu 24.04 in WSL2 so PX4, MAVSDK, Lifeline Python, and
+the API share true loopback. Windows hosts the read-only dashboard.
 
 ```powershell
 .\scripts\setup-px4-wsl.ps1
-# Complete Ubuntu's first-launch local-account prompt, then rerun setup as directed.
 .\scripts\qualify-px4.ps1 -Scenario Smoke
 .\scripts\qualify-px4.ps1 -Scenario T-01
 .\scripts\qualify-px4.ps1 -Scenario T-05
 ```
 
-The setup script also installs a checksum-verified, project-local Node 20.20.2 runtime;
-it does not replace the host's global Node installation.
+`config/baseline.yaml` remains fail-closed. The qualification profile may differ only
+by `actions_enabled: true`; the code also enforces loopback, explicit authorization,
+a nonzero simulator UUID, and dashboard readiness before mission release.
 
-`config/baseline.yaml` remains fail-closed. The qualification profile may differ from it
-only by `actions_enabled: true`, and the code independently enforces the loopback endpoint,
-explicit launcher token, nonzero vehicle UUID, and dashboard-before-release interlock.
+## Command reference
 
-## Command contract
-
-All commands accept the global `--json` flag before the subcommand. In JSON mode stdout
-contains exactly one JSON object. Success uses `{"ok": true, "data": ...}`; failure uses
+All commands accept the global `--json` flag before the subcommand. JSON success uses
+`{"ok": true, "data": ...}`; failure uses
 `{"ok": false, "error": {"type": ..., "message": ...}}` and a nonzero exit code.
 
 ```text
@@ -75,25 +112,33 @@ lifeline campaign audit
 lifeline runs list
 lifeline runs show <run-id>
 lifeline evidence --run <run-id>
+lifeline evidence --run <run-id> --export-public <staging-root>
 lifeline figure --run <run-id>
 lifeline replay --run <run-id>
 lifeline serve [--host 127.0.0.1] [--port 8000]
 lifeline inject --field navigation_confidence --value 0.25 --exploratory
 ```
 
-`campaign run` executes the twelve controlled fake-source scenarios and writes an
-aggregate summary plus requirement-coverage table under `evidence/campaigns/`.
-`campaign audit` rechecks every referenced evidence checksum and reports separate PX4,
-automated-display, discrepancy, and clean-worktree gates. Automated browser qualification
-is not a human usability study.
+## Verified results
 
-## Safety boundary
+- 12/12 controlled fake-source scenarios pass their frozen assertions.
+- T-01 completes `RECOVERED` in PX4 SITL.
+- T-05 completes `SAFE_STOP`, rejects `RETURN`, and records the controlled-land
+  acknowledgement.
+- Automated display qualification passes 15/15 assertions at desktop and compact
+  viewports with eight hash-checked screenshots.
+- The release audit verifies committed evidence from a fresh Git archive.
 
-- The Open MCT/browser surface is read-only.
-- PX4 actions default to disabled and accept only a loopback SITL endpoint.
-- No real coordinates, radio parameters, patient data, tactics, or fielded-system claims
-  belong in this repository.
-- Manual injection is exploratory and cannot satisfy controlled verification coverage.
+These results establish behavior for the documented simulation and test configuration.
+They do not establish operational safety, real-flight performance, certification, or
+human usability.
 
-See `docs/` for the CONOPS, architecture, interfaces, decision policy, hazards, and
-verification plan.
+## Project documentation
+
+The `docs/` directory contains the CONOPS, architecture, interface contract, decision
+policy, verification plan, discrepancies, project status, and claim-evidence register.
+Requirements, hazards, traceability, scenarios, and generated schemas are maintained as
+version-controlled engineering artifacts.
+
+Project Lifeline is released under the MIT License. Upstream component versions and
+licenses are documented in `THIRD_PARTY.md`.

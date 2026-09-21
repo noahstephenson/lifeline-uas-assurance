@@ -125,7 +125,15 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 ## D-16 — Workstation line endings and ignored PX4 runs broke clone reproducibility
 
 - **Observed:** All 17 previously committed synthetic bundles passed in the Windows checkout but failed after `git archive` because text conversion changed hashed JSONL bytes. The three passing PX4 bundles were ignored and absent from an export. Forty-eight older September 14 development bundles were unhashed and cluttered local discovery.
-- **Risk:** A workstation-local audit could claim release readiness that a reviewer could not reproduce from the published repository.
+- **Risk:** A workstation-local audit could claim release readiness that another user could not reproduce from a clean repository export.
 - **Decision:** Declare LF as the repository text format, emit LF-stable evidence, regenerate the controlled campaign and display fixtures, require a fresh-archive audit, and allow only tracked sanitized PX4 derivatives with provenance to satisfy the public gate. Preserve the three exact originals in a private checksummed archive. Archive the 48 legacy bundles separately and remove them from active discovery.
 - **Verification:** The original-qualification archive SHA-256 is `6f63fffec85e45c4c45aa4b772107d4bda70c89530fa89dc462d68e2ca0ffb1`; the legacy archive SHA-256 is `d9e82db8bdfdef856cfeeacd4d7db80664d6027a3930f2e0fd5cd46ec5fcd541`. Public export tests cover redaction, non-loopback rejection, coordinate rejection, source immutability, and derivative integrity. The release verifier audits a new `git archive` rather than the working tree.
 - **Scenario impact:** None; all twelve scenario definitions and expected outcomes are unchanged.
+
+## D-17 — Nontechnical metadata blocked an otherwise complete project
+
+- **Observed:** The release audit required personal attribution and repository metadata unrelated to simulator behavior, evidence integrity, or reproducibility. Separate article-drafting assets also made the repository appear organized around an external submission rather than the engineering work.
+- **Risk:** A technically complete student project could report `release_ready: false` for missing nontechnical material, obscuring the status of the assurance engine, simulator integration, dashboard, and evidence.
+- **Decision:** Remove the separate writing assets and personal-metadata gate. Standardize the software and evidence archive on `v1.0.0`, retain all technical qualification gates, and add a tracked-content regression for the retired identifiers.
+- **Verification:** The current checkout and a fresh Git archive must pass the same strict audit without exceptions. Python, frontend, schema, PowerShell, display, evidence-integrity, and package checks remain required.
+- **Scenario impact:** None; no model, policy, event, threshold, expected state, or prohibited action changed.

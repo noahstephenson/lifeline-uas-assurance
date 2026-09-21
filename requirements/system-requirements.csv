@@ -25,5 +25,4 @@ EV-03,Evidence,Record scenario software configuration and result in every bundle
 EV-04,Evidence,Prevent pass when an assertion or export is missing,Negative test
 SS-01,Safety,Enable actions only for explicitly local SITL,Configuration test
 SS-02,Safety,Keep the browser console read-only,Inspection
-SS-03,Safety,Exclude operational coordinates frequencies tactics and patient data,Publication review
-
+SS-03,Safety,Exclude operational coordinates frequencies tactics and patient data,Repository content audit
