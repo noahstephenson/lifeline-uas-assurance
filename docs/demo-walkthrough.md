@@ -2,6 +2,10 @@
 
 The strongest demonstration uses two qualified PX4 replays. T-01 shows the complete delivery workflow. T-05 shows how the assurance logic responds when navigation becomes invalid before handoff.
 
+![Recorded T-01 PX4 SITL replay](../evidence/demo-screenshots/lifeline-t01-demo.gif)
+
+The animation uses the retained T-01 handoff and recovery captures. It is a recorded PX4/Gazebo SITL replay, not live flight footage. Run the command below to inspect the full timeline and use the replay controls.
+
 ## Nominal delivery
 
 Start the qualified T-01 replay:

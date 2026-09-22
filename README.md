@@ -6,9 +6,9 @@ Project Lifeline follows a fictional medical supply request from assignment to r
 
 > This is an independent student simulation. It uses fictional locations, requests, supplies, and deadlines. It does not support real flight or medical decisions, and its results are not safety validation or certification.
 
-![Project Lifeline dashboard](evidence/demo-screenshots/px4-t05-decision.png)
+[![Project Lifeline T-01 replay](evidence/demo-screenshots/lifeline-t01-demo.gif)](docs/demo-walkthrough.md)
 
-*The T-05 replay at the moment invalid navigation rules out a return and the assurance engine selects a controlled landing.*
+*A recorded replay of the qualified PX4 SITL T-01 run. The dashboard separates simulator observations from the modeled receiving-station handoff.*
 
 ## What the project models
 
@@ -31,6 +31,10 @@ Reaching a waypoint does not count as delivery. Lifeline requires an observed la
 | Timeliness | Did acceptance occur before the fictional deadline? | `ON_TIME` |
 
 The package manifest uses fictional quantities of gauze, bandages, examination gloves, and adhesive tape. Its 1.8 kg mass is a planning assumption and is not applied to the stock X500 dynamics. The reasoning behind that choice is documented in [the logistics basis](docs/medical-logistics-basis.md).
+
+## Why this mission matters
+
+Army organizations are actively exploring uncrewed aircraft for last-mile medical resupply in dispersed and austere settings. Recent examples include the [44th Medical Brigade's simulated resupply training](https://www.army.mil/article/292841/44th_medical_brigade_integrates_drones_into_medical_resupply_operations) and the [West Point medical-resupply research project](https://www.army.mil/article/284898/west_point_cadets_pilot_drone_innovation_for_medical_resupply). Lifeline studies the software-assurance and evidence problem around that mission idea. It does not model Army doctrine, threat systems, protected communications, airspace approval, medical product handling, or field operations, and it has no Army affiliation or endorsement.
 
 ## Two runs to open first
 
@@ -80,6 +84,8 @@ You can also choose a scenario and source directly:
 
 The launcher creates or selects the evidence, starts the local API and Open MCT application, then opens the dashboard. Replay controls include Play, Pause, Restart, speed selection, recorded-moment seeking, and a presentation mode. "Explain this moment" reconstructs only the information available at the selected time.
 
+After the launcher starts, [open the local Open MCT dashboard](http://127.0.0.1:8766/?run=LFL-T01-PX4-20260922T120613Z-A800#/browse/lifeline:mission-assurance). This link uses the API running on your computer; GitHub does not host the simulation service.
+
 The command-line interface exposes the same runs and scenarios:
 
 ```text
@@ -116,6 +122,10 @@ The assurance package has no dependency on PX4, FastAPI, Open MCT, or filesystem
 
 Every run records snapshots, decisions, command acknowledgements, delivery events, the resolved mission contract, assertions, an after-action summary, and artifact hashes. The dashboard uses that same data for live display and historical replay.
 
+### Where the project work sits
+
+The original engineering work is the Lifeline layer: the mission contract, receiving-station and custody model, assurance policy, deterministic scenario harness, verification oracle, evidence pipeline, guarded MAVSDK adapter, Open MCT plugin, and launch tooling. PX4, Gazebo, MAVSDK, and Open MCT are upstream projects used through documented interfaces. Their versions and licenses are recorded in [THIRD_PARTY.md](THIRD_PARTY.md).
+
 ## Verified results
 
 The final v1.1 evidence set contains:
@@ -128,6 +138,15 @@ The final v1.1 evidence set contains:
 - a clean release audit and a passing fresh-archive audit.
 
 The display checks cover stale and unavailable data, temporal replay, HTML escaping, compact layouts, source labeling, presentation mode, and the absence of browser-side flight controls. They are automated checks, not a human usability study.
+
+### What qualification establishes
+
+| Evidence | What it establishes | What it does not establish |
+|---|---|---|
+| 15/15 deterministic scenarios | The implemented policy produced the declared outcomes for the 15 modeled input sequences. | Coverage of weather, terrain, contested spectrum, hardware faults, or unmodeled operational conditions. |
+| PX4 smoke, T-01, and T-05 | The guarded MAVSDK path worked with a stock X500 in PX4/Gazebo SITL, including observed mission progress and landing states. | Real aircraft behavior, payload effects, flightworthiness, or a degraded PX4 estimator. |
+| 27 browser checks | The recorded data, failure labels, replay controls, and read-only boundary behaved as asserted in Chromium. | Human-factors validation or operator effectiveness. |
+| Hash-complete release audit | The retained artifacts, configuration, assertions, and trace links are internally consistent and reproducible from the repository. | Safety approval, certification, clinical suitability, or Army endorsement. |
 
 See [project status](docs/project-status.md), [the demonstration walkthrough](docs/demo-walkthrough.md), and [the claim-evidence register](docs/claim-evidence-register.md) for the run IDs and acceptance boundaries.
 
