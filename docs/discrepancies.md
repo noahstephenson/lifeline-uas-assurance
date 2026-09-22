@@ -137,3 +137,18 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Remove the separate writing assets and personal-metadata gate. Standardize the software and evidence archive on `v1.0.0`, retain all technical qualification gates, and add a tracked-content regression for the retired identifiers.
 - **Verification:** The current checkout and a fresh Git archive must pass the same strict audit without exceptions. Python, frontend, schema, PowerShell, display, evidence-integrity, and package checks remain required.
 - **Scenario impact:** None; no model, policy, event, threshold, expected state, or prohibited action changed.
+
+## D-18 — Aircraft completion was standing in for medical-logistics completion
+
+- **Observed:** The earlier mission marked the payload delivered from route progress and
+  emphasized vehicle state. It had no independently validated request, custody transfer,
+  receiver receipt, or logistics deadline outcome.
+- **Risk:** A successful flight could be presented as a successful resupply even when no
+  simulated receiver confirmed the correct package.
+- **Decision:** Add a versioned mission contract and deterministic receiving-station model.
+  Require zone arrival, landing, inferred disarm, unloading dwell, and an identifier-matched
+  receipt. Report aircraft, delivery, and timeliness outcomes separately.
+- **Verification:** Delivery unit tests; scenarios T-13 through T-15; new required delivery
+  and after-action evidence; dashboard outcome strip and Explain this moment view.
+- **Scenario impact:** T-01 and T-05 gain explicit logistics expectations; T-13, T-14, and
+  T-15 extend the catalogue. The preserved v1.0 evidence is not rewritten or relabeled.

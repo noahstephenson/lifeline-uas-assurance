@@ -2,6 +2,9 @@ id,category,requirement,verification
 M-01,Mission,Execute one fictional outbound and recovery route in PX4 SITL,Demonstration
 M-02,Mission,Represent delivery as a simulated acknowledgement,Inspection
 M-03,Mission,Maintain mission state through a defined terminal state,State coverage
+M-04,Mission,Link the fictional request package recipient aircraft mission and evidence run with stable identifiers,Schema inspection
+M-05,Mission,Confirm delivery only after a matching receiving-station receipt and required handoff conditions,Scenario test
+M-06,Mission,Report aircraft delivery timeliness assurance and evidence outcomes independently,Scenario test
 HM-01,Health,Monitor operator link navigation confidence and energy margin,Scenario test
 HM-02,Health,Carry value source time receipt time and validity for critical inputs,Schema test
 HM-03,Health,Treat stale critical input as unknown,Stale injection
@@ -19,10 +22,12 @@ OD-02,Display,Distinguish state without relying on color alone,Accessibility ins
 OD-03,Display,Show transition time rationale requirements hazards and rejected actions,Demonstration
 OD-04,Display,Show explicit stale or unavailable telemetry,Service-loss test
 OD-05,Display,Replay a completed run through historical telemetry,T-12
+OD-06,Display,Show request package custody handoff receipt and independent outcomes,Automated browser qualification
 EV-01,Evidence,Declare expected and prohibited outcomes before every controlled run,Schema validation
 EV-02,Evidence,Map every requirement to verification or a documented deferral,Traceability audit
 EV-03,Evidence,Record scenario software configuration and result in every bundle,Export inspection
 EV-04,Evidence,Prevent pass when an assertion or export is missing,Negative test
+EV-05,Evidence,Freeze the resolved mission contract and delivery events into each modeled-delivery run,Export inspection
 SS-01,Safety,Enable actions only for explicitly local SITL,Configuration test
 SS-02,Safety,Keep the browser console read-only,Inspection
 SS-03,Safety,Exclude operational coordinates frequencies tactics and patient data,Repository content audit

@@ -1,5 +1,16 @@
 {
   "$defs": {
+    "AircraftOutcome": {
+      "enum": [
+        "PENDING",
+        "RECOVERED",
+        "SAFE_STOP",
+        "ABORTED",
+        "INCOMPLETE"
+      ],
+      "title": "AircraftOutcome",
+      "type": "string"
+    },
     "AssuranceState": {
       "enum": [
         "NOMINAL",
@@ -10,6 +21,19 @@
         "UNKNOWN"
       ],
       "title": "AssuranceState",
+      "type": "string"
+    },
+    "DeliveryOutcome": {
+      "enum": [
+        "NOT_MODELED",
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED",
+        "UNCONFIRMED",
+        "NOT_COMPLETED",
+        "UNKNOWN"
+      ],
+      "title": "DeliveryOutcome",
       "type": "string"
     },
     "MissionState": {
@@ -107,6 +131,39 @@
           ],
           "default": null,
           "title": "Transition Deadline S"
+        },
+        "aircraft_outcome": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AircraftOutcome"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "delivery_outcome": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeliveryOutcome"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "timeliness": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimelinessOutcome"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -114,6 +171,17 @@
       ],
       "title": "ScenarioExpectation",
       "type": "object"
+    },
+    "TimelinessOutcome": {
+      "enum": [
+        "NOT_MODELED",
+        "PENDING",
+        "ON_TIME",
+        "LATE",
+        "UNKNOWN"
+      ],
+      "title": "TimelinessOutcome",
+      "type": "string"
     },
     "TraceLinks": {
       "properties": {

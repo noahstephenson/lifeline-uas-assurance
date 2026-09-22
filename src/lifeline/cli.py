@@ -27,7 +27,7 @@ from lifeline.evidence import (
 )
 from lifeline.figures import generate_timeline_svg
 from lifeline.models import AssertionResult
-from lifeline.scenarios import load_scenario, run_px4_scenario, run_scenario
+from lifeline.scenarios import load_scenario, load_scenarios, run_px4_scenario, run_scenario
 from lifeline.scenarios.runner import ScenarioRun
 from lifeline.smoke import finalize_smoke_setup_error, run_px4_smoke
 from lifeline.validation import validate_project
@@ -42,6 +42,12 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("doctor", help="inspect local configuration and optional simulator dependencies")
     sub.add_parser("validate", help="validate requirements, hazards, traceability, config, and scenarios")
 
+    scenarios = sub.add_parser("scenarios", help="discover the controlled mission catalogue")
+    scenarios_sub = scenarios.add_subparsers(dest="scenarios_command", required=True)
+    scenarios_sub.add_parser("list", help="list scenarios and expected lessons")
+    scenario_show = scenarios_sub.add_parser("show", help="show one resolved scenario")
+    scenario_show.add_argument("scenario_id")
+
     run = sub.add_parser("run", help="execute a controlled scenario")
     run.add_argument("--scenario", required=True, help="scenario ID such as T-05")
     run.add_argument("--source", choices=["fake", "px4"], default="fake")
@@ -52,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     campaign = sub.add_parser("campaign", help="run or audit the controlled scenario campaign")
     campaign_sub = campaign.add_subparsers(dest="campaign_command", required=True)
-    campaign_run = campaign_sub.add_parser("run", help="run all twelve controlled fake-source scenarios")
+    campaign_run = campaign_sub.add_parser("run", help="run the complete controlled fake-source scenario catalogue")
     campaign_run.add_argument("--id", dest="campaign_id")
     campaign_audit = campaign_sub.add_parser("audit", help="audit release gates against a campaign")
     campaign_audit.add_argument("--id", dest="campaign_id")
@@ -60,7 +66,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     runs = sub.add_parser("runs", help="discover or inspect evidence runs")
     runs_sub = runs.add_subparsers(dest="runs_command", required=True)
-    runs_sub.add_parser("list", help="list evidence runs")
+    runs_list = runs_sub.add_parser("list", help="list evidence runs")
+    runs_list.add_argument("--scenario")
+    runs_list.add_argument("--source", choices=["fake", "px4"])
+    runs_list.add_argument("--status")
     show = runs_sub.add_parser("show", help="show one evidence manifest")
     show.add_argument("run_id")
 
@@ -125,6 +134,23 @@ def dispatch(args: argparse.Namespace) -> Any:
         if not result["valid"]:
             raise ValueError("; ".join(result["errors"]))
         return result
+    if args.command == "scenarios":
+        if args.scenarios_command == "show":
+            return load_scenario(args.scenario_id).model_dump(mode="json")
+        return [
+            {
+                "id": item.id,
+                "name": item.name,
+                "event_count": len(item.events),
+                "expected_terminal_state": item.expect.terminal_state.value,
+                "expected_delivery_outcome": (
+                    item.expect.delivery_outcome.value if item.expect.delivery_outcome else "NOT_DECLARED"
+                ),
+                "requirements": item.trace.requirements,
+                "hazards": item.trace.hazards,
+            }
+            for item in load_scenarios()
+        ]
     if args.command == "run":
         scenario = load_scenario(args.scenario)
         config = _load_cli_config(args.config, require_qualification=args.source == "px4")
@@ -157,7 +183,16 @@ def dispatch(args: argparse.Namespace) -> Any:
         manifest = export_run(run)
         return manifest.model_dump(mode="json")
     if args.command == "runs":
-        return list_runs() if args.runs_command == "list" else load_run(args.run_id)
+        if args.runs_command == "show":
+            return load_run(args.run_id)
+        runs = list_runs()
+        if args.scenario:
+            runs = [item for item in runs if item.get("scenario_id") == args.scenario]
+        if args.source:
+            runs = [item for item in runs if item.get("software_versions", {}).get("source") == args.source]
+        if args.status:
+            runs = [item for item in runs if item.get("verification_status") == args.status]
+        return runs
     if args.command == "campaign":
         if args.campaign_command == "run":
             return run_fake_campaign(campaign_id=args.campaign_id)

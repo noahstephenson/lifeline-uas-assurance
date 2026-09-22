@@ -48,6 +48,52 @@ class VerificationState(StrEnum):
     INCOMPLETE = "INCOMPLETE"
 
 
+class AircraftOutcome(StrEnum):
+    PENDING = "PENDING"
+    RECOVERED = "RECOVERED"
+    SAFE_STOP = "SAFE_STOP"
+    ABORTED = "ABORTED"
+    INCOMPLETE = "INCOMPLETE"
+
+
+class PackageCustodyState(StrEnum):
+    NOT_MODELED = "NOT_MODELED"
+    LOGISTICS_POINT = "LOGISTICS_POINT"
+    AIRCRAFT = "AIRCRAFT"
+    RECEIVING_STATION = "RECEIVING_STATION"
+    RETURNED = "RETURNED"
+    UNKNOWN = "UNKNOWN"
+
+
+class ReceiptStatus(StrEnum):
+    NOT_MODELED = "NOT_MODELED"
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+    ABSENT = "ABSENT"
+    MALFORMED = "MALFORMED"
+    STALE = "STALE"
+    DUPLICATE = "DUPLICATE"
+
+
+class DeliveryOutcome(StrEnum):
+    NOT_MODELED = "NOT_MODELED"
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+    UNCONFIRMED = "UNCONFIRMED"
+    NOT_COMPLETED = "NOT_COMPLETED"
+    UNKNOWN = "UNKNOWN"
+
+
+class TimelinessOutcome(StrEnum):
+    NOT_MODELED = "NOT_MODELED"
+    PENDING = "PENDING"
+    ON_TIME = "ON_TIME"
+    LATE = "LATE"
+    UNKNOWN = "UNKNOWN"
+
+
 class CommandName(StrEnum):
     UPLOAD_MISSION = "UPLOAD_MISSION"
     ARM = "ARM"
@@ -69,6 +115,27 @@ class CriticalValue(BaseModel):
 
     def is_stale(self, now_s: float, limit_s: float) -> bool:
         return not self.valid or now_s - self.source_time_s > limit_s
+
+
+class DeliveryStatus(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: Literal["1.0"] = "1.0"
+    mission_id: str | None = None
+    request_id: str | None = None
+    package_id: str | None = None
+    recipient_id: str | None = None
+    custody: PackageCustodyState = PackageCustodyState.NOT_MODELED
+    receipt_status: ReceiptStatus = ReceiptStatus.NOT_MODELED
+    outcome: DeliveryOutcome = DeliveryOutcome.NOT_MODELED
+    timeliness: TimelinessOutcome = TimelinessOutcome.NOT_MODELED
+    delivery_zone_arrived: bool = False
+    landed_at_site: bool = False
+    disarmed_at_site: bool = False
+    handoff_progress: float = Field(default=0.0, ge=0, le=1)
+    deadline_remaining_s: float | None = None
+    accepted_at_s: float | None = Field(default=None, ge=0)
+    source: str = "not-modeled"
 
 
 class MissionSnapshot(BaseModel):
@@ -95,6 +162,7 @@ class MissionSnapshot(BaseModel):
     flight_mode: str = "MISSION"
     vehicle_connected: bool = True
     payload_delivered: bool = False
+    delivery: DeliveryStatus = Field(default_factory=DeliveryStatus)
     exploratory: bool = False
 
     def content_hash(self) -> str:
@@ -149,6 +217,21 @@ class CommandRecord(BaseModel):
     error: str | None = None
 
 
+class DeliveryEvent(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: Literal["1.0"] = "1.0"
+    sequence: int = Field(ge=0)
+    sim_time_s: float = Field(ge=0)
+    event_type: str
+    request_id: str
+    package_id: str
+    recipient_id: str
+    source: str
+    visible_to_monitor: bool = True
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
 class ScenarioEvent(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -164,6 +247,9 @@ class ScenarioExpectation(BaseModel):
     prohibited_actions: list[RecommendedAction] = Field(default_factory=list)
     required_decision_codes: list[str] = Field(default_factory=list)
     transition_deadline_s: float | None = None
+    aircraft_outcome: AircraftOutcome | None = None
+    delivery_outcome: DeliveryOutcome | None = None
+    timeliness: TimelinessOutcome | None = None
 
 
 class TraceLinks(BaseModel):

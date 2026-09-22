@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from lifeline import __version__
 from lifeline.config import PROJECT_ROOT, load_config
 from lifeline.evidence import export_run, list_runs, validate_evidence_id, verify_run_integrity
 from lifeline.scenarios import load_scenarios, run_scenario
@@ -52,16 +53,17 @@ def run_fake_campaign(
         )
 
     passed = sum(item["verification_status"] == "PASS" for item in results)
+    scenario_total = len(results)
     summary = {
         "campaign_id": campaign_id,
         "source": "fake",
         "controlled": True,
         "created_at": datetime.now(UTC).isoformat(),
-        "scenario_total": len(results),
+        "scenario_total": scenario_total,
         "scenario_passed": passed,
-        "scenario_failed": len(results) - passed,
-        "release_threshold": 10,
-        "release_threshold_met": passed >= 10 and len(results) == 12,
+        "scenario_failed": scenario_total - passed,
+        "release_threshold": scenario_total,
+        "release_threshold_met": scenario_total > 0 and passed == scenario_total,
         "results": results,
     }
     with (campaign_dir / "campaign-summary.json").open("w", encoding="utf-8", newline="\n") as stream:
@@ -114,6 +116,7 @@ def audit_release(
         if item.get("scenario_id") in {"T-01", "T-05"}
         and item.get("verification_status") == "PASS"
         and item.get("software_versions", {}).get("source") == "px4"
+        and item.get("software_versions", {}).get("lifeline") == __version__
         and item.get("software_versions", {}).get("evidence_variant") == "sanitized-public-export"
         and verify_run_integrity(item["run_id"], runs_root)["complete"]
         and item.get("software_versions", {}).get("dashboard_px4_time_overlap") == "true"
@@ -127,6 +130,7 @@ def audit_release(
         if item.get("run_id") in tracked_run_ids
         if item.get("kind") == "px4-smoke"
         and item.get("verification_status") == "PASS"
+        and item.get("software_versions", {}).get("lifeline") == __version__
         and item.get("software_versions", {}).get("evidence_variant") == "sanitized-public-export"
         and verify_run_integrity(item["run_id"], runs_root)["complete"]
         and _valid_public_provenance(item, effective_runs_root)
@@ -170,7 +174,14 @@ def _audit_display_qualification() -> dict[str, Any]:
         report = json.loads(DISPLAY_REPORT.read_text(encoding="utf-8"))
         assertions = report.get("assertions", [])
         screenshots = report.get("screenshots", {})
-        expected_runs = {"DISPLAY-T01", "DISPLAY-T05", "DISPLAY-T11", "DISPLAY-T12"}
+        expected_runs = {
+            "DISPLAY-V11-T01",
+            "DISPLAY-V11-T05",
+            "DISPLAY-V11-T11",
+            "DISPLAY-V11-T13",
+            "DISPLAY-V11-T14",
+            "DISPLAY-V11-T15",
+        }
         hashes_match = all(
             (DISPLAY_REPORT.parent / name).is_file() and _sha256(DISPLAY_REPORT.parent / name) == digest
             for name, digest in screenshots.items()
@@ -184,9 +195,9 @@ def _audit_display_qualification() -> dict[str, Any]:
             report.get("verification_status") == "PASS"
             and report.get("qualification_method") == "automated browser display qualification"
             and report.get("human_usability_study") is False
-            and len(assertions) == 15
+            and len(assertions) == 21
             and all(item.get("passed") for item in assertions)
-            and len(screenshots) == 8
+            and len(screenshots) == 12
             and hashes_match
             and set(report.get("fixtures", {})) == expected_runs
             and fixtures_match

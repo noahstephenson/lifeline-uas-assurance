@@ -5,14 +5,14 @@ import pytest
 from lifeline.campaign import audit_release, run_fake_campaign
 from lifeline.config import load_config
 from lifeline.evidence import attach_run_artifact, export_public_run, export_run, load_run, verify_run_integrity
-from lifeline.scenarios import load_scenario, run_scenario
+from lifeline.scenarios import load_scenario, load_scenarios, run_scenario
 from lifeline.validation import validate_project
 
 
 def test_project_traceability_is_valid():
     result = validate_project()
     assert result["valid"], result["errors"]
-    assert result["counts"]["scenarios"] == 12
+    assert result["counts"]["scenarios"] == len(load_scenarios())
 
 
 def test_evidence_bundle_contains_required_files(tmp_path, monkeypatch):
@@ -23,6 +23,9 @@ def test_evidence_bundle_contains_required_files(tmp_path, monkeypatch):
     assert all((run_dir / name).exists() for name in manifest.files.values())
     assert manifest.software_versions["openmct"] == "4.1.0"
     assert manifest.software_versions["source"] == "fake"
+    after_action = json.loads((run_dir / "after-action.json").read_text(encoding="utf-8"))
+    assert after_action["outcomes"]["delivery"] == "NOT_COMPLETED"
+    assert after_action["completion"]["verification_status"] == "PASS"
     assert verify_run_integrity(run.run_id, tmp_path)["verification_status"] == "PASS"
 
 
@@ -97,8 +100,9 @@ def test_controlled_campaign_aggregates_all_scenarios(tmp_path):
         runs_root=tmp_path / "runs",
         campaigns_root=campaigns_root,
     )
-    assert result["scenario_total"] == 12
-    assert result["scenario_passed"] == 12
+    expected_total = len(load_scenarios())
+    assert result["scenario_total"] == expected_total
+    assert result["scenario_passed"] == expected_total
     assert result["release_threshold_met"]
     audit = audit_release("TEST-CAMPAIGN", campaigns_root, tmp_path / "runs")
     assert audit["checks"]["controlled_campaign_threshold"]

@@ -1,9 +1,10 @@
 param(
-    [ValidateSet("T-01","T-02","T-03","T-04","T-05","T-06","T-07","T-08","T-09","T-10","T-11","T-12")]
+    [ValidateSet("T-01","T-02","T-03","T-04","T-05","T-06","T-07","T-08","T-09","T-10","T-11","T-12","T-13","T-14","T-15")]
     [string]$Scenario = "T-05",
     [ValidateSet("Fake","Replay","Live")]
     [string]$Mode = "Fake",
     [switch]$AllowSitlActions,
+    [string]$RunId,
     [ValidateRange(1024,65535)]
     [int]$ApiPort = 8765,
     [ValidateRange(1024,65535)]
@@ -67,11 +68,19 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "PX4 scenario execution failed: $RunJson" }
         $RunId = ($RunJson | ConvertFrom-Json).data.run_id
     } elseif ($Mode -eq "Fake") {
-        $RunJson = & $Lifeline --json run --scenario $Scenario --source fake
+        $RunArgs = @("--json", "run", "--scenario", $Scenario, "--source", "fake")
+        if ($RunId) { $RunArgs += @("--run-id", $RunId) }
+        $RunJson = & $Lifeline @RunArgs
         if ($LASTEXITCODE -ne 0) { throw "Scenario execution failed: $RunJson" }
         $RunId = ($RunJson | ConvertFrom-Json).data.run_id
     } else {
-        $Runs = @((& $Lifeline --json runs list | ConvertFrom-Json).data)
+        if ($RunId) {
+            $RunJson = & $Lifeline --json runs show $RunId
+            if ($LASTEXITCODE -ne 0) { throw "Requested replay run does not exist: $RunId" }
+            $Runs = @(($RunJson | ConvertFrom-Json).data.manifest)
+        } else {
+            $Runs = @((& $Lifeline --json runs list --scenario $Scenario --status PASS | ConvertFrom-Json).data)
+        }
         if (-not $Runs) {
             Write-Host "No evidence exists; generating a deterministic $Scenario reference run for replay."
             $RunJson = & $Lifeline --json run --scenario $Scenario --source fake

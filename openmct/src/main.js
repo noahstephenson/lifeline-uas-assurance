@@ -12,6 +12,8 @@ export function selectedRun(search = globalThis.location?.search || "") {
 }
 
 const epoch = Date.UTC(2026, 0, 1);
+const browserPort = Number(globalThis.location?.port || 8766);
+const localApiBase = `http://${globalThis.location?.hostname || "127.0.0.1"}:${browserPort - 1}`;
 
 openmct.setAssetPath("/node_modules/openmct/dist");
 openmct.install(openmct.plugins.LocalStorage());
@@ -28,8 +30,9 @@ openmct.install(openmct.plugins.Espresso());
 openmct.install(openmct.plugins.SummaryWidget());
 openmct.install(
   LifelinePlugin({
-    apiBase: import.meta.env.VITE_LIFELINE_API_BASE || "http://127.0.0.1:8765",
-    runId: selectedRun()
+    apiBase: import.meta.env.VITE_LIFELINE_API_BASE || localApiBase,
+    runId: selectedRun(),
+    playbackSpeed: Number(import.meta.env.VITE_LIFELINE_REPLAY_SPEED || 4)
   })
 );
 

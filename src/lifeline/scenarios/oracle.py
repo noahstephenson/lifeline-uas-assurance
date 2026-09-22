@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from lifeline.models import AssertionResult, DecisionRecord, MissionSnapshot, ScenarioDefinition
+from lifeline.models import (
+    AircraftOutcome,
+    AssertionResult,
+    DecisionRecord,
+    MissionSnapshot,
+    MissionState,
+    ScenarioDefinition,
+)
 
 
 def evaluate_expectations(
@@ -21,6 +28,40 @@ def evaluate_expectations(
             observed=terminal.value,
         )
     ]
+    if scenario.expect.aircraft_outcome is not None:
+        observed_aircraft = {
+            MissionState.RECOVERED: AircraftOutcome.RECOVERED,
+            MissionState.SAFE_STOP: AircraftOutcome.SAFE_STOP,
+            MissionState.ABORTED: AircraftOutcome.ABORTED,
+        }.get(terminal, AircraftOutcome.INCOMPLETE)
+        results.append(
+            AssertionResult(
+                name="aircraft_outcome",
+                passed=observed_aircraft == scenario.expect.aircraft_outcome,
+                expected=scenario.expect.aircraft_outcome.value,
+                observed=observed_aircraft.value,
+            )
+        )
+    if scenario.expect.delivery_outcome is not None:
+        observed_delivery = snapshots[-1].delivery.outcome
+        results.append(
+            AssertionResult(
+                name="delivery_outcome",
+                passed=observed_delivery == scenario.expect.delivery_outcome,
+                expected=scenario.expect.delivery_outcome.value,
+                observed=observed_delivery.value,
+            )
+        )
+    if scenario.expect.timeliness is not None:
+        observed_timeliness = snapshots[-1].delivery.timeliness
+        results.append(
+            AssertionResult(
+                name="timeliness",
+                passed=observed_timeliness == scenario.expect.timeliness,
+                expected=scenario.expect.timeliness.value,
+                observed=observed_timeliness.value,
+            )
+        )
     for state in scenario.expect.required_assurance_states:
         results.append(
             AssertionResult(

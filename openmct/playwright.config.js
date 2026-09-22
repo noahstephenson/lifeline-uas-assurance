@@ -4,8 +4,8 @@ export default defineConfig({
   testDir: "./tests",
   testMatch: /display-qualification\.spec\.js/,
   timeout: 45_000,
-  fullyParallel: false,
-  workers: 1,
+  fullyParallel: true,
+  workers: process.env.CI ? 2 : 4,
   reporter: [["line"], ["./tests/display-reporter.js"]],
   use: {
     baseURL: "http://127.0.0.1:8876",
@@ -22,6 +22,10 @@ export default defineConfig({
     {
       command: "npm run dev -- --port 8876 --mode qualification",
       url: "http://127.0.0.1:8876",
+      env: {
+        VITE_LIFELINE_API_BASE: "http://127.0.0.1:8875",
+        VITE_LIFELINE_REPLAY_SPEED: "16"
+      },
       reuseExistingServer: !process.env.CI,
       timeout: 30_000
     }

@@ -16,6 +16,7 @@ import yaml
 
 from lifeline import __version__
 from lifeline.config import PROJECT_ROOT, file_sha256, load_config
+from lifeline.delivery import load_mission_contract
 from lifeline.figures import render_timeline_svg
 from lifeline.models import EvidenceManifest, VerificationState
 from lifeline.scenarios.loader import scenario_path
@@ -70,11 +71,14 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         "snapshots": "events.jsonl",
         "decisions": "decisions.jsonl",
         "commands": "commands.jsonl",
+        "delivery_events": "delivery-events.jsonl",
         "assertions": "assertions.csv",
         "verification_matrix": "verification-matrix.csv",
         "environment": "environment.json",
         "scenario": "scenario-resolved.yaml",
         "configuration": "configuration-resolved.yaml",
+        "mission_contract": "mission-contract-resolved.yaml",
+        "after_action": "after-action.json",
         "timeline": "timeline.csv",
         "timeline_svg": "timeline.svg",
         "manifest": "manifest.json",
@@ -84,12 +88,15 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
     _write_jsonl(run_dir / files["snapshots"], run.snapshots)
     _write_jsonl(run_dir / files["decisions"], run.decisions)
     _write_jsonl(run_dir / files["commands"], run.commands)
+    _write_jsonl(run_dir / files["delivery_events"], run.delivery_events)
     _write_assertions(run_dir / files["assertions"], run.assertions)
     _write_verification_matrix(run_dir / files["verification_matrix"], run)
     _write_timeline(run_dir / files["timeline"], run)
     render_timeline_svg(run_dir, run.run_id)
     _write_text(run_dir / files["scenario"], yaml.safe_dump(run.scenario.model_dump(mode="json"), sort_keys=False))
     _write_text(run_dir / files["configuration"], yaml.safe_dump(resolved_config.model_dump(mode="json"), sort_keys=False))
+    contract = load_mission_contract()
+    _write_text(run_dir / files["mission_contract"], yaml.safe_dump(contract.model_dump(mode="json"), sort_keys=False))
     environment = {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
@@ -111,12 +118,57 @@ def export_run(run: ScenarioRun, output_root: Path | None = None) -> EvidenceMan
         "scenario_name": run.scenario.name,
         "verification_status": status.value,
         "terminal_state": run.snapshots[-1].mission_state.value if run.snapshots else "UNAVAILABLE",
+        "aircraft_outcome": _aircraft_outcome(run.snapshots[-1].mission_state.value) if run.snapshots else "INCOMPLETE",
+        "delivery_outcome": run.snapshots[-1].delivery.outcome.value if run.snapshots else "UNKNOWN",
+        "timeliness": run.snapshots[-1].delivery.timeliness.value if run.snapshots else "UNKNOWN",
+        "package_custody": run.snapshots[-1].delivery.custody.value if run.snapshots else "UNKNOWN",
+        "receipt_status": run.snapshots[-1].delivery.receipt_status.value if run.snapshots else "NOT_MODELED",
         "snapshot_count": len(run.snapshots),
         "decision_count": len(run.decisions),
         "exploratory": run.snapshots[0].exploratory if run.snapshots else False,
         "error": run.error,
     }
     _write_json(run_dir / files["summary"], summary)
+    terminal = run.snapshots[-1] if run.snapshots else None
+    primary_decision = run.decisions[-1] if run.decisions else None
+    after_action = {
+        "schema_version": "1.0",
+        "run_id": run.run_id,
+        "request": {
+            "mission_id": contract.mission_id,
+            "request_id": contract.request_id,
+            "package_id": contract.package.id,
+            "recipient_id": contract.recipient.id,
+        },
+        "outcomes": {
+            "aircraft": summary["aircraft_outcome"],
+            "delivery": summary["delivery_outcome"],
+            "timeliness": summary["timeliness"],
+            "receipt": summary["receipt_status"],
+        },
+        "final_decision": (
+            {
+                "code": primary_decision.decision_code,
+                "action": primary_decision.recommended_action.value,
+                "summary": primary_decision.summary,
+                "requirements": primary_decision.requirement_ids,
+                "hazards": primary_decision.hazard_ids,
+            }
+            if primary_decision
+            else None
+        ),
+        "completion": {
+            "sim_time_s": terminal.sim_time_s if terminal else None,
+            "verification_status": status.value,
+            "assertions_passed": sum(1 for item in run.assertions if item.passed),
+            "assertions_total": len(run.assertions),
+        },
+        "interpretation_boundary": (
+            "Aircraft state and medical-logistics outcome are independent; receiver events, custody transfer, "
+            "and the logistics deadline are deterministic simulation models."
+        ),
+    }
+    _write_json(run_dir / files["after_action"], after_action)
     _normalize_text_files(run_dir, files.values())
     artifact_sha256 = {
         logical_name: file_sha256(run_dir / filename)
@@ -354,6 +406,10 @@ def _write_timeline(path: Path, run: ScenarioRun) -> None:
             "navigation_confidence",
             "energy_margin_wh",
             "decision_code",
+            "package_custody",
+            "receipt_status",
+            "delivery_outcome",
+            "timeliness",
         ]
         writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
@@ -376,8 +432,20 @@ def _write_timeline(path: Path, run: ScenarioRun) -> None:
                     "navigation_confidence": snapshot.navigation_confidence.value,
                     "energy_margin_wh": snapshot.energy_margin_wh.value,
                     "decision_code": active_code,
+                    "package_custody": snapshot.delivery.custody.value,
+                    "receipt_status": snapshot.delivery.receipt_status.value,
+                    "delivery_outcome": snapshot.delivery.outcome.value,
+                    "timeliness": snapshot.delivery.timeliness.value,
                 }
             )
+
+
+def _aircraft_outcome(terminal_state: str) -> str:
+    return {
+        "RECOVERED": "RECOVERED",
+        "SAFE_STOP": "SAFE_STOP",
+        "ABORTED": "ABORTED",
+    }.get(terminal_state, "INCOMPLETE")
 
 
 def _distribution_version(name: str) -> str:

@@ -1,0 +1,9 @@
+name,passed,expected,observed
+terminal_state,True,RECOVERED,RECOVERED
+aircraft_outcome,True,RECOVERED,RECOVERED
+delivery_outcome,True,REJECTED,REJECTED
+timeliness,True,UNKNOWN,UNKNOWN
+required_state:NOMINAL,True,observed,observed
+prohibited_action:CONTROLLED_LAND,True,absent,absent
+prohibited_action:ABORT_RUN,True,absent,absent
+required_code:NOMINAL,True,observed,observed

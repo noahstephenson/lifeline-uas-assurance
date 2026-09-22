@@ -5,9 +5,12 @@ duration_s: 120
 events: []
 expect:
   terminal_state: RECOVERED
+  aircraft_outcome: RECOVERED
+  delivery_outcome: ACCEPTED
+  timeliness: ON_TIME
   required_assurance_states: [NOMINAL]
   prohibited_actions: [CONTROLLED_LAND, ABORT_RUN]
   required_decision_codes: [NOMINAL]
 trace:
-  requirements: [M-01, M-02, M-03]
+  requirements: [M-01, M-02, M-03, M-04, M-05, M-06]
   hazards: []

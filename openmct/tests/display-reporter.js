@@ -6,7 +6,7 @@ import { chromium } from "@playwright/test";
 
 const root = path.resolve(process.cwd(), "..");
 const output = path.join(root, "evidence", "display-qualification");
-const fixtures = ["DISPLAY-T01", "DISPLAY-T05", "DISPLAY-T11", "DISPLAY-T12"];
+const fixtures = ["DISPLAY-V11-T01", "DISPLAY-V11-T05", "DISPLAY-V11-T11", "DISPLAY-V11-T13", "DISPLAY-V11-T14", "DISPLAY-V11-T15"];
 
 export default class DisplayQualificationReporter {
   constructor() {
@@ -34,7 +34,9 @@ export default class DisplayQualificationReporter {
     } catch {}
     const screenshotsDir = path.join(output, "screenshots");
     const screenshotHashes = fs.existsSync(screenshotsDir)
-      ? Object.fromEntries(listFiles(screenshotsDir).map((file) => [path.relative(output, file).replaceAll("\\", "/"), sha(file)]))
+      ? Object.fromEntries(listFiles(screenshotsDir)
+        .filter((file) => fixtures.some((runId) => path.basename(file).startsWith(`${runId}-`)))
+        .map((file) => [path.relative(output, file).replaceAll("\\", "/"), sha(file)]))
       : {};
     const report = {
       schema_version: "1.0",

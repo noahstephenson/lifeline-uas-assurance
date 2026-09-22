@@ -1,40 +1,46 @@
 # Project status
 
-Project Lifeline has completed its planned v1.0.0 engineering and simulation gates. A
-gate is complete only when its declared evidence is present and passes integrity checks.
+Project Lifeline v1.1 is implemented as a Medical Resupply Mission Lab. Its evidence
+status is intentionally split between the preserved v1.0 qualification baseline and new
+v1.1 behavior awaiting refreshed campaign evidence.
 
-## Completed capabilities
+## Implemented v1.1 capabilities
 
-- The controlled fake-source campaign executes T-01 through T-12 and preserves
-  requirement coverage, expected states, prohibited actions, and deterministic decisions.
-- Evidence bundles hash every required artifact and fail closed when files are missing,
-  modified, or unchecked.
-- The Open MCT console presents current and historical mission, health, assurance,
-  decision, and verification data.
-- Automated browser qualification covers desktop and compact layouts, explicit
-  unavailable states, text-based status cues, and replay completion.
-- Stock PX4 v1.17.0/Gazebo Harmonic X500 qualification covers takeoff and landing,
-  nominal T-01 recovery, and the T-05 controlled-landing contingency.
-- Fresh-archive verification proves the tracked evidence can be checked outside the
-  authoring checkout.
+- A versioned mission contract identifies the fictional request, package, origin,
+  recipient, delivery zone, landed handoff, acceptance rules, and logistics deadline.
+- The receiving-station simulator records custody and validates request, package, and
+  recipient identifiers before accepting a receipt.
+- Aircraft, delivery, and timeliness outcomes are independent.
+- Fifteen scenarios include nominal receipt, receiver absence, wrong-package rejection,
+  and accepted-but-late delivery.
+- Evidence includes delivery events, the resolved mission contract, and a deterministic
+  after-action summary.
+- The dashboard provides a telemetry-driven local-NED map, request/manifest view,
+  coordinated timeline, outcome strip, replay controls, and Explain this moment.
+- `scripts/mission.ps1` provides an interactive catalogue plus direct Synthetic, Replay,
+  and explicitly authorized SITL modes.
+- The PX4 integration now lands at the receiving station before modeled unload/receipt,
+  then explicitly rearms, takes off, and returns.
 
-## Evidence baseline
+## Qualification status
 
-- Controlled campaign: `CAMPAIGN-20260920-C`, 12/12 scenarios passing.
-- Display qualification: 15/15 assertions and eight hash-checked screenshots.
-- PX4 smoke: `LFL-SMOKE-PX4-20260921T022921Z-A837`.
-- PX4 nominal mission: `LFL-T01-PX4-20260921T094403Z-1CE3`.
-- PX4 compound fault: `LFL-T05-PX4-20260921T095622Z-00F1`.
+- The immutable v1.0 campaign, browser evidence, and PX4 runs remain the historical
+  baseline for the behavior they recorded.
+- The controlled `CAMPAIGN-20260921-MEDICAL-V11` campaign passed 15/15 scenarios with
+  complete bundle integrity.
+- Automated v1.1 display qualification passed 21/21 checks and generated 12 new desktop
+  and compact screenshots while retaining the historical screenshots.
+- A new T-01/T-05 SITL campaign is required before the landing-handoff-return integration
+  is called PX4-qualified. Old aircraft evidence is not reused for that claim.
 
-## Sensible future extensions
+## Sensible next extensions
 
-- Add a characterized alternate recovery point and a corresponding `DIVERT` policy.
+- Add randomized receiver delay and network-jitter experiments as exploratory runs.
+- Add a characterized alternate recovery location and only then consider `DIVERT`.
+- Run a separately designed human-factors study; automated display checks are not one.
+- Apply the fictional payload mass to a characterized vehicle-dynamics model.
 - Add hardware-in-the-loop as a separate evidence class without weakening SITL controls.
-- Conduct a separately designed human-factors study for the dashboard.
-- Expand property-based testing around policy boundaries and timing jitter.
-- Add more fictional worlds or vehicle models while preserving the canonical telemetry
-  and evidence interfaces.
 
-These extensions are outside v1.0.0. The current results remain limited to the documented
-simulation configuration and do not establish real-flight performance, operational
-safety, certification, medical suitability, or military capability.
+All results remain limited to the documented simulation configuration. They do not
+establish real-flight performance, operational safety, certification, medical suitability,
+or military capability.

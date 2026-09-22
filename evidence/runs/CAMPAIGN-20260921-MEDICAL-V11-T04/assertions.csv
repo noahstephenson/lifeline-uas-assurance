@@ -1,0 +1,6 @@
+name,passed,expected,observed
+terminal_state,True,SAFE_STOP,SAFE_STOP
+required_state:TERMINATE,True,observed,observed
+prohibited_action:RETURN,True,absent,absent
+required_code:NAVIGATION_INVALID,True,observed,observed
+transition_deadline,True,<= 21.0,20.0

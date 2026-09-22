@@ -42,6 +42,147 @@
       "title": "CriticalValue",
       "type": "object"
     },
+    "DeliveryOutcome": {
+      "enum": [
+        "NOT_MODELED",
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED",
+        "UNCONFIRMED",
+        "NOT_COMPLETED",
+        "UNKNOWN"
+      ],
+      "title": "DeliveryOutcome",
+      "type": "string"
+    },
+    "DeliveryStatus": {
+      "properties": {
+        "schema_version": {
+          "const": "1.0",
+          "default": "1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "mission_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mission Id"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "package_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Package Id"
+        },
+        "recipient_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipient Id"
+        },
+        "custody": {
+          "$ref": "#/$defs/PackageCustodyState",
+          "default": "NOT_MODELED"
+        },
+        "receipt_status": {
+          "$ref": "#/$defs/ReceiptStatus",
+          "default": "NOT_MODELED"
+        },
+        "outcome": {
+          "$ref": "#/$defs/DeliveryOutcome",
+          "default": "NOT_MODELED"
+        },
+        "timeliness": {
+          "$ref": "#/$defs/TimelinessOutcome",
+          "default": "NOT_MODELED"
+        },
+        "delivery_zone_arrived": {
+          "default": false,
+          "title": "Delivery Zone Arrived",
+          "type": "boolean"
+        },
+        "landed_at_site": {
+          "default": false,
+          "title": "Landed At Site",
+          "type": "boolean"
+        },
+        "disarmed_at_site": {
+          "default": false,
+          "title": "Disarmed At Site",
+          "type": "boolean"
+        },
+        "handoff_progress": {
+          "default": 0.0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Handoff Progress",
+          "type": "number"
+        },
+        "deadline_remaining_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deadline Remaining S"
+        },
+        "accepted_at_s": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted At S"
+        },
+        "source": {
+          "default": "not-modeled",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "title": "DeliveryStatus",
+      "type": "object"
+    },
     "MissionState": {
       "enum": [
         "INITIALIZING",
@@ -55,6 +196,43 @@
         "ABORTED"
       ],
       "title": "MissionState",
+      "type": "string"
+    },
+    "PackageCustodyState": {
+      "enum": [
+        "NOT_MODELED",
+        "LOGISTICS_POINT",
+        "AIRCRAFT",
+        "RECEIVING_STATION",
+        "RETURNED",
+        "UNKNOWN"
+      ],
+      "title": "PackageCustodyState",
+      "type": "string"
+    },
+    "ReceiptStatus": {
+      "enum": [
+        "NOT_MODELED",
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED",
+        "ABSENT",
+        "MALFORMED",
+        "STALE",
+        "DUPLICATE"
+      ],
+      "title": "ReceiptStatus",
+      "type": "string"
+    },
+    "TimelinessOutcome": {
+      "enum": [
+        "NOT_MODELED",
+        "PENDING",
+        "ON_TIME",
+        "LATE",
+        "UNKNOWN"
+      ],
+      "title": "TimelinessOutcome",
       "type": "string"
     }
   },
@@ -154,6 +332,9 @@
       "default": false,
       "title": "Payload Delivered",
       "type": "boolean"
+    },
+    "delivery": {
+      "$ref": "#/$defs/DeliveryStatus"
     },
     "exploratory": {
       "default": false,

@@ -8,4 +8,6 @@ H-06,Unsafe automatic reversal,Irreversible terminal state,T-09
 H-07,Stale data appears healthy,Age metadata and UNKNOWN,T-11
 H-08,Decision cannot be reproduced,Manifest and hashes,T-12
 H-09,Command reaches unintended hardware,Loopback allowlist and explicit opt-in,Configuration test
-
+H-10,Waypoint arrival is mislabeled as completed delivery,Landing handoff and matching receipt gate,T-01;T-13
+H-11,Unrelated malformed duplicate or absent receipt is accepted,Receiving-station validation and idempotence,T-13;T-14
+H-12,Aircraft recovery hides an unsuccessful logistics outcome,Independent outcome aggregation,T-05;T-13;T-14;T-15

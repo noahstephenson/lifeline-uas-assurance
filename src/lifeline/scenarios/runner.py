@@ -6,10 +6,13 @@ from datetime import UTC, datetime
 
 from lifeline.assurance import AssuranceEngine
 from lifeline.config import LifelineConfig
+from lifeline.delivery import DeliveryThread, load_mission_contract
 from lifeline.models import (
     CommandRecord,
     CriticalValue,
     DecisionRecord,
+    DeliveryEvent,
+    DeliveryOutcome,
     EngineContext,
     MissionSnapshot,
     MissionState,
@@ -28,6 +31,7 @@ class ScenarioRun:
     assertions: list
     source: str = "fake"
     commands: list[CommandRecord] = field(default_factory=list)
+    delivery_events: list[DeliveryEvent] = field(default_factory=list)
     configuration: LifelineConfig | None = None
     environment: dict[str, str] = field(default_factory=dict)
     error: str | None = None
@@ -43,6 +47,7 @@ def run_scenario(
     run_id = run_id or f"LFL-{scenario.id.replace('-', '')}-{datetime.now(UTC):%Y%m%dT%H%M%SZ}"
     engine = AssuranceEngine(config)
     context = EngineContext()
+    delivery_thread = DeliveryThread(load_mission_contract())
     snapshots: list[MissionSnapshot] = []
     decisions: list[DecisionRecord] = []
     overrides: dict[str, bool | float | str] = {}
@@ -63,7 +68,7 @@ def run_scenario(
         if not bool(overrides.get("freeze_telemetry", False)):
             source_times = {"link": now, "nav": now, "energy": now}
 
-        mission_state, progress, delivered = _mission_state(now, forced_return_at, landing_at)
+        mission_state, progress, _ = _mission_state(now, forced_return_at, landing_at)
         base_energy = max(8.0, 30.0 - (0.15 * now))
         energy_margin = float(overrides.get("energy_margin_wh", base_energy))
         nav = float(overrides.get("navigation_confidence", 0.90))
@@ -72,10 +77,28 @@ def run_scenario(
         east_m = 80.0 * min(progress / 0.70, 1.0) if progress <= 0.70 else 80.0 * (1 - progress) / 0.30
         airborne = mission_state not in {
             MissionState.PREFLIGHT,
+            MissionState.DELIVERY,
             MissionState.RECOVERED,
             MissionState.SAFE_STOP,
             MissionState.ABORTED,
         }
+        terminal = mission_state in {
+            MissionState.RECOVERED,
+            MissionState.SAFE_STOP,
+            MissionState.ABORTED,
+        }
+        delivery = delivery_thread.update(
+            sim_time_s=now,
+            dispatched=now >= 2.0,
+            at_delivery_zone=mission_state in {MissionState.LANDING, MissionState.DELIVERY}
+            and landing_at is None,
+            landed=mission_state == MissionState.DELIVERY,
+            disarmed=mission_state == MissionState.DELIVERY,
+            terminal=terminal,
+            response_mode=str(overrides.get("receiving_response", "accepted")),
+            deadline_s=float(overrides["delivery_deadline_s"]) if "delivery_deadline_s" in overrides else None,
+            response_delay_s=float(overrides.get("receiving_response_delay_s", 6.0)),
+        )
         snapshot = MissionSnapshot(
             run_id=run_id,
             sequence=sequence,
@@ -106,10 +129,11 @@ def run_scenario(
             route_progress=max(0.0, min(1.0, progress)),
             north_m=max(0.0, north_m),
             east_m=max(0.0, east_m),
-            relative_altitude_m=25.0 if airborne else 0.0,
+            relative_altitude_m=25.0 if airborne and mission_state != MissionState.LANDING else 0.0,
             ground_speed_mps=8.0 if airborne and mission_state != MissionState.LANDING else 0.0,
             flight_mode=_flight_mode(mission_state),
-            payload_delivered=delivered,
+            payload_delivered=delivery.outcome == DeliveryOutcome.ACCEPTED,
+            delivery=delivery,
             exploratory=exploratory,
         )
         record, context = engine.evaluate(snapshot, context)
@@ -140,6 +164,7 @@ def run_scenario(
         decisions,
         assertions,
         "fake",
+        delivery_events=list(delivery_thread.events),
         configuration=config,
     )
 
@@ -156,12 +181,14 @@ def _mission_state(now: float, forced_return_at: float | None, landing_at: float
         return MissionState.RETURNING, max(0.0, 0.70 * (1 - elapsed / 20.0)), False
     if now < 2.0:
         return MissionState.PREFLIGHT, 0.0, False
+    if now < 39.0:
+        return MissionState.OUTBOUND, (now - 2.0) / 37.0 * 0.70, False
     if now < 42.0:
-        return MissionState.OUTBOUND, (now - 2.0) / 40.0 * 0.70, False
-    if now < 45.0:
-        return MissionState.DELIVERY, 0.70, True
-    if now < 60.0:
-        return MissionState.RETURNING, 0.70 + (now - 45.0) / 15.0 * 0.30, True
+        return MissionState.LANDING, 0.70, False
+    if now < 50.0:
+        return MissionState.DELIVERY, 0.70, False
+    if now < 65.0:
+        return MissionState.RETURNING, 0.70 + (now - 50.0) / 15.0 * 0.30, True
     return MissionState.RECOVERED, 1.0, True
 
 
@@ -169,7 +196,7 @@ def _flight_mode(state: MissionState) -> str:
     return {
         MissionState.PREFLIGHT: "STANDBY",
         MissionState.OUTBOUND: "MISSION",
-        MissionState.DELIVERY: "HOLD",
+        MissionState.DELIVERY: "DISARMED_HANDOFF",
         MissionState.RETURNING: "RETURN_TO_LAUNCH",
         MissionState.LANDING: "LAND",
         MissionState.RECOVERED: "LANDED",

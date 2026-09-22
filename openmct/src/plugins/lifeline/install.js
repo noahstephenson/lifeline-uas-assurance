@@ -117,6 +117,9 @@ export default function LifelinePlugin(options = {}) {
         };
       }
     });
-    openmct.objectViews.addProvider(createAssuranceViewProvider(apiBase, { runId }));
+    openmct.objectViews.addProvider(createAssuranceViewProvider(apiBase, {
+      runId,
+      playbackSpeed: options.playbackSpeed
+    }));
   };
 }

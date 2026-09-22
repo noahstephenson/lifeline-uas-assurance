@@ -1,0 +1,16 @@
+{
+  "aircraft_outcome": "SAFE_STOP",
+  "decision_count": 4,
+  "delivery_outcome": "NOT_COMPLETED",
+  "error": null,
+  "exploratory": false,
+  "package_custody": "RETURNED",
+  "receipt_status": "PENDING",
+  "run_id": "DISPLAY-V11-T05",
+  "scenario_id": "T-05",
+  "scenario_name": "compound_link_and_navigation_degradation",
+  "snapshot_count": 51,
+  "terminal_state": "SAFE_STOP",
+  "timeliness": "UNKNOWN",
+  "verification_status": "PASS"
+}

@@ -9,11 +9,13 @@ events:
     set: {navigation_confidence: 0.25}
 expect:
   terminal_state: SAFE_STOP
+  aircraft_outcome: SAFE_STOP
+  delivery_outcome: NOT_COMPLETED
+  timeliness: UNKNOWN
   required_assurance_states: [WATCH, TERMINATE]
   prohibited_actions: [RETURN]
   required_decision_codes: [LINK_LOSS_DWELL, NAVIGATION_INVALID]
   transition_deadline_s: 23
 trace:
-  requirements: [A-02, A-03, A-08]
+  requirements: [A-02, A-03, A-08, M-06]
   hazards: [H-02, H-04]
-

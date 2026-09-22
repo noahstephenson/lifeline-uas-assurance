@@ -1,0 +1,16 @@
+{
+  "aircraft_outcome": "RECOVERED",
+  "decision_count": 1,
+  "delivery_outcome": "ACCEPTED",
+  "error": null,
+  "exploratory": false,
+  "package_custody": "RECEIVING_STATION",
+  "receipt_status": "ACCEPTED",
+  "run_id": "DISPLAY-V11-T01",
+  "scenario_id": "T-01",
+  "scenario_name": "nominal_delivery_and_recovery",
+  "snapshot_count": 131,
+  "terminal_state": "RECOVERED",
+  "timeliness": "ON_TIME",
+  "verification_status": "PASS"
+}

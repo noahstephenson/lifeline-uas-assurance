@@ -10,11 +10,13 @@ from typing import Any
 
 from lifeline.assurance import AssuranceEngine
 from lifeline.config import LifelineConfig
+from lifeline.delivery import DeliveryThread, load_mission_contract
 from lifeline.models import (
     CommandName,
     CommandRecord,
     CriticalValue,
     DecisionRecord,
+    DeliveryOutcome,
     EngineContext,
     MissionSnapshot,
     MissionState,
@@ -65,6 +67,11 @@ async def run_px4_scenario(
     sequence = 0
     ever_airborne = False
     terminal_requested = False
+    contract = load_mission_contract()
+    delivery_thread = DeliveryThread(contract)
+    delivery_enabled = scenario.expect.delivery_outcome is not None
+    recovery_started = False
+    site_landing_observed = False
     command_sequence = 0
 
     async def issue(
@@ -141,8 +148,39 @@ async def run_px4_scenario(
 
         ever_airborne = ever_airborne or airborne
         progress = max(0.0, min(1.0, current / total if total else 0.0))
-        mission_state, delivered = _mission_state(progress, airborne, ever_airborne, terminal_requested)
         north_m, east_m = _local_position(sample, home)
+        zone_distance_m = math.hypot(
+            north_m - contract.delivery_zone.north_m,
+            east_m - contract.delivery_zone.east_m,
+        )
+        at_delivery_zone = zone_distance_m <= contract.delivery_zone.radius_m
+        if delivery_enabled:
+            site_landing_observed = site_landing_observed or (
+                ever_airborne and at_delivery_zone and not airborne and not recovery_started
+            )
+            delivery = delivery_thread.update(
+                sim_time_s=now,
+                dispatched=ever_airborne,
+                at_delivery_zone=at_delivery_zone,
+                landed=site_landing_observed,
+                # PX4's landed state is the observable used by this simulation
+                # for disarm completion; evidence labels this as an inference.
+                disarmed=site_landing_observed,
+                terminal=terminal_requested and not site_landing_observed,
+                response_mode=str(overrides.get("receiver_response", "accepted")),
+                deadline_s=float(overrides.get("delivery_deadline_s", contract.delivery_deadline_s)),
+            )
+            mission_state = _medical_mission_state(
+                airborne=airborne,
+                ever_airborne=ever_airborne,
+                terminal_requested=terminal_requested,
+                site_landing_observed=site_landing_observed,
+                recovery_started=recovery_started,
+            )
+            delivered = delivery.outcome == DeliveryOutcome.ACCEPTED
+        else:
+            mission_state, delivered = _mission_state(progress, airborne, ever_airborne, terminal_requested)
+            delivery = None
         energy_available = (sample.battery_remaining_pct / 100.0) * config.energy.usable_capacity_wh
         energy_reserve = config.energy.usable_capacity_wh * config.energy.protected_reserve_fraction
         energy_recovery = 20.0
@@ -157,9 +195,9 @@ async def run_px4_scenario(
         if sample_valid and not bool(overrides.get("freeze_telemetry", False)):
             received_at = sample.received_at_monotonic_s or monotonic()
             source_times = {
-                "link": _relative_source_time(sample.link_received_at_monotonic_s, received_at, started_at),
-                "nav": _relative_source_time(sample.navigation_received_at_monotonic_s, received_at, started_at),
-                "energy": _relative_source_time(sample.energy_received_at_monotonic_s, received_at, started_at),
+                "link": min(now, _relative_source_time(sample.link_received_at_monotonic_s, received_at, started_at)),
+                "nav": min(now, _relative_source_time(sample.navigation_received_at_monotonic_s, received_at, started_at)),
+                "energy": min(now, _relative_source_time(sample.energy_received_at_monotonic_s, received_at, started_at)),
             }
 
         snapshot = MissionSnapshot(
@@ -200,6 +238,7 @@ async def run_px4_scenario(
             flight_mode=sample.flight_mode,
             vehicle_connected=sample_valid and sample.connected,
             payload_delivered=delivered,
+            **({"delivery": delivery} if delivery is not None else {}),
             exploratory=exploratory,
         )
         record, context = engine.evaluate(snapshot, context)
@@ -224,6 +263,22 @@ async def run_px4_scenario(
             )
             previous_command = command
             terminal_requested = command == RecommendedAction.CONTROLLED_LAND
+
+        if (
+            delivery_enabled
+            and site_landing_observed
+            and not recovery_started
+            and delivery.outcome
+            in {DeliveryOutcome.ACCEPTED, DeliveryOutcome.REJECTED, DeliveryOutcome.UNCONFIRMED}
+        ):
+            await issue(CommandName.ARM, adapter.arm(), requested_at_s=now)
+            await issue(CommandName.TAKEOFF, adapter.takeoff(), requested_at_s=now)
+            await issue(
+                CommandName.RETURN,
+                adapter.execute(RecommendedAction.RETURN),
+                requested_at_s=now,
+            )
+            recovery_started = True
 
         sequence += 1
         if mission_state in {MissionState.RECOVERED, MissionState.SAFE_STOP, MissionState.ABORTED}:
@@ -250,10 +305,14 @@ async def run_px4_scenario(
         assertions,
         "px4",
         commands=commands,
+        delivery_events=delivery_thread.events if delivery_enabled else [],
         configuration=config,
         environment={
             "vehicle_uuid": str(adapter.vehicle_uuid or 0),
             "sitl_endpoint": config.sitl.endpoint,
+            "aircraft_telemetry": "mavsdk",
+            "receiver_source": "modeled-receiving-station",
+            "site_disarm_observation": "inferred-from-px4-landed-state",
         },
     )
 
@@ -270,6 +329,25 @@ def _mission_state(progress: float, airborne: bool, ever_airborne: bool, termina
     if progress < 0.75:
         return MissionState.DELIVERY, True
     return MissionState.RETURNING, True
+
+
+def _medical_mission_state(
+    *,
+    airborne: bool,
+    ever_airborne: bool,
+    terminal_requested: bool,
+    site_landing_observed: bool,
+    recovery_started: bool,
+) -> MissionState:
+    if terminal_requested:
+        return MissionState.LANDING if airborne else MissionState.SAFE_STOP
+    if not ever_airborne:
+        return MissionState.PREFLIGHT
+    if site_landing_observed and not recovery_started:
+        return MissionState.DELIVERY
+    if recovery_started:
+        return MissionState.RETURNING if airborne else MissionState.RECOVERED
+    return MissionState.OUTBOUND if airborne else MissionState.LANDING
 
 
 def _unavailable_sample() -> VehicleSample:

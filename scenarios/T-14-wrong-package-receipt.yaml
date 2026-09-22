@@ -1,0 +1,18 @@
+schema_version: "1.0"
+id: T-14
+name: wrong_package_receipt_rejected
+duration_s: 120
+events:
+  - at_s: 0
+    set: {receiving_response: wrong_package}
+expect:
+  terminal_state: RECOVERED
+  aircraft_outcome: RECOVERED
+  delivery_outcome: REJECTED
+  timeliness: UNKNOWN
+  required_assurance_states: [NOMINAL]
+  prohibited_actions: [CONTROLLED_LAND, ABORT_RUN]
+  required_decision_codes: [NOMINAL]
+trace:
+  requirements: [M-04, M-05, M-06, EV-05]
+  hazards: [H-10, H-11, H-12]

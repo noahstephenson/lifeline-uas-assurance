@@ -118,9 +118,10 @@ class MavsdkAdapter:
                 float(item["altitude_m"]),
             )
             for item in mission["route"]
+            if item["name"] != "recovery"
         ]
         items = []
-        for north_m, east_m, altitude_m in offsets:
+        for index, (north_m, east_m, altitude_m) in enumerate(offsets):
             latitude, longitude = _offset_lat_lon(home.latitude_deg, home.longitude_deg, north_m, east_m)
             items.append(
                 MissionItem(
@@ -137,10 +138,13 @@ class MavsdkAdapter:
                     float("nan"),
                     float("nan"),
                     float("nan"),
-                    MissionItem.VehicleAction.NONE,
+                    MissionItem.VehicleAction.LAND if index == len(offsets) - 1 else MissionItem.VehicleAction.NONE,
                 )
             )
-        await self._drone.mission.set_return_to_launch_after_mission(True)
+        # The outbound mission ends with a real SITL landing at the fictional
+        # receiving station. Lifeline models the unload and validates the
+        # receipt before explicitly commanding the return leg.
+        await self._drone.mission.set_return_to_launch_after_mission(False)
         await self._drone.mission.upload_mission(MissionPlan(items))
         return "accepted:upload_mission"
 
