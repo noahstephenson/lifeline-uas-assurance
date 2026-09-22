@@ -13,6 +13,7 @@ from typing import Any
 
 import yaml
 
+from lifeline import __version__
 from lifeline.config import LifelineConfig, file_sha256
 from lifeline.evidence.exporter import RUNS_DIR, collect_px4_environment, validate_evidence_id
 from lifeline.models import CommandName, CommandRecord
@@ -85,6 +86,11 @@ async def run_px4_smoke(
         status = "PASS"
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
+    finally:
+        close = getattr(adapter, "close", None)
+        if close is not None:
+            await close()
+
     return _finalize_smoke(run_dir, run_id, config, adapter, commands, observations, status, error)
 
 
@@ -159,6 +165,7 @@ def _finalize_smoke(
         "platform": platform.platform(),
         "python": platform.python_version(),
         "mavsdk": _version("mavsdk"),
+        "lifeline": __version__,
         **collect_px4_environment(),
         "ubuntu_release_declared": os.getenv("LIFELINE_UBUNTU_RELEASE", "unreported"),
         "px4_tag_declared": os.getenv("LIFELINE_PX4_TAG", "unreported"),

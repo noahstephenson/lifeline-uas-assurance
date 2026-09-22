@@ -3,8 +3,8 @@
   "qualification_method": "automated browser display qualification",
   "human_usability_study": false,
   "verification_status": "PASS",
-  "generated_at": "2026-09-22T00:45:25.360Z",
-  "commit": "9541ecc8119bf48f036a7fdccaa0cc9ab6348a6f",
+  "generated_at": "2026-09-22T12:33:26.727Z",
+  "commit": "4912d9e2ae04321199a2577337abc691e96dfb2d",
   "playwright_version": "1.55.1",
   "browser": {
     "name": "chromium",
@@ -15,173 +15,187 @@
     "800x1000"
   ],
   "fixtures": {
-    "DISPLAY-V11-T01": "03e4b825422d506e8531bd564d5d514bcb9921e2bf670271ae1bbf46b58460ad",
-    "DISPLAY-V11-T05": "88f7f8bd5e3e34a3dfc9842b11408292071c0cdf30dc048909b97c13401b4b84",
-    "DISPLAY-V11-T11": "48112698794ea102875a0ce1a8f7e39863370e84b5374f254ec5c0eb7d9af626",
-    "DISPLAY-V11-T13": "2a953bdcb65ac797a9c68c8afea56b72aa1068a24d346f5f87bffe2b73ed6eba",
-    "DISPLAY-V11-T14": "264289f202f579cf80c0054a83faeba4b7c67aca2a0b96d5c3c5f6e4c2454ad5",
-    "DISPLAY-V11-T15": "3d0321f7a79010d87112c40d76ba6cd007f6579965f0f70643d99bd121eed98d"
+    "DISPLAY-V11-T01": "943801c5b36de502afa3fd85fe0d9f7221b8528cfdc7568ae624ad27640747e0",
+    "DISPLAY-V11-T05": "1905dec6b06497655905d4fd119f37340209b4ac3429d39f2cd8030c0f90b86c",
+    "DISPLAY-V11-T11": "62fa1dfcdb11ed48c38f561535c84b50d46e9fc606774760a2edcd7c53e06106",
+    "DISPLAY-V11-T13": "32516020cbef7f25350f0859db08e2b20b7f7a5c8302b03122de0ea70c4d9052",
+    "DISPLAY-V11-T14": "8c966b19d2dfe5f4602709926229598b21fc1980749118764a355b2f6ad462dd",
+    "DISPLAY-V11-T15": "7cc3c14d768d7a64d62f80fabd0447880cc2bbb86309759bcc9fc7cfe55c722e"
   },
   "screenshots": {
-    "screenshots/DISPLAY-V11-T01-compact.png": "e502e9057b49d482a124944f4400e612cea67e1aa58ca99262cb6090f68ebfe3",
-    "screenshots/DISPLAY-V11-T01-desktop.png": "50cf96787bb63d74564b39cb33a208e9753c382b48e8b73047adde9871de0add",
-    "screenshots/DISPLAY-V11-T05-compact.png": "289bbf305098064b04586a181282afbec7afeb76aedc848b92585d13a02b78da",
-    "screenshots/DISPLAY-V11-T05-desktop.png": "8cf85b0c6d90e6ffc9a70908872e82ffafa39792d0dc884d149c2b1f926a1d16",
-    "screenshots/DISPLAY-V11-T11-compact.png": "71c2bda0ebb88be75c9de7ed7c85a0b2aba48facb34ffb0c7b88ec970bb26502",
-    "screenshots/DISPLAY-V11-T11-desktop.png": "2c6024a5a66e70f9b3335abd22a5fc33ab741a74dc81e3db04b4d35f34a504df",
-    "screenshots/DISPLAY-V11-T13-compact.png": "82c89676c6ef6d1870d35c43a3a80d7e704c28be1de62f613f1fe33f7bcec258",
-    "screenshots/DISPLAY-V11-T13-desktop.png": "4bd9402ae265d4bbeaecf2f2ea1e3ffef1fd77a6e575587deee198950e464706",
-    "screenshots/DISPLAY-V11-T14-compact.png": "f7611756cd424920f43a58602d4046160bd0aa912c031873a0d6c2cb927e61b1",
-    "screenshots/DISPLAY-V11-T14-desktop.png": "9fcdb0ee4d88669d5eec165332ce572ddc688e4d05e9abce48300da81d627431",
-    "screenshots/DISPLAY-V11-T15-compact.png": "4a63162523072039383f9e5f026be1581f9d71a7ef11f5ad7f11c81682c3eedb",
+    "screenshots/DISPLAY-V11-T01-compact.png": "8fb8cc43dba2ba2bb7dcfb7ba8245ad42cf81ec72dcd59b4f19a4721e4f1cb8e",
+    "screenshots/DISPLAY-V11-T01-desktop.png": "fcc259f026470074cd1ae9fed41c8f844ef25a73d56fa4297c7104cdffdb0cd6",
+    "screenshots/DISPLAY-V11-T05-compact.png": "a2ed4703faccfa7e02313f8db06b2e5b989bbbd69a6d83d78cd1367592e2accc",
+    "screenshots/DISPLAY-V11-T05-desktop.png": "033b7c8ec12b35dab43c811e82c9d2f2e41b4fef579f112c100f84bac72540e8",
+    "screenshots/DISPLAY-V11-T11-compact.png": "8f356213d6562e650619c8309206f2b26f5388afc7abc7748bbdab3705357f89",
+    "screenshots/DISPLAY-V11-T11-desktop.png": "97702031e3cb55a73d2ba34572423a942b0a4142b270e49a36ec0fd73be32c63",
+    "screenshots/DISPLAY-V11-T13-compact.png": "e462d7819d48dcfc0426e104f9b03c8a1e35afe1d4949066e6407035012e9c11",
+    "screenshots/DISPLAY-V11-T13-desktop.png": "9e40d629b4ff5cbb4391a027ebc4d2e1f085048785714d75b805851f7390516e",
+    "screenshots/DISPLAY-V11-T14-compact.png": "8332a86761b67fa615a9975117b51bb47e5f8f5f34838f0fc40d21984cea3433",
+    "screenshots/DISPLAY-V11-T14-desktop.png": "fa949efbe25399e64af898b959b6ec7606940e4dcec1d7e94a288b6d1208209b",
+    "screenshots/DISPLAY-V11-T15-compact.png": "01e51b2982b1f176ce39e2d6c3359f1833b75e7599da2df0c3ddc6c01bfcfae3",
     "screenshots/DISPLAY-V11-T15-desktop.png": "947ae8758647f6d61ddc622f3117c8709ee8cff3dc74d62563cc5f1cfda2d2ea"
   },
   "assertions": [
     {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 7424,
-      "error": null
-    },
-    {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 7416,
+      "duration_ms": 13137,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 13040,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / the dashboard exposes replay inspection but no mission-control request",
       "status": "passed",
       "passed": true,
-      "duration_ms": 7412,
+      "duration_ms": 13230,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-01 keeps mission, assurance, health, energy, evidence, and time visible",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8455,
+      "duration_ms": 13434,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-02 explains unknown and stale critical data without color",
       "status": "passed",
       "passed": true,
-      "duration_ms": 3949,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 7057,
+      "duration_ms": 5707,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 7416,
+      "duration_ms": 8696,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / medical workflow shows request, manifest, map, custody, and accepted receipt",
       "status": "passed",
       "passed": true,
-      "duration_ms": 7561,
+      "duration_ms": 9235,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-03 shows the T-05 decision basis and rejected RETURN",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4070,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T05 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4218,
+      "duration_ms": 4392,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-04 failed WebSocket replaces operational content with unavailable text",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2504,
+      "duration_ms": 2040,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T05 compact qualification screenshot",
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4045,
+      "duration_ms": 12669,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
+      "name": " /  / display-qualification.spec.js / compact dashboard has no horizontal content clipping",
       "status": "passed",
       "passed": true,
-      "duration_ms": 3970,
+      "duration_ms": 7101,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8476,
+      "duration_ms": 8113,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4468,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T05 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4459,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / untrusted rationale and identifier are rendered as text, never HTML",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2129,
+      "duration_ms": 2267,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 desktop qualification screenshot",
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T05 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4351,
+      "duration_ms": 4379,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / replay seeking and Explain this moment do not leak later receipt or terminal outcomes",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 7995,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 7034,
+      "duration_ms": 8542,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4374,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 3672,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / independent logistics outcomes remain visible after aircraft recovery",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 18533,
+      "duration_ms": 4263,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 6565,
+      "duration_ms": 7326,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 6380,
+      "duration_ms": 6817,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / independent logistics outcomes remain visible after aircraft recovery",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 18383,
       "error": null
     }
   ]

@@ -103,6 +103,10 @@ class DeliveryThread:
         self.events: list[DeliveryEvent] = []
         self._event_sequence = 0
         self._arrived_at_s: float | None = None
+        self._handoff_started_at_s: float | None = None
+        self._landing_observed = False
+        self._disarm_observed = False
+        self._unloading_completed = False
         self._accepted_at_s: float | None = None
         self._receipt_emitted = False
         self._seen_receipts: set[str] = set()
@@ -137,6 +141,7 @@ class DeliveryThread:
         response_mode: str = "accepted",
         deadline_s: float | None = None,
         response_delay_s: float = 6.0,
+        aircraft_observation_source: str = "deterministic-fake-telemetry",
     ) -> DeliveryStatus:
         deadline = float(deadline_s if deadline_s is not None else self.contract.delivery_deadline_s)
         custody = self._status.custody
@@ -151,19 +156,42 @@ class DeliveryThread:
 
         if at_delivery_zone and self._arrived_at_s is None:
             self._arrived_at_s = sim_time_s
-            self._emit(sim_time_s, "DELIVERY_ZONE_ARRIVAL", {"landed": landed})
+            self._emit(
+                sim_time_s,
+                "DELIVERY_ZONE_ARRIVAL",
+                {"landed": landed, "disarmed": disarmed},
+                source=aircraft_observation_source,
+            )
+
+        if self._arrived_at_s is not None and landed and not self._landing_observed:
+            self._landing_observed = True
+            self._emit(sim_time_s, "LANDING_OBSERVED", {}, source=aircraft_observation_source)
+        if self._arrived_at_s is not None and disarmed and not self._disarm_observed:
+            self._disarm_observed = True
+            self._emit(sim_time_s, "DISARM_OBSERVED", {}, source=aircraft_observation_source)
 
         conditions_met = (
             self._arrived_at_s is not None
-            and (landed or not self.contract.handoff.required_landed)
-            and (disarmed or not self.contract.handoff.required_disarmed)
+            and (self._landing_observed or not self.contract.handoff.required_landed)
+            and (self._disarm_observed or not self.contract.handoff.required_disarmed)
         )
-        if conditions_met and outcome == DeliveryOutcome.PENDING:
-            elapsed = max(0.0, sim_time_s - self._arrived_at_s)
+        if conditions_met and self._handoff_started_at_s is None:
+            self._handoff_started_at_s = sim_time_s
+            self._emit(
+                sim_time_s,
+                "UNLOADING_STARTED",
+                {"required_dwell_s": self.contract.handoff.unloading_dwell_s},
+            )
+
+        if self._handoff_started_at_s is not None and outcome == DeliveryOutcome.PENDING:
+            elapsed = max(0.0, sim_time_s - self._handoff_started_at_s)
             handoff_progress = min(1.0, elapsed / max(self.contract.handoff.unloading_dwell_s, 0.001))
             if handoff_progress >= 1.0:
+                if not self._unloading_completed:
+                    self._unloading_completed = True
+                    self._emit(sim_time_s, "UNLOADING_COMPLETE", {})
                 receipt_id = f"RCPT-{self.contract.request_id}"
-                ready_at = self._arrived_at_s + self.contract.handoff.unloading_dwell_s
+                ready_at = self._handoff_started_at_s + self.contract.handoff.unloading_dwell_s
                 if response_mode == "delayed" and sim_time_s < ready_at + response_delay_s:
                     receipt = ReceiptStatus.PENDING
                 elif response_mode == "absent":
@@ -186,6 +214,7 @@ class DeliveryThread:
                 else:
                     accepted = self.ingest_receipt(
                         receipt_id=receipt_id,
+                        mission_id=self.contract.mission_id,
                         request_id=self.contract.request_id,
                         package_id=self.contract.package.id,
                         recipient_id=self.contract.recipient.id,
@@ -214,8 +243,8 @@ class DeliveryThread:
             outcome=outcome,
             timeliness=timeliness,
             delivery_zone_arrived=self._arrived_at_s is not None,
-            landed_at_site=self._arrived_at_s is not None and landed,
-            disarmed_at_site=self._arrived_at_s is not None and disarmed,
+            landed_at_site=self._landing_observed,
+            disarmed_at_site=self._disarm_observed,
             handoff_progress=handoff_progress,
             deadline_remaining_s=deadline - sim_time_s,
             accepted_at_s=self._accepted_at_s,
@@ -227,6 +256,7 @@ class DeliveryThread:
         self,
         *,
         receipt_id: str,
+        mission_id: str,
         request_id: str,
         package_id: str,
         recipient_id: str,
@@ -237,7 +267,8 @@ class DeliveryThread:
             return False
         self._seen_receipts.add(receipt_id)
         matches = (
-            request_id == self.contract.request_id
+            mission_id == self.contract.mission_id
+            and request_id == self.contract.request_id
             and package_id == self.contract.package.id
             and recipient_id == self.contract.recipient.id
         )
@@ -253,16 +284,24 @@ class DeliveryThread:
         self._receipt_emitted = True
         self._emit(sim_time_s, event_type, details)
 
-    def _emit(self, sim_time_s: float, event_type: str, details: dict[str, Any]) -> None:
+    def _emit(
+        self,
+        sim_time_s: float,
+        event_type: str,
+        details: dict[str, Any],
+        *,
+        source: str = "modeled-receiving-station",
+    ) -> None:
         self.events.append(
             DeliveryEvent(
                 sequence=self._event_sequence,
                 sim_time_s=sim_time_s,
                 event_type=event_type,
+                mission_id=self.contract.mission_id,
                 request_id=self.contract.request_id,
                 package_id=self.contract.package.id,
                 recipient_id=self.contract.recipient.id,
-                source="modeled-receiving-station",
+                source=source,
                 details=details,
             )
         )

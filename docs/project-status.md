@@ -1,8 +1,8 @@
 # Project status
 
 Project Lifeline v1.1 is implemented as a Medical Resupply Mission Lab. Its evidence
-status is intentionally split between the preserved v1.0 qualification baseline and new
-v1.1 behavior awaiting refreshed campaign evidence.
+status includes the preserved v1.0 qualification baseline and the completed v1.1
+medical-workflow qualification.
 
 ## Implemented v1.1 capabilities
 
@@ -26,12 +26,14 @@ v1.1 behavior awaiting refreshed campaign evidence.
 
 - The immutable v1.0 campaign, browser evidence, and PX4 runs remain the historical
   baseline for the behavior they recorded.
-- The controlled `CAMPAIGN-20260921-MEDICAL-V11` campaign passed 15/15 scenarios with
+- The controlled `CAMPAIGN-20260922-FINAL-V11` campaign passed 15/15 scenarios with
   complete bundle integrity.
-- Automated v1.1 display qualification passed 21/21 checks and generated 12 new desktop
+- Automated v1.1 display qualification passed 23/23 checks and generated 12 new desktop
   and compact screenshots while retaining the historical screenshots.
-- A new T-01/T-05 SITL campaign is required before the landing-handoff-return integration
-  is called PX4-qualified. Old aircraft evidence is not reused for that claim.
+- Stock-X500 v1.1 qualification passed for smoke `LFL-SMOKE-PX4-20260922T121905Z-6518`,
+  nominal T-01 `LFL-T01-PX4-20260922T120613Z-A800`, and compound-fault T-05
+  `LFL-T05-PX4-20260922T121017Z-B4A3`; each public bundle is sanitized, provenance-linked,
+  hash-complete, and distinct from preserved v1.0 evidence.
 
 ## Sensible next extensions
 

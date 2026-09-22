@@ -2,9 +2,9 @@ requirement_id,test_ids,hazard_ids,status
 M-01,T-01,,verified-px4-sitl
 M-02,T-01,,verified-fake
 M-03,T-01;T-05,,verified-fake
-M-04,T-01;T-13;T-14;T-15,H-10;H-11,planned-v1.1
-M-05,T-01;T-13;T-14,H-10;H-11,planned-v1.1
-M-06,T-01;T-05;T-13;T-14;T-15,H-12,planned-v1.1
+M-04,T-01;T-13;T-14;T-15,H-10;H-11,verified-px4-sitl-and-fake
+M-05,T-01;T-13;T-14,H-10;H-11,verified-px4-sitl-and-fake
+M-06,T-01;T-05;T-13;T-14;T-15,H-12,verified-px4-sitl-and-fake
 HM-01,T-02;T-04;T-06,,verified
 HM-02,T-11,H-07,verified
 HM-03,T-11,H-07,verified
@@ -22,12 +22,12 @@ OD-02,T-11,H-07,verified-playwright
 OD-03,T-05,H-04,verified-playwright
 OD-04,T-11,H-07,verified-playwright;verified-frontend-unit
 OD-05,T-12,H-08,verified-replay
-OD-06,T-01;T-13,H-10;H-12,planned-v1.1
+OD-06,T-01;T-13,H-10;H-12,verified-playwright
 EV-01,T-01;T-12,,verified
 EV-02,T-12,H-08,verified
 EV-03,T-12,H-08,verified
 EV-04,T-12,H-08,verified-negative-test
-EV-05,T-01;T-13;T-14;T-15,H-08;H-11,planned-v1.1
+EV-05,T-01;T-13;T-14;T-15,H-08;H-11,verified-evidence-audit
 SS-01,T-01,H-09,verified-unit
 SS-02,T-01,,verified-inspection
 SS-03,T-01,,verified-content-audit

@@ -1,0 +1,34 @@
+{
+  "created_at": "2026-09-22T12:20:37.583078+00:00",
+  "export_type": "sanitized-public-export",
+  "original_artifact_sha256": {
+    "commands.jsonl": "16fdf023ebb10af376ef33aeccddf2d72dda9f8962942885bf1ca9d109f31320",
+    "configuration-resolved.yaml": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "environment.json": "7728e675ad6c804df36c6d8453148f13f8d32bf788171a90dbbd68b9e2a7ccff",
+    "observations.jsonl": "c3f88b1b1c9eced14f528e260ede8bd8be083493e53de89f5058a385d2ad507f",
+    "px4.log": "e99f513c9e29866a68e72495b07a644830fb045b4ccd0bdadecfd2d115ca0501",
+    "sitl-reset.log": "1d728cd4f943a998147da077d68dda8caa84d6cf8756c49b2c7666ea47d31472",
+    "smoke-summary.json": "55f8e97a8ec72161a8edbf96eeba09c5b2489ffa1063c4d1c8df07bf04ff8428"
+  },
+  "public_artifact_sha256": {
+    "commands.jsonl": "16fdf023ebb10af376ef33aeccddf2d72dda9f8962942885bf1ca9d109f31320",
+    "configuration-resolved.yaml": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "environment.json": "7728e675ad6c804df36c6d8453148f13f8d32bf788171a90dbbd68b9e2a7ccff",
+    "observations.jsonl": "c3f88b1b1c9eced14f528e260ede8bd8be083493e53de89f5058a385d2ad507f",
+    "px4.log": "b0abdd732b654520d88c057b25604c79a71523e7e4c87fdf049cd848755efa0e",
+    "sitl-reset.log": "1d728cd4f943a998147da077d68dda8caa84d6cf8756c49b2c7666ea47d31472",
+    "smoke-summary.json": "55f8e97a8ec72161a8edbf96eeba09c5b2489ffa1063c4d1c8df07bf04ff8428"
+  },
+  "redaction_count": 7,
+  "redactions": [
+    {
+      "artifact": "px4.log",
+      "count": 7,
+      "replacement": "/home/<user>",
+      "rule": "linux-home-directory"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "source_manifest_sha256": "567ad7af6f48af23fefa0b80798e1167798b2a5358e294fbf08534e4659ee74b",
+  "source_run_id": "LFL-SMOKE-PX4-20260922T121905Z-6518"
+}

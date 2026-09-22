@@ -1,0 +1,92 @@
+{
+  "artifact_sha256": {
+    "after_action": "f60a771bfcfca26fa28e10cb81d95f5a3c4a17964bb8ee8aa0b5d82eaca04539",
+    "assertions": "1f20047934bdc3374da6a259a72298ed7bff7bcf8a35b462b8b2e69e9139f74a",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
+    "decisions": "8c8da30079d8127026e9e2f28b0157d8bd3a24e4e6c9292876baf715a1c2d5d1",
+    "delivery_events": "1712453be60b4561846eb3ed5cf9f585298007c4276009ee07b0d4561be8d4bc",
+    "environment": "2ff2e34dfe8f64a4c59b2d79111a3ddde3217cb7cf24be5be16fd725281f4c04",
+    "mission_contract": "28d6615be2af43205ec7efd88c3f2ea9b39020050e05fd1325c47fae30b77dbd",
+    "scenario": "3c3e7ee40ca9a3119cf7939dbac7018ab372371d5921fde89150175798d18382",
+    "snapshots": "fb84af6098418406f49789156b1b0974757cda0670a93b574d182c3e4fd53bdd",
+    "summary": "8d17111971b2891a56649d9c5f758f62e31765721c2f0f7e8fc0e1ca4ca869ef",
+    "timeline": "4d83524e35255665f94bade660b9cb9d4d99aafc579d6df328af44f578e118ec",
+    "timeline_svg": "001a6143a4b7c3ad3f3323f6656175100f9aa1a60bf6dfc96be116d74600ad5f",
+    "verification_matrix": "f281e39232caef9c8f60bc546a90c29ca0bf1d6eecfd9e219d266cf156dda809"
+  },
+  "assertions": [
+    {
+      "expected": "RECOVERED",
+      "name": "terminal_state",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:WATCH",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:RETURN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTROLLED_LAND",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:LINK_LOSS_DWELL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:RECOVERY_DWELL",
+      "observed": "observed",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
+  "exploratory": false,
+  "files": {
+    "after_action": "after-action.json",
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "delivery_events": "delivery-events.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "mission_contract": "mission-contract-resolved.yaml",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "CAMPAIGN-20260922-FINAL-V11-T08",
+  "scenario_id": "T-08",
+  "scenario_sha256": "4d4677cbea924c6ed52ac051be91fd49507cb51c86e03c54df5aff9aec4710c8",
+  "schema_version": "1.0",
+  "software_versions": {
+    "fastapi": "0.141.1",
+    "lifeline": "1.1.0",
+    "mavsdk": "not-installed",
+    "openmct": "4.1.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pydantic": "2.13.5",
+    "python": "3.11.0",
+    "pyyaml": "6.0.3",
+    "source": "fake",
+    "uvicorn": "0.53.0"
+  },
+  "verification_status": "PASS"
+}

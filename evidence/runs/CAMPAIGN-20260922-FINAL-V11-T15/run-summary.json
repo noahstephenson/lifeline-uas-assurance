@@ -1,0 +1,16 @@
+{
+  "aircraft_outcome": "RECOVERED",
+  "decision_count": 1,
+  "delivery_outcome": "ACCEPTED",
+  "error": null,
+  "exploratory": false,
+  "package_custody": "RECEIVING_STATION",
+  "receipt_status": "ACCEPTED",
+  "run_id": "CAMPAIGN-20260922-FINAL-V11-T15",
+  "scenario_id": "T-15",
+  "scenario_name": "delivery_accepted_after_service_deadline",
+  "snapshot_count": 131,
+  "terminal_state": "RECOVERED",
+  "timeliness": "LATE",
+  "verification_status": "PASS"
+}

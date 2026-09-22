@@ -1,0 +1,129 @@
+{
+  "artifact_sha256": {
+    "after_action": "6ef63a38e27448d817a58ddd92ae508ab49657781ceb0a1ac3673660046b9779",
+    "api_log": "bcba55c9b46ce7cf54eda7bbadf702aee170380c6b61691961bf444b1786a658",
+    "assertions": "7b5f4f343528128f590ce749c4abe35e955e276caedfb1c70298e04d513dca69",
+    "commands": "0efcefc0aebbd5b0631d922d00f446dceaf15f9c052c0b460d533c90b1db2b96",
+    "configuration": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "decisions": "a3211fb253173decbc183f5d135ff76ec8fe857e7ae3251ce367bf3a76ffdf01",
+    "delivery_events": "b0c3327b53e30d2b4618a854b1465a4cca2809ec86e551c90217f002b610b489",
+    "environment": "ac5e6a7d4e1ee5cbb44a36fa3cd8f55423eb709e5b72fd8c80688b438fabe4b3",
+    "mission_contract": "28d6615be2af43205ec7efd88c3f2ea9b39020050e05fd1325c47fae30b77dbd",
+    "public_export": "084ddb3d8a5529e6274137377df0b00b80e5118fadaf80ad020da9956072f284",
+    "px4_log": "42f3301fcd92cbbec9cf1d80a91826f8edf6b3bcd120cec3d4d2ab214998cc50",
+    "scenario": "a2fd395fb1847350a6034505dc80ccfe2181ab41bc9d0f2dfa70845719d922b3",
+    "sitl_reset_log": "1d728cd4f943a998147da077d68dda8caa84d6cf8756c49b2c7666ea47d31472",
+    "snapshots": "4766c88332e5c73515cbd599a352941c9f4ac4f46b8f9032e67abda5889319ee",
+    "summary": "621507f3e42cf87b2c90151ae547553d2d6451999527f7b5202d445f6d5b6913",
+    "timeline": "3d867e12d8a15a2ef80387c11f2a62750640ab0ea05fe8070b2fd1c63a8e0bbf",
+    "timeline_svg": "1c7db67b26370b6d2d1bb36fc0b0e92dee66461d86474ae596303c674964af13",
+    "verification_matrix": "78b62383630982adfe2845229ad0c98b850eb47f2ae83bef2fbaab762bd882b6"
+  },
+  "assertions": [
+    {
+      "expected": "RECOVERED",
+      "name": "terminal_state",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "RECOVERED",
+      "name": "aircraft_outcome",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "ACCEPTED",
+      "name": "delivery_outcome",
+      "observed": "ACCEPTED",
+      "passed": true
+    },
+    {
+      "expected": "ON_TIME",
+      "name": "timeliness",
+      "observed": "ON_TIME",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:NOMINAL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTROLLED_LAND",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:ABORT_RUN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:NOMINAL",
+      "observed": "observed",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+  "exploratory": false,
+  "files": {
+    "after_action": "after-action.json",
+    "api_log": "api.log",
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "delivery_events": "delivery-events.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "mission_contract": "mission-contract-resolved.yaml",
+    "public_export": "public-export.json",
+    "px4_log": "px4.log",
+    "scenario": "scenario-resolved.yaml",
+    "sitl_reset_log": "sitl-reset.log",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "LFL-T01-PX4-20260922T120613Z-A800",
+  "scenario_id": "T-01",
+  "scenario_sha256": "e30806df456f506411602f6db0f56a4ca65b6ca891cb78ace399402171dd26d0",
+  "schema_version": "1.0",
+  "software_versions": {
+    "aircraft_telemetry": "mavsdk",
+    "assurance_fault_scope": "scripted-lifeline-inputs-only; PX4 estimator unchanged",
+    "dashboard_connected_at": "2026-09-22T12:06:48.967097+00:00",
+    "dashboard_px4_time_overlap": "true",
+    "evidence_variant": "sanitized-public-export",
+    "fastapi": "0.141.1",
+    "gazebo_version": "Gazebo Sim, version 8.15.0",
+    "lifeline": "1.1.0",
+    "mavsdk": "3.17.2",
+    "mission_released_at": "2026-09-22T12:06:49.563950+00:00",
+    "openmct": "4.1.0",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "px4_commit": "d6f12ad1c4f70ad3230afd7d86e971421e02fef4",
+    "px4_tag": "v1.17.0",
+    "pydantic": "2.13.5",
+    "python": "3.12.3",
+    "pyyaml": "6.0.3",
+    "receiver_source": "modeled-receiving-station",
+    "return_mode": "mission-to-original-fictional-launch-point",
+    "site_disarm_observation": "mavsdk-armed-false",
+    "sitl_endpoint": "udpin://127.0.0.1:14540",
+    "source": "px4",
+    "source_manifest_sha256": "a84d17237ce4f71cf8078101e25bbadae4db4734017c4c431a131b0a94d6418d",
+    "ubuntu_release": "24.04",
+    "uvicorn": "0.53.0",
+    "vehicle_uuid": "5283920058631409231",
+    "wsl_kernel": "6.18.33.2-microsoft-standard-WSL2"
+  },
+  "verification_status": "PASS"
+}

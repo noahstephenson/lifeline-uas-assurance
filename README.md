@@ -10,7 +10,7 @@ and the logistics deadline was met.
 > requests, and deadlines. It is not an operational medical system, does not support real
 > flight or care decisions, and does not establish safety, certification, or endorsement.
 
-![Project Lifeline dashboard](evidence/display-qualification/screenshots/DISPLAY-T05-desktop.png)
+![Project Lifeline dashboard](evidence/display-qualification/screenshots/DISPLAY-V11-T05-desktop.png)
 
 ## Why this is more than a drone simulation
 
@@ -119,9 +119,10 @@ executes the modeled handoff, then explicitly rearms, takes off, and returns. Po
 altitude, battery, mode, and flight state come from MAVSDK; confidence, energy feasibility,
 custody, receipt, and deadline status are Lifeline models.
 
-The pre-existing v1.0 PX4 evidence remains valid for its recorded aircraft behavior. It
-does not retroactively prove the new v1.1 receiving-station workflow; a new SITL campaign
-is required before that integration is claimed as qualified.
+The v1.1 qualification uses stock PX4/Gazebo X500 SITL. The nominal run records outbound
+travel, observed landing and disarming, modeled unloading, a matching accepted receipt,
+observed re-departure, and observed recovery. The compound-fault run records the scripted
+Lifeline input degradation separately from unchanged PX4 estimator telemetry.
 
 ## Current verification status
 
@@ -132,9 +133,9 @@ is required before that integration is claimed as qualified.
   behavior, launch contracts, and the PX4 safety boundary.
 - Frontend tests cover escaping, stale-data behavior, loss of service, and replay completion.
 - Historical v1.0 PX4 and display evidence is preserved unchanged.
-- Automated v1.1 browser qualification passed 21/21 checks and generated 12 new desktop
-  and compact screenshots; the repository does not treat old evidence as proof of new
-  PX4 behavior.
+- New v1.1 PX4 qualification passed for smoke, nominal T-01, and compound-fault T-05.
+- Automated v1.1 browser qualification passed 23/23 checks and generated 12 desktop
+  and compact screenshots, including temporal replay and compact-layout checks.
 
 Project Lifeline is released under the MIT License. Requirements, hazards, traceability,
 CONOPS, discrepancies, and upstream component provenance are maintained as versioned

@@ -54,6 +54,9 @@ class MavsdkAdapter:
         self._stream_received_at: dict[str, float] = {}
         self._stream_errors: dict[str, BaseException] = {}
         self._rates_configured = False
+        self._launch_home: tuple[float, float] | None = None
+        self._return_altitude_m = 25.0
+        self._return_speed_mps = 8.0
 
     def _validate_loopback_endpoint(self) -> None:
         endpoint = self.endpoint.replace("udpin://", "udp://", 1).replace("udpout://", "udp://", 1)
@@ -96,7 +99,7 @@ class MavsdkAdapter:
 
         async def wait_health() -> None:
             async for health in self._drone.telemetry.health():
-                if health.is_global_position_ok and health.is_home_position_ok:
+                if health.is_local_position_ok and health.is_global_position_ok and health.is_home_position_ok and health.is_armable:
                     return
 
         await asyncio.wait_for(wait_health(), timeout=timeout_s)
@@ -109,6 +112,9 @@ class MavsdkAdapter:
         home = await _first(self._drone.telemetry.home())
         mission_path = mission_path or PROJECT_ROOT / "config" / "missions" / "medical-resupply.yaml"
         mission = yaml.safe_load(mission_path.read_text(encoding="utf-8"))
+        self._launch_home = (home.latitude_deg, home.longitude_deg)
+        self._return_altitude_m = float(mission["cruise_altitude_m"])
+        self._return_speed_mps = float(mission["cruise_speed_mps"])
         if mission.get("coordinate_frame") != "local_ned":
             raise SitlSafetyError("qualification mission must use the fictional local_ned frame")
         offsets = [
@@ -177,8 +183,31 @@ class MavsdkAdapter:
         self._require_actions()
         self._require_drone()
         if action == RecommendedAction.RETURN:
-            await self._drone.action.return_to_launch()
-            return "accepted:return_to_launch"
+            if self._launch_home is None:
+                raise SitlSafetyError("original fictional launch point is unavailable")
+            from mavsdk.mission import MissionItem, MissionPlan
+
+            latitude, longitude = self._launch_home
+            item = MissionItem(
+                latitude,
+                longitude,
+                max(1.0, self._return_altitude_m),
+                self._return_speed_mps,
+                True,
+                float("nan"),
+                float("nan"),
+                MissionItem.CameraAction.NONE,
+                float("nan"),
+                float("nan"),
+                float("nan"),
+                float("nan"),
+                float("nan"),
+                MissionItem.VehicleAction.LAND,
+            )
+            await self._drone.mission.set_return_to_launch_after_mission(False)
+            await self._drone.mission.upload_mission(MissionPlan([item]))
+            await self._drone.mission.start_mission()
+            return "accepted:return_mission_to_original_launch_point"
         if action == RecommendedAction.CONTROLLED_LAND:
             await self._drone.action.land()
             return "accepted:land"
@@ -222,6 +251,33 @@ class MavsdkAdapter:
         self._require_drone()
         value, _ = await self._stream_value("in_air", self._drone.telemetry.in_air)
         return bool(value)
+
+    async def armed(self) -> bool:
+        self._require_drone()
+        value, _ = await self._stream_value("armed", self._drone.telemetry.armed)
+        return bool(value)
+
+    async def close(self) -> None:
+        """Stop cached telemetry streams and the local MAVSDK server process."""
+        tasks = list(self._stream_tasks.values())
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        self._stream_tasks.clear()
+        self._stream_events.clear()
+        self._stream_values.clear()
+        self._stream_received_at.clear()
+        self._stream_errors.clear()
+        drone = self._drone
+        self._drone = None
+        if drone is not None:
+            # MAVSDK-Python 3.17 exposes no public shutdown method. Its own
+            # destructor uses this hook; invoking it here makes qualification
+            # teardown deterministic instead of relying on garbage collection.
+            stop_server = getattr(drone, "_stop_mavsdk_server", None)
+            if stop_server is not None:
+                stop_server()
 
     async def _stream_value(self, key: str, factory: Any, timeout_s: float = 5.0) -> tuple[Any, float]:
         if key not in self._stream_tasks:

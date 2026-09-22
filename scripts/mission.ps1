@@ -8,7 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
-$Lifeline = Join-Path $ProjectRoot ".venvScriptslifeline.exe"
+$Lifeline = Join-Path $ProjectRoot ".venv\Scripts\lifeline.exe"
 
 if (-not (Test-Path -LiteralPath $Lifeline)) {
     throw "Missing .venv. Run scripts/bootstrap.ps1 first."
@@ -17,7 +17,7 @@ if (-not (Test-Path -LiteralPath $Lifeline)) {
 if (-not $Scenario) {
     $Catalogue = @((& $Lifeline --json scenarios list | ConvertFrom-Json).data)
     Write-Host ""
-    Write-Host "Project Lifeline — Medical Resupply Mission Lab"
+    Write-Host "Project Lifeline - Medical Resupply Mission Lab"
     Write-Host "Select a controlled mission:"
     for ($Index = 0; $Index -lt $Catalogue.Count; $Index++) {
         $Item = $Catalogue[$Index]

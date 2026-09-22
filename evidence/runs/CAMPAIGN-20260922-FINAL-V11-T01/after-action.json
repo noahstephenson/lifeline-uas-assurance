@@ -1,0 +1,32 @@
+{
+  "completion": {
+    "assertions_passed": 8,
+    "assertions_total": 8,
+    "sim_time_s": 65.0,
+    "verification_status": "PASS"
+  },
+  "final_decision": {
+    "action": "NONE",
+    "code": "NOMINAL",
+    "hazards": [],
+    "requirements": [
+      "A-01"
+    ],
+    "summary": "All monitored resources are within the configured simulation envelope."
+  },
+  "interpretation_boundary": "Aircraft state and medical-logistics outcome are independent; receiver events, custody transfer, and the logistics deadline are deterministic simulation models.",
+  "outcomes": {
+    "aircraft": "RECOVERED",
+    "delivery": "ACCEPTED",
+    "receipt": "ACCEPTED",
+    "timeliness": "ON_TIME"
+  },
+  "request": {
+    "mission_id": "MISSION-ECHO-RESUPPLY",
+    "package_id": "PKG-ECHO-017-A",
+    "recipient_id": "AID-STATION-ECHO",
+    "request_id": "REQ-ECHO-017"
+  },
+  "run_id": "CAMPAIGN-20260922-FINAL-V11-T01",
+  "schema_version": "1.0"
+}

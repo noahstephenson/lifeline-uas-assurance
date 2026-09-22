@@ -1,31 +1,37 @@
 # Medical Resupply Mission Lab demonstration
 
-## Five-minute walkthrough
+## Short demonstration script
 
-1. Run `.\scripts\mission.ps1 -Scenario T-01 -Mode Synthetic`.
-2. In the outcome strip, point out that Aircraft, Delivery, and Timeliness are separate.
-3. Follow the aircraft and package markers on the local-NED map. These are fictional
-   coordinates, not an operational route.
-4. At Echo Aid Station, observe arrival, landing, modeled unloading progress, custody
-   transfer, and the matching receipt. Waypoint arrival alone does not complete delivery.
-5. Pause replay, select a timeline transition, and use **Explain this moment** to inspect
-   what the policy knew, what was unavailable, its allowed action, rejected alternatives,
-   and requirement/hazard trace links.
-6. Run T-14. The aircraft recovers, but the wrong-package receipt produces an independent
-   `REJECTED` delivery outcome.
-7. Open the evidence directory and inspect `after-action.json`, `delivery-events.jsonl`,
-   `assertions.csv`, and `manifest.json`.
+1. Start the nominal qualified replay:
 
-## Claims to make
+       .\scripts\mission.ps1 -Scenario T-01 -Mode Replay -RunId LFL-T01-PX4-20260922T120613Z-A800
 
-- The deterministic model distinguishes flight completion from logistics completion.
-- A receipt is accepted only when request, package, and recipient identifiers match.
-- Recorded decisions and delivery events are traceable and replayable.
-- The system demonstrates these properties in the documented simulation configuration.
+2. In the outcome strip, explain that Aircraft, Delivery, and Timeliness are independent. Follow the outbound X500 path to Echo Aid Station.
+3. On the timeline, identify telemetry-sourced DELIVERY_ZONE_ARRIVAL, LANDING_OBSERVED, and DISARM_OBSERVED. Then identify modeled-station UNLOADING_STARTED, UNLOADING_COMPLETE, and the matched ACCEPTED receipt. A command acknowledgement is not used as observed completion.
+4. Seek to a point before the receipt and select Explain this moment. Confirm the later receipt and final recovery do not appear. Resume and show the accepted, on-time handoff, re-departure, return, and observed recovery.
+5. Start the compound-fault replay:
 
-## Claims not to make
+       .\scripts\mission.ps1 -Scenario T-05 -Mode Replay -RunId LFL-T05-PX4-20260922T121017Z-B4A3
 
-- Do not describe the package, deadline, energy model, or receiving station as clinically
-  validated.
-- Do not imply real-flight testing, operational readiness, certified autonomy, or a human
-  usability study.
+6. Show the link-loss WATCH transition followed by invalid navigation. RETURN is rejected, CONTROLLED_LAND is selected, landing is observed, and Delivery remains NOT_COMPLETED. Explain that the degraded link/navigation values were scripted Lifeline inputs while MAVSDK continued to report the PX4 vehicle connected in MISSION mode.
+7. Briefly show the synthetic receiver outcomes: T-13 UNCONFIRMED/ABSENT, T-14 REJECTED with AIRCRAFT custody, and T-15 ACCEPTED plus LATE.
+
+## Reproduce qualification locally
+
+Ubuntu 24.04 WSL2, PX4 v1.17.0 at d6f12ad1c4, Gazebo Harmonic, MAVSDK 3.17.2, and explicit loopback SITL authorization are required.
+
+    .\scripts\qualify-px4.ps1 -Scenario Smoke
+    .\scripts\qualify-px4.ps1 -Scenario T-01
+    .\scripts\qualify-px4.ps1 -Scenario T-05
+    .\.venv\Scripts\lifeline.exe campaign run --campaign-id CAMPAIGN-LOCAL-V11
+    .\.venv\Scripts\lifeline.exe campaign audit --id CAMPAIGN-LOCAL-V11
+
+## Best dashboard captures
+
+- Nominal workflow: ../evidence/display-qualification/screenshots/DISPLAY-V11-T01-desktop.png
+- Compound fault: ../evidence/display-qualification/screenshots/DISPLAY-V11-T05-desktop.png
+- Compact nominal layout: ../evidence/display-qualification/screenshots/DISPLAY-V11-T01-compact.png
+
+## Claims and limits
+
+The deterministic model distinguishes flight completion from logistics completion, accepts a receipt only when mission/request/package/recipient identifiers match, and produces traceable replay evidence. Results are limited to the documented fictional simulation. They do not establish clinical suitability, real-flight performance, operational safety, certification, or human usability.

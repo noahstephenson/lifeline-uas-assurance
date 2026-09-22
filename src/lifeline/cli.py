@@ -75,7 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     evidence = sub.add_parser("evidence", help="inspect and verify an evidence bundle")
     evidence.add_argument("--run", required=True, dest="run_id")
-    evidence.add_argument("--attach-name", choices=["px4_log", "api_log"])
+    evidence.add_argument("--attach-name", choices=["px4_log", "api_log", "sitl_reset_log"])
     evidence.add_argument("--file", type=Path)
     evidence.add_argument("--export-public", type=Path, dest="export_public")
 

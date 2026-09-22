@@ -27,6 +27,10 @@ def test_history_and_current_state(tmp_path, monkeypatch):
     assert state["receipt_status"] == "ACCEPTED"
     history = client.get("/api/v1/history", params={"key": "energy_margin_wh"}).json()
     assert history and history[0]["id"] == "energy_margin_wh"
+    full_history = client.get("/api/v1/history").json()
+    assert "verification_status" not in full_history[0]
+    assert full_history[-1]["verification_status"] == "PASS"
+    assert full_history[-1]["evidence_complete"] is True
     cors = client.get(
         "/api/v1/health",
         headers={"Origin": "http://127.0.0.1:8876"},

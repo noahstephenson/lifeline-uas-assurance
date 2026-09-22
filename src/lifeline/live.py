@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from lifeline.api.app import TELEMETRY_METADATA, _merge_snapshot
 from lifeline.config import LifelineConfig
+from lifeline.delivery import load_mission_contract
 from lifeline.evidence import export_run
 from lifeline.models import AssertionResult, CommandRecord, DecisionRecord, MissionSnapshot, ScenarioDefinition
 from lifeline.scenarios.px4_runner import run_px4_scenario
@@ -279,6 +280,28 @@ def create_live_app(session: LiveSession) -> FastAPI:
     async def metadata(run_id: str | None = None) -> dict[str, Any]:
         _check_run_id(run_id, session)
         return {"schema_version": "1.0", "run_id": session.run_id, "measurements": TELEMETRY_METADATA}
+
+    @app.get("/api/v1/mission-contract")
+    async def mission_contract() -> dict[str, Any]:
+        return load_mission_contract().model_dump(mode="json")
+
+    @app.get("/api/v1/runs")
+    async def runs() -> list[dict[str, Any]]:
+        current = session.snapshots[-1] if session.snapshots else None
+        delivery = current.delivery if current else None
+        return [
+            {
+                "run_id": session.run_id,
+                "scenario_id": session.scenario.id,
+                "source": "px4",
+                "verification_status": session._verification_summary()["verification_status"],
+                "aircraft_outcome": current.mission_state.value if current else "IN_PROGRESS",
+                "delivery_outcome": delivery.outcome.value if delivery else "PENDING",
+                "timeliness": delivery.timeliness.value if delivery else "PENDING",
+                "terminal_state": current.mission_state.value if current else "INITIALIZING",
+                "exploratory": False,
+            }
+        ]
 
     @app.get("/api/v1/state")
     async def state(run_id: str | None = None) -> dict[str, Any]:

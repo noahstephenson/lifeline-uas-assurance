@@ -111,6 +111,37 @@ test("medical workflow shows request, manifest, map, custody, and accepted recei
   await expect(page.getByText("Explain this moment", { exact: true })).toBeVisible();
 });
 
+test("compact dashboard has no horizontal content clipping", async ({ page }) => {
+  await openRun(page, "DISPLAY-V11-T01", viewports.compact);
+  const overflow = await page.locator(".lifeline-shell").evaluate((shell) =>
+    [...shell.querySelectorAll("*")]
+      .filter((element) => element.scrollWidth > element.clientWidth + 2)
+      .map((element) => ({
+        tag: element.tagName,
+        className: String(element.className),
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth
+      }))
+  );
+  expect(overflow).toEqual([]);
+});
+
+test("replay seeking and Explain this moment do not leak later receipt or terminal outcomes", async ({ page }) => {
+  await openRun(page, "DISPLAY-V11-T01");
+  const seek = page.locator("#lifeline-seek");
+  await seek.evaluate((element) => {
+    element.value = "0";
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect(page.locator(".mission-meta b")).toContainText("T+0.0");
+  await expect(page.locator(".outcome-strip")).toContainText("PENDING");
+  await expect(page.locator(".outcome-strip")).not.toContainText("ACCEPTED");
+  await expect(page.locator(".outcome-strip")).not.toContainText("RECEIVING_STATION");
+  await expect(page.locator(".explain-panel")).toContainText("Delivery PENDING");
+  await expect(page.locator(".explain-panel")).not.toContainText("receipt ACCEPTED");
+  await expect(page.locator(".timeline-panel")).not.toContainText("RECOVERED");
+});
+
 test("independent logistics outcomes remain visible after aircraft recovery", async ({ page }) => {
   await openRun(page, "DISPLAY-V11-T13");
   await expect(page.getByText("RECOVERED", { exact: true }).first()).toBeVisible();

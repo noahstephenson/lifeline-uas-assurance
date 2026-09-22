@@ -71,6 +71,9 @@ async def run_px4_scenario(
     delivery_thread = DeliveryThread(contract)
     delivery_enabled = scenario.expect.delivery_outcome is not None
     recovery_started = False
+    recovery_return_commanded = False
+    recovery_airborne_observed = False
+    initial_departure_observed = False
     site_landing_observed = False
     command_sequence = 0
 
@@ -90,9 +93,9 @@ async def run_px4_scenario(
                 requested_at_s=max(0.0, requested_at_s),
                 accepted=True,
                 acknowledgement=acknowledgement,
-                completed_at_s=max(0.0, requested_at_s),
+                completed_at_s=max(0.0, requested_at_s) if name == CommandName.UPLOAD_MISSION else None,
                 decision_sequence=decision_sequence,
-                observed_completion_state="ACTION_ACKNOWLEDGED",
+                observed_completion_state="ACTION_ACKNOWLEDGED" if name == CommandName.UPLOAD_MISSION else "COMMAND_ACCEPTED",
             )
         except Exception as exc:
             record = CommandRecord(
@@ -117,6 +120,7 @@ async def run_px4_scenario(
     await adapter.sample()
     await adapter.mission_progress()
     await adapter.in_air()
+    await adapter.armed()
     await _notify(on_ready, run_id)
     if start_gate is not None:
         await start_gate.wait()
@@ -133,19 +137,35 @@ async def run_px4_scenario(
             sample = await adapter.sample()
             current, total = await adapter.mission_progress()
             airborne = await adapter.in_air()
+            armed = await adapter.armed()
             last_sample = sample
             if home is None:
                 home = (sample.latitude_deg, sample.longitude_deg)
         except Exception:
             sample_valid = False
             sample = last_sample or _unavailable_sample()
-            current, total, airborne = 0, 0, False
+            current, total, airborne, armed = 0, 0, False, False
 
         now = round(monotonic() - started_at, 3)
         while event_index < len(scenario.events) and scenario.events[event_index].at_s <= now:
             overrides.update(scenario.events[event_index].set)
             event_index += 1
 
+        if airborne and not initial_departure_observed:
+            initial_departure_observed = True
+            _complete_pending_command(commands, CommandName.ARM, now, "AIRBORNE_OUTBOUND_OBSERVED")
+            _complete_pending_command(commands, CommandName.START_MISSION, now, "OUTBOUND_TELEMETRY_OBSERVED")
+        if recovery_started and airborne and not recovery_airborne_observed:
+            recovery_airborne_observed = True
+            _complete_pending_command(commands, CommandName.ARM, now, "AIRBORNE_RETURN_LEG_OBSERVED", latest=True)
+            _complete_pending_command(commands, CommandName.TAKEOFF, now, "AIRBORNE_RETURN_LEG_OBSERVED", latest=True)
+        if recovery_airborne_observed and not recovery_return_commanded:
+            await issue(
+                CommandName.RETURN,
+                adapter.execute(RecommendedAction.RETURN),
+                requested_at_s=now,
+            )
+            recovery_return_commanded = True
         ever_airborne = ever_airborne or airborne
         progress = max(0.0, min(1.0, current / total if total else 0.0))
         north_m, east_m = _local_position(sample, home)
@@ -155,20 +175,21 @@ async def run_px4_scenario(
         )
         at_delivery_zone = zone_distance_m <= contract.delivery_zone.radius_m
         if delivery_enabled:
+            landed_at_delivery_zone = ever_airborne and at_delivery_zone and not airborne and not recovery_started
+            disarmed_at_delivery_zone = landed_at_delivery_zone and not armed
             site_landing_observed = site_landing_observed or (
-                ever_airborne and at_delivery_zone and not airborne and not recovery_started
+                landed_at_delivery_zone and disarmed_at_delivery_zone
             )
             delivery = delivery_thread.update(
                 sim_time_s=now,
                 dispatched=ever_airborne,
                 at_delivery_zone=at_delivery_zone,
-                landed=site_landing_observed,
-                # PX4's landed state is the observable used by this simulation
-                # for disarm completion; evidence labels this as an inference.
-                disarmed=site_landing_observed,
+                landed=landed_at_delivery_zone,
+                disarmed=disarmed_at_delivery_zone,
                 terminal=terminal_requested and not site_landing_observed,
                 response_mode=str(overrides.get("receiver_response", "accepted")),
                 deadline_s=float(overrides.get("delivery_deadline_s", contract.delivery_deadline_s)),
+                aircraft_observation_source="mavsdk-telemetry",
             )
             mission_state = _medical_mission_state(
                 airborne=airborne,
@@ -176,6 +197,8 @@ async def run_px4_scenario(
                 terminal_requested=terminal_requested,
                 site_landing_observed=site_landing_observed,
                 recovery_started=recovery_started,
+                recovery_airborne_observed=recovery_airborne_observed,
+                at_recovery_zone=math.hypot(north_m, east_m) <= contract.delivery_zone.radius_m,
             )
             delivered = delivery.outcome == DeliveryOutcome.ACCEPTED
         else:
@@ -273,11 +296,6 @@ async def run_px4_scenario(
         ):
             await issue(CommandName.ARM, adapter.arm(), requested_at_s=now)
             await issue(CommandName.TAKEOFF, adapter.takeoff(), requested_at_s=now)
-            await issue(
-                CommandName.RETURN,
-                adapter.execute(RecommendedAction.RETURN),
-                requested_at_s=now,
-            )
             recovery_started = True
 
         sequence += 1
@@ -297,7 +315,7 @@ async def run_px4_scenario(
                     "observed_completion_state": snapshots[-1].mission_state.value if snapshots else "UNAVAILABLE",
                 }
             )
-    return ScenarioRun(
+    result = ScenarioRun(
         run_id,
         scenario,
         snapshots,
@@ -312,9 +330,13 @@ async def run_px4_scenario(
             "sitl_endpoint": config.sitl.endpoint,
             "aircraft_telemetry": "mavsdk",
             "receiver_source": "modeled-receiving-station",
-            "site_disarm_observation": "inferred-from-px4-landed-state",
+            "site_disarm_observation": "mavsdk-armed-false",
+            "assurance_fault_scope": "scripted-lifeline-inputs-only; PX4 estimator unchanged",
+            "return_mode": "mission-to-original-fictional-launch-point",
         },
     )
+    await adapter.close()
+    return result
 
 
 def _mission_state(progress: float, airborne: bool, ever_airborne: bool, terminal_requested: bool) -> tuple[MissionState, bool]:
@@ -338,6 +360,8 @@ def _medical_mission_state(
     terminal_requested: bool,
     site_landing_observed: bool,
     recovery_started: bool,
+    recovery_airborne_observed: bool,
+    at_recovery_zone: bool,
 ) -> MissionState:
     if terminal_requested:
         return MissionState.LANDING if airborne else MissionState.SAFE_STOP
@@ -346,7 +370,9 @@ def _medical_mission_state(
     if site_landing_observed and not recovery_started:
         return MissionState.DELIVERY
     if recovery_started:
-        return MissionState.RETURNING if airborne else MissionState.RECOVERED
+        if recovery_airborne_observed and not airborne and at_recovery_zone:
+            return MissionState.RECOVERED
+        return MissionState.RETURNING
     return MissionState.OUTBOUND if airborne else MissionState.LANDING
 
 
@@ -363,6 +389,24 @@ def _local_position(sample: VehicleSample, home: tuple[float, float] | None) -> 
     north_m = latitude_delta * earth_radius_m
     east_m = longitude_delta * earth_radius_m * math.cos(math.radians(home[0]))
     return north_m, east_m
+
+
+def _complete_pending_command(
+    commands: list[CommandRecord],
+    name: CommandName,
+    completed_at_s: float,
+    state: str,
+    *,
+    latest: bool = False,
+) -> None:
+    indexes = range(len(commands) - 1, -1, -1) if latest else range(len(commands))
+    for index in indexes:
+        record = commands[index]
+        if record.command == name and record.accepted and record.observed_completion_state == "COMMAND_ACCEPTED":
+            commands[index] = record.model_copy(
+                update={"completed_at_s": completed_at_s, "observed_completion_state": state}
+            )
+            return
 
 
 def _relative_source_time(value: float, fallback: float, started_at: float) -> float:

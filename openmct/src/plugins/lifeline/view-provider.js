@@ -111,6 +111,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
             socket?.close();
             render(lastPoint);
           } else {
+            selectedMoment = null;
             connectionState = "REPLAY RESUMING";
             connectStream();
           }
@@ -132,6 +133,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
 
       const render = (point = {}) => {
         if (!container) return;
+        point = selectedMoment || point;
         const e = escapeHtml;
         const nav = Number(point.navigation_confidence ?? 0);
         const energy = Number(point.energy_margin_wh ?? 0);
@@ -143,7 +145,13 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const moment = momentExplanation(selectedMoment || point);
         const packageInfo = contract?.package || {};
         const manifest = packageInfo.manifest || [];
-        const breadcrumbPoints = breadcrumb.map((item) => item.x + "," + item.y).join(" ");
+        const selectedSequence = Number(point.sequence ?? Number.MAX_SAFE_INTEGER);
+        const breadcrumbPoints = history
+          .filter((item) => Number(item.sequence) <= selectedSequence)
+          .map((item) => mapPosition(item.north_m, item.east_m))
+          .filter((item, index, items) => index === 0 || Math.hypot(item.x - items[index - 1].x, item.y - items[index - 1].y) > 4)
+          .map((item) => item.x + "," + item.y)
+          .join(" ");
         const runs = runCatalog.slice(0, 40).map((item) =>
           "<option value='" + e(item.run_id) + "' " + (item.run_id === point.run_id ? "selected" : "") + ">" +
           e(item.scenario_id) + " · " + e(item.source) + " · " + e(item.delivery_outcome) + "</option>"
@@ -151,8 +159,9 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const manifestRows = manifest.map((item) =>
           "<li><b>" + Number(item.quantity) + " " + e(item.unit) + "</b> " + e(item.description) + "</li>"
         ).join("") || "<li>Legacy run: delivery was not modeled.</li>";
-        const timelineRows = eventRows.slice(-10).map((row, visibleIndex) => {
-          const actualIndex = Math.max(0, eventRows.length - 10) + visibleIndex;
+        const visibleEventRows = eventRows.filter((row) => Number(row.point.sequence) <= selectedSequence);
+        const timelineRows = visibleEventRows.slice(-10).map((row) => {
+          const actualIndex = eventRows.indexOf(row);
           return "<button data-moment='" + actualIndex + "' class='moment-row'><time>T+" +
             Number(row.point.sim_time_s).toFixed(1) + "</time><span>" + e(row.point.mission_state) +
             "</span><span>" + e(row.point.package_custody || "NOT_MODELED") + "</span><b>" +
@@ -221,7 +230,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
                 "<dl><dt>Rejected</dt><dd>" + e((point.rejected_actions || []).join(", ") || "None") + "</dd><dt>Requirements</dt><dd>" + e((point.requirement_ids || []).join(", ")) +
                 "</dd><dt>Hazards</dt><dd>" + e((point.hazard_ids || []).join(", ")) + "</dd></dl></article>" +
             "</div>" +
-            "<div class='lower-grid'><article class='panel timeline-panel'><div class='panel-heading'><div><span>SELECT AN EVENT</span><h2>Coordinated mission timeline</h2></div><b>" + eventRows.length + " transitions</b></div><div class='events'>" + timelineRows + "</div></article>" +
+            "<div class='lower-grid'><article class='panel timeline-panel'><div class='panel-heading'><div><span>SELECT AN EVENT</span><h2>Coordinated mission timeline</h2></div><b>" + visibleEventRows.length + " transitions</b></div><div class='events'>" + timelineRows + "</div></article>" +
               "<article class='panel explain-panel'><div class='panel-heading'><div><span>SIGNATURE FEATURE</span><h2>Explain this moment</h2></div></div><h3>" + e(moment.title) + "</h3>" +
               "<dl><dt>System knew</dt><dd>" + e(moment.known) + "</dd><dt>Unavailable</dt><dd>" + e(moment.unavailable) + "</dd><dt>Allowed action</dt><dd>" + e(moment.action) +
               "</dd><dt>Rejected</dt><dd>" + e(moment.rejected) + "</dd><dt>Resupply objective</dt><dd>" + e(moment.delivery) + "</dd><dt>Trace</dt><dd>" + e(moment.trace) + "</dd></dl></article></div>" +
@@ -278,10 +287,14 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
       const handleMessage = (event) => {
         const message = JSON.parse(event.data);
         const status = message.status || message.payload?.status;
-        if (message.message_type === "status" && String(status).toLowerCase() === "replay_complete") {
-          replayComplete = true;
-          connectionState = "REPLAY COMPLETE";
-          if (watchdog) timers.clearTimeout(watchdog);
+        if (message.message_type === "status") {
+          if (String(status).toLowerCase() === "replay_complete") {
+            replayComplete = true;
+            connectionState = "REPLAY COMPLETE";
+            if (watchdog) timers.clearTimeout(watchdog);
+          } else if (status) {
+            connectionState = "LIVE · " + String(status).toUpperCase();
+          }
           render(lastPoint);
           return;
         }

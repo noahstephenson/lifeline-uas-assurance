@@ -32,8 +32,9 @@ package:
     quantity: 6
     unit: roll
 dispatch_time_s: 0.0
-delivery_deadline_s: 55.0
-deadline_basis: fictional logistics service target
+delivery_deadline_s: 90.0
+deadline_basis: fictional SITL service target revised after observed stock-X500 route
+  qualification
 delivery_zone:
   frame: local_ned
   north_m: 240.0

@@ -88,6 +88,7 @@ def test_telemetry_subscriptions_are_persistent_and_cached():
         velocity_ned=lambda: stream("velocity", SimpleNamespace(north_m_s=3.0, east_m_s=4.0)),
         flight_mode=lambda: stream("mode", "MISSION"),
         in_air=lambda: stream("in_air", True),
+        armed=lambda: stream("armed", True),
     )
     mission = SimpleNamespace(mission_progress=lambda: stream("progress", SimpleNamespace(current=2, total=4)))
 
@@ -101,13 +102,15 @@ def test_telemetry_subscriptions_are_persistent_and_cached():
         assert await adapter.mission_progress() == (2, 4)
         assert await adapter.in_air()
         assert await adapter.in_air()
+        assert await adapter.armed()
+        assert await adapter.armed()
         assert first.received_at_monotonic_s > 0
         assert first.link_received_at_monotonic_s > 0
         assert first.navigation_received_at_monotonic_s > 0
         assert first.energy_received_at_monotonic_s > 0
 
     asyncio.run(exercise())
-    assert calls == {"position": 1, "battery": 1, "velocity": 1, "mode": 1, "progress": 1, "in_air": 1}
+    assert calls == {"position": 1, "battery": 1, "velocity": 1, "mode": 1, "progress": 1, "in_air": 1, "armed": 1}
 
 
 def test_wait_ready_requests_two_hz_critical_telemetry():
@@ -117,7 +120,7 @@ def test_wait_ready_requests_two_hz_critical_telemetry():
         rates[name] = value
 
     async def health():
-        yield SimpleNamespace(is_global_position_ok=True, is_home_position_ok=True)
+        yield SimpleNamespace(is_local_position_ok=True, is_global_position_ok=True, is_home_position_ok=True, is_armable=True)
 
     telemetry = SimpleNamespace(
         set_rate_position=lambda value: set_rate("position", value),

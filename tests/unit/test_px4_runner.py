@@ -50,6 +50,12 @@ class FakeAdapter:
     async def in_air(self):
         return not self.landed and self.tick < 4
 
+    async def armed(self):
+        return not self.landed
+
+    async def close(self):
+        return None
+
     async def execute(self, action):
         self.commands.append(action)
         if action == RecommendedAction.CONTROLLED_LAND:

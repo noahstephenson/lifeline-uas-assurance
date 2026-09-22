@@ -81,6 +81,24 @@ Assert-PortAvailable $WebPort
 
 $WslProject = ConvertTo-WslMountPath $ProjectRoot
 $WslLogRoot = ConvertTo-WslMountPath $LogRoot
+$SitlResetLog = Join-Path $LogRoot "sitl-reset.log"
+$SitlRootfs = "$WslHome/PX4-Autopilot/build/px4_sitl_default/rootfs"
+$ResetEntries = @()
+foreach ($StateName in @("parameters.bson", "parameters_backup.bson", "dataman")) {
+    $StatePath = "$SitlRootfs/$StateName"
+    & wsl.exe -d $Distro -- test -f $StatePath
+    if ($LASTEXITCODE -eq 0) {
+        & wsl.exe -d $Distro -- cp $StatePath "$WslLogRoot/sitl-state-before-$StateName"
+        if ($LASTEXITCODE -ne 0) { throw "Failed to preserve generated SITL state $StateName." }
+        & wsl.exe -d $Distro -- rm -f -- $StatePath
+        if ($LASTEXITCODE -ne 0) { throw "Failed to reset generated SITL state $StateName." }
+        $ResetEntries += "$StateName preserved and reset"
+    } else {
+        $ResetEntries += "$StateName absent; clean start already in effect"
+    }
+}
+Set-Content -LiteralPath $SitlResetLog -Value $ResetEntries -Encoding utf8
+
 $Px4Out = Join-Path $LogRoot "px4.stdout.log"
 $Px4Err = Join-Path $LogRoot "px4.stderr.log"
 $Px4Log = Join-Path $LogRoot "px4.log"
@@ -178,6 +196,7 @@ $AttachmentFailure = $null
 if (Test-Path -LiteralPath $ManifestPath) {
     try {
         Attach-EvidenceLog "px4_log" $Px4Log
+        Attach-EvidenceLog "sitl_reset_log" $SitlResetLog
         if ($Scenario -ne "Smoke") { Attach-EvidenceLog "api_log" $ApiLog }
     } catch {
         $AttachmentFailure = $_

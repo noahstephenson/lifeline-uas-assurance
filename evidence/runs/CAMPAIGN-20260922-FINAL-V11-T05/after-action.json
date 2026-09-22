@@ -1,0 +1,34 @@
+{
+  "completion": {
+    "assertions_passed": 10,
+    "assertions_total": 10,
+    "sim_time_s": 25.0,
+    "verification_status": "PASS"
+  },
+  "final_decision": {
+    "action": "CONTROLLED_LAND",
+    "code": "TERMINAL_LATCHED",
+    "hazards": [
+      "H-06"
+    ],
+    "requirements": [
+      "A-07"
+    ],
+    "summary": "The terminal response remains latched for this run."
+  },
+  "interpretation_boundary": "Aircraft state and medical-logistics outcome are independent; receiver events, custody transfer, and the logistics deadline are deterministic simulation models.",
+  "outcomes": {
+    "aircraft": "SAFE_STOP",
+    "delivery": "NOT_COMPLETED",
+    "receipt": "PENDING",
+    "timeliness": "UNKNOWN"
+  },
+  "request": {
+    "mission_id": "MISSION-ECHO-RESUPPLY",
+    "package_id": "PKG-ECHO-017-A",
+    "recipient_id": "AID-STATION-ECHO",
+    "request_id": "REQ-ECHO-017"
+  },
+  "run_id": "CAMPAIGN-20260922-FINAL-V11-T05",
+  "schema_version": "1.0"
+}

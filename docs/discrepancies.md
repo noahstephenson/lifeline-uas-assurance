@@ -152,3 +152,17 @@ Scenario expectations remain controlled inputs. No expected result was changed t
   and after-action evidence; dashboard outcome strip and Explain this moment view.
 - **Scenario impact:** T-01 and T-05 gain explicit logistics expectations; T-13, T-14, and
   T-15 extend the catalogue. The preserved v1.0 evidence is not rewritten or relabeled.
+
+## D-19 — v1.1 handoff timing and return completion were not telemetry-grounded
+
+- **Observed:** The first v1.1 PX4 T-01 run (LFL-T01-PX4-20260922T010638Z-9807) landed at the receiving station and produced an accepted modeled receipt, but it failed the 55-second fictional deadline at 70.187 seconds. The implementation measured the five-second unload dwell from airborne zone entry, inferred disarm from in_air=false, and declared RECOVERED before observing the return takeoff.
+- **Decision:** Require MAVSDK armed=false together with in_air=false before starting the modeled unload dwell; emit source-labeled landing, disarm, unload-start, and unload-complete events; require an observed second airborne phase and a final landing inside the recovery zone; and revise the fictional SITL service target from 55 to 90 seconds. T-01 remains expected ACCEPTED and ON_TIME; T-15 retains its explicit 43-second deadline override and remains expected ACCEPTED and LATE.
+- **Verification:** Rerun the complete deterministic campaign, focused component tests, PX4 T-01/T-05, replay/display qualification, and evidence audit. Command acceptance remains distinct from observed completion.
+- **Scenario impact:** No scenario is added or relabeled. The mission contract timing assumption and PX4 observation boundary are corrected.
+
+## D-20 — PX4 RTL home moved to the aid station after the handoff rearm
+
+- **Observed:** Clean-state run LFL-T01-PX4-20260922T115212Z-7655 completed the corrected handoff, rearmed, departed, and accepted RTL, but PX4 had reset home on the second arm. It landed at the aid station and remained RETURNING at the original 120-second envelope boundary.
+- **Decision:** Capture the original fictional launch coordinates during outbound mission upload. Implement Lifeline RETURN in SITL as a stock one-item PX4 mission that lands at that captured point, and extend only T-01's execution envelope from 120 to 190 seconds after the 160-second trial reached the recovery point during final descent. The mission, delivery, timeliness, action, and terminal expectations remain unchanged.
+- **Verification:** Require observed second takeoff, accepted return-mission upload/start, movement to the original local-NED recovery zone, and observed final landing/disarm before RECOVERED.
+- **Scenario impact:** T-01 timing only; no scenario was added or relabeled.

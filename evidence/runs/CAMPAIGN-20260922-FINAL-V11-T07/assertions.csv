@@ -1,0 +1,6 @@
+name,passed,expected,observed
+terminal_state,True,SAFE_STOP,SAFE_STOP
+required_state:TERMINATE,True,observed,observed
+prohibited_action:CONTINUE,True,absent,absent
+required_code:ENERGY_CRITICAL,True,observed,observed
+transition_deadline,True,<= 49.0,48.0

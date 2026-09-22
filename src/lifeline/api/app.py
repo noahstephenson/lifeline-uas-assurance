@@ -127,7 +127,11 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
         snapshots = _read_run_file(selected, "events.jsonl")
         decisions = _read_run_file(selected, "decisions.jsonl")
         verification = _verification_summary(selected)
-        points = [_merge_snapshot(item, decisions, verification) for item in snapshots]
+        final_sequence = snapshots[-1]["sequence"]
+        points = [
+            _merge_snapshot(item, decisions, verification if item["sequence"] == final_sequence else None)
+            for item in snapshots
+        ]
         points = [p for p in points if p["sim_time_s"] >= start and (end is None or p["sim_time_s"] <= end)]
         if key:
             valid = {item["key"] for item in TELEMETRY_METADATA}
@@ -182,9 +186,9 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
                 await websocket.close(code=1008, reason="unsupported replay speed")
                 return
             selected = _require_run(run_id or app.state.default_run_id)
-            snapshots = [
-                item for item in _read_run_file(selected, "events.jsonl") if int(item["sequence"]) > after_sequence
-            ]
+            all_snapshots = _read_run_file(selected, "events.jsonl")
+            final_sequence = all_snapshots[-1]["sequence"]
+            snapshots = [item for item in all_snapshots if int(item["sequence"]) > after_sequence]
             if not snapshots:
                 await websocket.close(code=1000, reason="replay already complete")
                 return
@@ -199,7 +203,11 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
                 )
                 if delay:
                     await asyncio.sleep(min(delay, 1.0))
-                payload = _merge_snapshot(snapshot, decisions_data, verification)
+                payload = _merge_snapshot(
+                    snapshot,
+                    decisions_data,
+                    verification if snapshot["sequence"] == final_sequence else None,
+                )
                 await websocket.send_json(
                     {
                         "schema_version": "1.0",

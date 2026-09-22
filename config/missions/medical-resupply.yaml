@@ -27,8 +27,8 @@ contract:
       - {item_id: NITRILE-GLOVE-M, description: Powder-free nitrile examination gloves, quantity: 50, unit: pair}
       - {item_id: ADHESIVE-TAPE-25MM, description: Medical adhesive tape rolls, quantity: 6, unit: roll}
   dispatch_time_s: 0.0
-  delivery_deadline_s: 55.0
-  deadline_basis: fictional logistics service target
+  delivery_deadline_s: 90.0
+  deadline_basis: fictional SITL service target revised after observed stock-X500 route qualification
   delivery_zone:
     frame: local_ned
     north_m: 240.0

@@ -80,7 +80,17 @@ def audit_release(
     exported_tree: bool = False,
 ) -> dict[str, Any]:
     campaigns_root = campaigns_root or CAMPAIGNS_DIR
-    summaries = sorted(campaigns_root.glob("*/campaign-summary.json"), reverse=True)
+    def campaign_created_at(path: Path) -> str:
+        try:
+            return str(json.loads(path.read_text(encoding="utf-8")).get("created_at", ""))
+        except (OSError, json.JSONDecodeError):
+            return ""
+
+    summaries = sorted(
+        campaigns_root.glob("*/campaign-summary.json"),
+        key=campaign_created_at,
+        reverse=True,
+    )
     if campaign_id:
         summary_path = campaigns_root / campaign_id / "campaign-summary.json"
     elif summaries:
@@ -195,7 +205,7 @@ def _audit_display_qualification() -> dict[str, Any]:
             report.get("verification_status") == "PASS"
             and report.get("qualification_method") == "automated browser display qualification"
             and report.get("human_usability_study") is False
-            and len(assertions) == 21
+            and len(assertions) == 23
             and all(item.get("passed") for item in assertions)
             and len(screenshots) == 12
             and hashes_match

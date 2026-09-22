@@ -197,7 +197,7 @@ def attach_run_artifact(
     source: Path,
     output_root: Path | None = None,
 ) -> dict[str, Any]:
-    allowed = {"px4_log": "px4.log", "api_log": "api.log"}
+    allowed = {"px4_log": "px4.log", "api_log": "api.log", "sitl_reset_log": "sitl-reset.log"}
     if logical_name not in allowed:
         raise ValueError(f"unsupported attached artifact: {logical_name}")
     loaded = load_run(run_id, output_root)

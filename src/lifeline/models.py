@@ -224,6 +224,7 @@ class DeliveryEvent(BaseModel):
     sequence: int = Field(ge=0)
     sim_time_s: float = Field(ge=0)
     event_type: str
+    mission_id: str
     request_id: str
     package_id: str
     recipient_id: str
