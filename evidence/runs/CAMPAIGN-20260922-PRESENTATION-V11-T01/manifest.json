@@ -1,0 +1,104 @@
+{
+  "artifact_sha256": {
+    "after_action": "f70e5b47369ef6a0cf8d41a003b210cc98c66e94dfbe46a126ad122cefb45056",
+    "assertions": "7b5f4f343528128f590ce749c4abe35e955e276caedfb1c70298e04d513dca69",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
+    "decisions": "93cb5c9067578dbbd72c02d350ba801ee5b1b918344a8c18e625e95b726fe270",
+    "delivery_events": "1712453be60b4561846eb3ed5cf9f585298007c4276009ee07b0d4561be8d4bc",
+    "environment": "2ff2e34dfe8f64a4c59b2d79111a3ddde3217cb7cf24be5be16fd725281f4c04",
+    "mission_contract": "28d6615be2af43205ec7efd88c3f2ea9b39020050e05fd1325c47fae30b77dbd",
+    "scenario": "a2fd395fb1847350a6034505dc80ccfe2181ab41bc9d0f2dfa70845719d922b3",
+    "snapshots": "b92064c8eed52fdf310efabc6d4753b959d12f4dcdde4b558cbb8b0c184d2863",
+    "summary": "93a28f2df1816f09281a7350ca067c1078fe9ad7fe478b4fe7c2b24f02503afd",
+    "timeline": "f97b94c99e1ddd5b1f154154c42578de9529bc13a611ed9993e453c1fbfdca40",
+    "timeline_svg": "ebaa9912e78dedf9db3b8b47c4a917915bf97702de7329aba6e7b58f5f6c1f54",
+    "verification_matrix": "ec274c46212643342faa1334f71645f586797edac6847b84126b6bbaeb1e7b86"
+  },
+  "assertions": [
+    {
+      "expected": "RECOVERED",
+      "name": "terminal_state",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "RECOVERED",
+      "name": "aircraft_outcome",
+      "observed": "RECOVERED",
+      "passed": true
+    },
+    {
+      "expected": "ACCEPTED",
+      "name": "delivery_outcome",
+      "observed": "ACCEPTED",
+      "passed": true
+    },
+    {
+      "expected": "ON_TIME",
+      "name": "timeliness",
+      "observed": "ON_TIME",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:NOMINAL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTROLLED_LAND",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:ABORT_RUN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:NOMINAL",
+      "observed": "observed",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
+  "exploratory": false,
+  "files": {
+    "after_action": "after-action.json",
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "delivery_events": "delivery-events.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "mission_contract": "mission-contract-resolved.yaml",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "CAMPAIGN-20260922-PRESENTATION-V11-T01",
+  "scenario_id": "T-01",
+  "scenario_sha256": "e30806df456f506411602f6db0f56a4ca65b6ca891cb78ace399402171dd26d0",
+  "schema_version": "1.0",
+  "software_versions": {
+    "fastapi": "0.141.1",
+    "lifeline": "1.1.0",
+    "mavsdk": "not-installed",
+    "openmct": "4.1.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pydantic": "2.13.5",
+    "python": "3.11.0",
+    "pyyaml": "6.0.3",
+    "source": "fake",
+    "uvicorn": "0.53.0"
+  },
+  "verification_status": "PASS"
+}

@@ -5,6 +5,7 @@ M-03,T-01;T-05,,verified-fake
 M-04,T-01;T-13;T-14;T-15,H-10;H-11,verified-px4-sitl-and-fake
 M-05,T-01;T-13;T-14,H-10;H-11,verified-px4-sitl-and-fake
 M-06,T-01;T-05;T-13;T-14;T-15,H-12,verified-px4-sitl-and-fake
+M-07,T-05;T-14,H-13,verified-px4-sitl-and-fake
 HM-01,T-02;T-04;T-06,,verified
 HM-02,T-11,H-07,verified
 HM-03,T-11,H-07,verified

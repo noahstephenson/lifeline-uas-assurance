@@ -10,7 +10,7 @@ and the logistics deadline was met.
 > requests, and deadlines. It is not an operational medical system, does not support real
 > flight or care decisions, and does not establish safety, certification, or endorsement.
 
-![Project Lifeline dashboard](evidence/display-qualification/screenshots/DISPLAY-V11-T05-desktop.png)
+![Project Lifeline dashboard](evidence/demo-screenshots/px4-t05-decision.png)
 
 ## Why this is more than a drone simulation
 
@@ -24,8 +24,8 @@ outcomes separately:
 | Timeliness | Was that accepted receipt recorded before the fictional deadline? | `ON_TIME` |
 
 This prevents a common modeling mistake: reaching a waypoint is not treated as proof of
-delivery. The simulated handoff requires delivery-zone arrival, landing, an inferred
-disarmed state, a five-second unloading dwell, and a matching request/package/recipient
+delivery. The simulated handoff requires delivery-zone arrival, observed landing and
+disarming, a five-second unloading dwell, and a matching request/package/recipient
 receipt. A recovered aircraft can therefore coexist with `REJECTED`, `UNCONFIRMED`, or
 `LATE` delivery results.
 
@@ -84,8 +84,9 @@ Or select a run directly:
 ```
 
 The launcher creates evidence, starts the local API and dashboard, and opens the selected
-mission. The dashboard supports pause, 0.5×–4× replay, recorded-moment seeking, coordinated
-map/timeline inspection, and **Explain this moment**. It remains read-only.
+mission. The dashboard supports Play, Pause, Restart, 0.5×–4× replay, recorded-moment
+seeking, coordinated map/timeline inspection, **Explain this moment**, and a reversible
+presentation mode. It remains read-only.
 
 Replay a completed mission without PX4 or Gazebo:
 
@@ -134,9 +135,12 @@ Lifeline input degradation separately from unchanged PX4 estimator telemetry.
 - Frontend tests cover escaping, stale-data behavior, loss of service, and replay completion.
 - Historical v1.0 PX4 and display evidence is preserved unchanged.
 - New v1.1 PX4 qualification passed for smoke, nominal T-01, and compound-fault T-05.
-- Automated v1.1 browser qualification passed 23/23 checks and generated 12 desktop
-  and compact screenshots, including temporal replay and compact-layout checks.
+- Automated v1.1 browser qualification passed 27/27 checks and generated 12 synthetic
+  desktop/compact screenshots plus four captures from qualified PX4 replays. Checks include
+  temporal replay, source labeling, presentation mode, and compact-layout behavior.
+- Corrected T-05 evidence leaves package custody with the aircraft after the observed
+  off-origin controlled landing; it does not claim delivery or return.
 
 Project Lifeline is released under the MIT License. Requirements, hazards, traceability,
 CONOPS, discrepancies, and upstream component provenance are maintained as versioned
-engineering artifacts in `docs/`, `engineering/`, and `THIRD_PARTY.md`.
+engineering artifacts in `docs/`, `requirements/`, and `THIRD_PARTY.md`.

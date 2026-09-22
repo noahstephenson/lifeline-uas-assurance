@@ -11,3 +11,4 @@ H-09,Command reaches unintended hardware,Loopback allowlist and explicit opt-in,
 H-10,Waypoint arrival is mislabeled as completed delivery,Landing handoff and matching receipt gate,T-01;T-13
 H-11,Unrelated malformed duplicate or absent receipt is accepted,Receiving-station validation and idempotence,T-13;T-14
 H-12,Aircraft recovery hides an unsuccessful logistics outcome,Independent outcome aggregation,T-05;T-13;T-14;T-15
+H-13,Contingency landing is mislabeled as package return,Evidence-gated custody transition,T-05;T-14

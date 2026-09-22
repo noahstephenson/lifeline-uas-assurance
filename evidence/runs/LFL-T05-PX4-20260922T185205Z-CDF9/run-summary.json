@@ -1,0 +1,16 @@
+{
+  "aircraft_outcome": "SAFE_STOP",
+  "decision_count": 4,
+  "delivery_outcome": "NOT_COMPLETED",
+  "error": null,
+  "exploratory": false,
+  "package_custody": "AIRCRAFT",
+  "receipt_status": "PENDING",
+  "run_id": "LFL-T05-PX4-20260922T185205Z-CDF9",
+  "scenario_id": "T-05",
+  "scenario_name": "compound_link_and_navigation_degradation",
+  "snapshot_count": 93,
+  "terminal_state": "SAFE_STOP",
+  "timeliness": "UNKNOWN",
+  "verification_status": "PASS"
+}

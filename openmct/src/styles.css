@@ -2,14 +2,17 @@
 * { box-sizing: border-box; }
 .lifeline-shell { min-height: 100%; padding: 22px; color: #e9f1f7; background: radial-gradient(circle at 75% -10%, #17364c 0, #091620 40%, #050b10 100%); font-family: Inter, "Segoe UI", sans-serif; }
 .mission-header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-end; margin-bottom: 14px; }
-.mission-header h1 { margin: 4px 0; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.045em; }
+.mission-header h1 { margin: 3px 0; font-size: clamp(24px, 2.5vw, 34px); letter-spacing: -.035em; }
 .mission-header p { margin: 0; color: #91aabd; }
+.machine-id { font-family: Consolas, monospace; font-size: 11px; }
 .eyebrow, .panel-heading span { color: #69cbea; font-size: 10px; letter-spacing: .18em; font-weight: 700; }
 .mission-meta { display: grid; justify-items: end; gap: 5px; color: #91aabd; font-family: Consolas, monospace; font-size: 11px; }
 .mission-meta label { display: grid; gap: 4px; text-align: right; }
 .mission-meta select { width: 290px; border: 1px solid #29485e; border-radius: 5px; padding: 7px; background: #0b1c27; color: #e9f1f7; }
 .mission-meta b { color: #f4c95d; font-size: 20px; }
 .connection-banner, .critical-stale, .exploratory { margin-bottom: 10px; padding: 8px 12px; border: 1px solid #29485e; color: #a9c7d8; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-align: center; }
+.connection-banner { display: flex; justify-content: center; gap: 16px; }
+.connection-banner strong { color: #69cbea; }
 .critical-stale { border-color: #ba82d3; color: #e1bdf0; }
 .exploratory { border-color: #f4c95d; color: #f4c95d; }
 .outcome-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; margin-bottom: 9px; }
@@ -17,7 +20,11 @@
 .outcome-strip article { min-height: 82px; padding: 12px 14px; border-top: 3px solid #3a718a; }
 .outcome-strip label, .outcome-strip small { display: block; color: #809aac; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
 .outcome-strip strong { display: block; margin: 7px 0 5px; font-size: 16px; }
-.mission-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 9px; }
+.mission-grid { display: grid; grid-template-columns: 1.55fr 1fr; grid-template-areas: "map decision" "request resources"; gap: 9px; }
+.map-panel { grid-area: map; }
+.decision-panel { grid-area: decision; }
+.request-panel { grid-area: request; }
+.resources-panel { grid-area: resources; }
 .panel { padding: 16px; min-width: 0; }
 .panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
 .panel h2 { margin: 3px 0 0; font-size: 17px; letter-spacing: -.01em; }
@@ -57,11 +64,12 @@ dd { margin: 0; color: #d4e1e8; }
 .action-callout { padding: 13px; border-left: 3px solid #f4c95d; background: #0b202b; }
 .action-callout span { display: block; color: #7e98a9; font-size: 10px; text-transform: uppercase; }
 .action-callout strong { display: block; margin-top: 4px; font-size: 20px; }
+.action-callout small { display: block; margin-top: 5px; color: #91aabd; }
 .decision-panel p { color: #bdced8; line-height: 1.45; }
 .lower-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 9px; margin-top: 9px; }
 .events { max-height: 300px; overflow: auto; }
 .moment-row { width: 100%; display: grid; grid-template-columns: 62px 95px 130px 1fr; gap: 8px; padding: 9px 7px; border: 0; border-bottom: 1px solid #19313e; background: transparent; color: #c7d7df; text-align: left; cursor: pointer; }
-.moment-row:hover, .moment-row:focus { background: #102a36; outline: 1px solid #3a718a; }
+.moment-row:hover, .moment-row:focus, .moment-row.is-selected { background: #102a36; outline: 1px solid #3a718a; }
 .moment-row time { color: #7894a5; }
 .explain-panel h3 { margin: 0 0 13px; color: #f4c95d; }
 .explain-panel dd { line-height: 1.4; }
@@ -71,10 +79,16 @@ dd { margin: 0; color: #d4e1e8; }
 .state-pending, .state-watch { border-top-color: #63cbea !important; color: #7cdaff; }
 .state-unknown, .state-not-modeled { border-top-color: #b987d5 !important; color: #d6b0ea; }
 .lifeline-unavailable { margin: 40px; padding: 30px; border: 2px solid #b987d5; color: #e1bdf0; font-size: 20px; text-align: center; }
-.replay-controls { display: grid; grid-template-columns: auto auto minmax(220px, 1fr); gap: 12px; align-items: center; padding: 10px 14px; margin-bottom: 9px; background: #101e27; border: 1px solid #29404f; }
+.replay-controls { display: grid; grid-template-columns: auto auto minmax(220px, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; margin-bottom: 9px; background: #101e27; border: 1px solid #29404f; }
 .replay-controls button, .replay-controls select { background: #192b37; color: #edf7fb; border: 1px solid #4f7184; border-radius: 5px; padding: 7px 10px; }
 .replay-controls label { display: flex; align-items: center; gap: 8px; color: #a9bdc8; font-size: 12px; }
 .seek-label input { width: 100%; accent-color: #39bfd3; }
+.lifeline-shell.is-presentation { padding: 12px 16px 18px; }
+.lifeline-shell.is-presentation .mission-header { margin-bottom: 8px; }
+.lifeline-shell.is-presentation .map-panel svg { height: 245px; }
+.lifeline-shell.is-presentation .panel { padding: 13px; }
+.lifeline-shell.is-presentation .outcome-strip article { min-height: 70px; padding: 9px 11px; }
+.lifeline-shell.is-presentation .outcome-strip strong { margin: 5px 0 3px; }
 @media (max-width: 1000px) {
   .lifeline-shell { padding: 12px; overflow-x: hidden; }
   .mission-header { display: grid; align-items: flex-start; min-width: 0; }
@@ -82,7 +96,8 @@ dd { margin: 0; color: #d4e1e8; }
   .mission-meta label { width: 100%; text-align: left; }
   .mission-meta select { width: 100%; max-width: 100%; }
   .outcome-strip { grid-template-columns: 1fr; }
-  .mission-grid, .lower-grid { grid-template-columns: minmax(0, 1fr); }
+  .mission-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "map" "decision" "request" "resources"; }
+  .lower-grid { grid-template-columns: minmax(0, 1fr); }
   .panel { padding: 12px; overflow-wrap: anywhere; }
   .panel-heading { display: grid; }
   .map-panel svg { height: 270px; }
@@ -106,4 +121,5 @@ dd { margin: 0; color: #d4e1e8; }
   .moment-row span:nth-of-type(2) { display: none; }
   .replay-controls { grid-template-columns: auto 1fr; }
   .seek-label { grid-column: 1 / -1; }
+  #lifeline-presentation { grid-column: 1 / -1; }
 }

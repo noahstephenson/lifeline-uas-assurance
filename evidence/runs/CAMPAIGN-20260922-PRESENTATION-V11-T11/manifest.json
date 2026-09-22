@@ -1,0 +1,92 @@
+{
+  "artifact_sha256": {
+    "after_action": "bbe969b2e6cd179547d0c47d434fe4b861f1ae1b22a8cefb7e3764830a9c9c5d",
+    "assertions": "b7a88192855a38f45ff1b5b405d3dd0c6f35455db7be567c11edbd9d9010d80b",
+    "commands": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "configuration": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
+    "decisions": "c2b2bcb968e273aba8a6ffa9f3cf3f92ceb31bd08a2b8e08331b082c2158b99f",
+    "delivery_events": "d00dbaefbcaed64739581b5b4720b3278e5a72d81a77c84a724bc9170a884100",
+    "environment": "2ff2e34dfe8f64a4c59b2d79111a3ddde3217cb7cf24be5be16fd725281f4c04",
+    "mission_contract": "28d6615be2af43205ec7efd88c3f2ea9b39020050e05fd1325c47fae30b77dbd",
+    "scenario": "9d4efdb7904cdc70dd3cd603a84b6d08a861bc1c500e2c80261b3c73abcb8d21",
+    "snapshots": "9654e1892380b046d332a66148b1e74e000b8296cc1890c78b7826f245856a2b",
+    "summary": "dd6173b836e816f04c7ce043f1a799ccbb40af4049c0cf079ac42cd8e6def6eb",
+    "timeline": "d87c9747f8242ed4cc8a3f1c0a02ada4f8f26f712591abfb90a6564d729ba42a",
+    "timeline_svg": "72aeeaf3e78d63d7f20219e485932fca127bf4b46bcc4f6e06ec1e15ba7177c1",
+    "verification_matrix": "937870ed9a1d99e67827ea9836bcfed2e755dc18c71ea5f3a11b2fc8ef00f234"
+  },
+  "assertions": [
+    {
+      "expected": "SAFE_STOP",
+      "name": "terminal_state",
+      "observed": "SAFE_STOP",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:UNKNOWN",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:RETURN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:CONTINUE",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:CRITICAL_INPUT_UNKNOWN",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "<= 24.0",
+      "name": "transition_deadline",
+      "observed": "22.0",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "684f65002f31ba152ae4391a79b9381747563adb657e33cf44655e6e963a9a96",
+  "exploratory": false,
+  "files": {
+    "after_action": "after-action.json",
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "delivery_events": "delivery-events.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "mission_contract": "mission-contract-resolved.yaml",
+    "scenario": "scenario-resolved.yaml",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "CAMPAIGN-20260922-PRESENTATION-V11-T11",
+  "scenario_id": "T-11",
+  "scenario_sha256": "d3db83d37cd54051ba81d6aeaf1ab94deb33cc8061e2d26c110569cd6b4761d6",
+  "schema_version": "1.0",
+  "software_versions": {
+    "fastapi": "0.141.1",
+    "lifeline": "1.1.0",
+    "mavsdk": "not-installed",
+    "openmct": "4.1.0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "pydantic": "2.13.5",
+    "python": "3.11.0",
+    "pyyaml": "6.0.3",
+    "source": "fake",
+    "uvicorn": "0.53.0"
+  },
+  "verification_status": "PASS"
+}

@@ -8,6 +8,7 @@
     "test": "node --test",
     "test:e2e": "playwright test",
     "test:qualification": "playwright test tests/display-qualification.spec.js",
+    "test:qualified-replays": "playwright test --config qualified-playwright.config.js",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 8766"
   },

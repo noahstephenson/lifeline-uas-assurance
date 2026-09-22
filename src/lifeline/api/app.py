@@ -3,8 +3,9 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.websockets import WebSocketState
 
 from lifeline.delivery import load_mission_contract
 from lifeline.evidence.exporter import RUNS_DIR, list_runs, load_run, read_jsonl, verify_run_integrity
@@ -233,8 +234,14 @@ def create_app(default_run_id: str | None = None) -> FastAPI:
                     "payload": {"status": "replay_complete"},
                 }
             )
+        except WebSocketDisconnect:
+            pass
         finally:
-            await websocket.close()
+            if websocket.application_state != WebSocketState.DISCONNECTED:
+                try:
+                    await websocket.close()
+                except RuntimeError:
+                    pass
 
     return app
 
@@ -314,9 +321,11 @@ def _merge_snapshot(
 
 def _verification_summary(run_id: str) -> dict[str, Any]:
     integrity = verify_run_integrity(run_id)
+    manifest = load_run(run_id)["manifest"]
     issue_count = len(integrity["missing"]) + len(integrity["mismatched"]) + len(integrity["unchecked"])
     return {
-        "verification_status": integrity["verification_status"],
+        "verification_status": manifest.get("verification_status", "PENDING"),
+        "integrity_status": "VERIFIED" if integrity["complete"] else "INCOMPLETE",
         "evidence_complete": integrity["complete"],
         "evidence_issue_count": issue_count,
     }

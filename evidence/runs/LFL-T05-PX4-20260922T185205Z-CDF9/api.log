@@ -1,0 +1,84 @@
+===== api.stdout.log =====
+INFO:     127.0.0.1:42202 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55924 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55928 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55934 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55946 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55958 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55968 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55978 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55988 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56000 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56016 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39582 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39584 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39592 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39598 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39608 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39616 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39630 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39642 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39656 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38780 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38782 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38790 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38792 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38798 - "GET /api/v1/metadata?run_id=LFL-T05-PX4-20260922T185205Z-CDF9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38830 - "GET /api/v1/mission-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38842 - "GET /api/v1/runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38850 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38858 - "POST /api/v1/control/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38872 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38882 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38890 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38892 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38894 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38898 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38910 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49490 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49498 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49502 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49512 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49514 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49518 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49526 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49530 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49542 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49550 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55834 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55854 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55862 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55876 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55880 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55894 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55904 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55920 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47088 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47094 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47102 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47104 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47120 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47130 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47134 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47136 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47142 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47154 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35360 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35368 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35382 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35390 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35404 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35420 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35430 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35440 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35446 - "GET /api/v1/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35448 - "GET /api/v1/health HTTP/1.1" 200 OK
+===== api.stderr.log =====
+INFO:     Started server process [423]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8895 (Press CTRL+C to quit)
+INFO:     127.0.0.1:38814 - "WebSocket /api/v1/stream?after_sequence=-1&speed=4&run_id=LFL-T05-PX4-20260922T185205Z-CDF9" [accepted]
+INFO:     connection open
+Received ack for not-existing command: 176! Ignoring... (mavlink_command_sender.cpp:304)

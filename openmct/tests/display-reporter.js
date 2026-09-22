@@ -6,7 +6,7 @@ import { chromium } from "@playwright/test";
 
 const root = path.resolve(process.cwd(), "..");
 const output = path.join(root, "evidence", "display-qualification");
-const fixtures = ["DISPLAY-V11-T01", "DISPLAY-V11-T05", "DISPLAY-V11-T11", "DISPLAY-V11-T13", "DISPLAY-V11-T14", "DISPLAY-V11-T15"];
+const fixtures = ["DISPLAY-V11-T01", "DISPLAY-V11B-T05", "DISPLAY-V11-T11", "DISPLAY-V11-T13", "DISPLAY-V11-T14", "DISPLAY-V11-T15"];
 
 export default class DisplayQualificationReporter {
   constructor() {

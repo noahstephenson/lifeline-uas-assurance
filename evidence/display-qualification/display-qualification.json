@@ -3,8 +3,8 @@
   "qualification_method": "automated browser display qualification",
   "human_usability_study": false,
   "verification_status": "PASS",
-  "generated_at": "2026-09-22T12:33:26.727Z",
-  "commit": "4912d9e2ae04321199a2577337abc691e96dfb2d",
+  "generated_at": "2026-09-22T19:18:00.266Z",
+  "commit": "15798978ef2028672e1e0e7935b2f3ebd6f9e0b6",
   "playwright_version": "1.55.1",
   "browser": {
     "name": "chromium",
@@ -16,186 +16,214 @@
   ],
   "fixtures": {
     "DISPLAY-V11-T01": "943801c5b36de502afa3fd85fe0d9f7221b8528cfdc7568ae624ad27640747e0",
-    "DISPLAY-V11-T05": "1905dec6b06497655905d4fd119f37340209b4ac3429d39f2cd8030c0f90b86c",
+    "DISPLAY-V11B-T05": "6de84c2959d8a7b253935f5e773411f303fa2d8ff6756c6718b6d86990ffb9bf",
     "DISPLAY-V11-T11": "62fa1dfcdb11ed48c38f561535c84b50d46e9fc606774760a2edcd7c53e06106",
     "DISPLAY-V11-T13": "32516020cbef7f25350f0859db08e2b20b7f7a5c8302b03122de0ea70c4d9052",
     "DISPLAY-V11-T14": "8c966b19d2dfe5f4602709926229598b21fc1980749118764a355b2f6ad462dd",
     "DISPLAY-V11-T15": "7cc3c14d768d7a64d62f80fabd0447880cc2bbb86309759bcc9fc7cfe55c722e"
   },
   "screenshots": {
-    "screenshots/DISPLAY-V11-T01-compact.png": "8fb8cc43dba2ba2bb7dcfb7ba8245ad42cf81ec72dcd59b4f19a4721e4f1cb8e",
-    "screenshots/DISPLAY-V11-T01-desktop.png": "fcc259f026470074cd1ae9fed41c8f844ef25a73d56fa4297c7104cdffdb0cd6",
-    "screenshots/DISPLAY-V11-T05-compact.png": "a2ed4703faccfa7e02313f8db06b2e5b989bbbd69a6d83d78cd1367592e2accc",
-    "screenshots/DISPLAY-V11-T05-desktop.png": "033b7c8ec12b35dab43c811e82c9d2f2e41b4fef579f112c100f84bac72540e8",
-    "screenshots/DISPLAY-V11-T11-compact.png": "8f356213d6562e650619c8309206f2b26f5388afc7abc7748bbdab3705357f89",
-    "screenshots/DISPLAY-V11-T11-desktop.png": "97702031e3cb55a73d2ba34572423a942b0a4142b270e49a36ec0fd73be32c63",
-    "screenshots/DISPLAY-V11-T13-compact.png": "e462d7819d48dcfc0426e104f9b03c8a1e35afe1d4949066e6407035012e9c11",
-    "screenshots/DISPLAY-V11-T13-desktop.png": "9e40d629b4ff5cbb4391a027ebc4d2e1f085048785714d75b805851f7390516e",
-    "screenshots/DISPLAY-V11-T14-compact.png": "8332a86761b67fa615a9975117b51bb47e5f8f5f34838f0fc40d21984cea3433",
-    "screenshots/DISPLAY-V11-T14-desktop.png": "fa949efbe25399e64af898b959b6ec7606940e4dcec1d7e94a288b6d1208209b",
-    "screenshots/DISPLAY-V11-T15-compact.png": "01e51b2982b1f176ce39e2d6c3359f1833b75e7599da2df0c3ddc6c01bfcfae3",
-    "screenshots/DISPLAY-V11-T15-desktop.png": "947ae8758647f6d61ddc622f3117c8709ee8cff3dc74d62563cc5f1cfda2d2ea"
+    "screenshots/DISPLAY-V11-T01-compact.png": "482860b7b209021850d5805e33aa5b35bc31cb16f2484af8dcdf4264968ab00c",
+    "screenshots/DISPLAY-V11-T01-desktop.png": "1722c78c1965067690fe98ee705b07f7cd2e9aace00a72d5e62238fa4b899b5a",
+    "screenshots/DISPLAY-V11-T11-compact.png": "2e473c107a1d551b813fc41f6323ebd2b400df97d522a39d37a4c80a82781a45",
+    "screenshots/DISPLAY-V11-T11-desktop.png": "e06e10d4c1b29e4abc54e08b5836b627bb8f75c87896ac69f3d0da26ba445f9a",
+    "screenshots/DISPLAY-V11-T13-compact.png": "7474e9c82143130ec1ad225a874338ed11771aedd22b318a1c8e7591fbc42e28",
+    "screenshots/DISPLAY-V11-T13-desktop.png": "f7442d5efbb0769b9de869b5abc9bb6a8bf0d903e1870e54040f60b5799920e6",
+    "screenshots/DISPLAY-V11-T14-compact.png": "8a1dfb33dbcb199ab71c8de5b14111fd0ca03e13d2af65a8caab28902385889e",
+    "screenshots/DISPLAY-V11-T14-desktop.png": "72b93e55bae648c6edf0e03a19d9423c2c3f7daf7667eb675d41a64db93e26da",
+    "screenshots/DISPLAY-V11-T15-compact.png": "6b2294de5064c9da6a42b872534a33c71864790591a1f118e8482d0e7dd6700d",
+    "screenshots/DISPLAY-V11-T15-desktop.png": "0773940f813c1d7e92586d18ccdd3d3ec08bfe83b67dec7bb43c739c7f9e4792",
+    "screenshots/DISPLAY-V11B-T05-compact.png": "38c1d08189ce4e10c29eb242e19cb61602dfcde61c90d4407df4526c062d9178",
+    "screenshots/DISPLAY-V11B-T05-desktop.png": "78700637f7151edba7de4cd2db107f0ab9396c1e243ee57a74bfb9099c9145b2"
   },
   "assertions": [
+    {
+      "name": " /  / display-qualification.spec.js / OD-03 shows the T-05 decision basis and rejected RETURN",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8998,
+      "error": null
+    },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 13137,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 13040,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / the dashboard exposes replay inspection but no mission-control request",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 13230,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / OD-01 keeps mission, assurance, health, energy, evidence, and time visible",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 13434,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / OD-02 explains unknown and stale critical data without color",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 5707,
+      "duration_ms": 10443,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8696,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / medical workflow shows request, manifest, map, custody, and accepted receipt",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 9235,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / OD-03 shows the T-05 decision basis and rejected RETURN",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4392,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / OD-04 failed WebSocket replaces operational content with unavailable text",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 2040,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 12669,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / compact dashboard has no horizontal content clipping",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 7101,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 8113,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4468,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T05 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4459,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / untrusted rationale and identifier are rendered as text, never HTML",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 2267,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T05 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4379,
+      "duration_ms": 10358,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / replay seeking and Explain this moment do not leak later receipt or terminal outcomes",
       "status": "passed",
       "passed": true,
-      "duration_ms": 7995,
+      "duration_ms": 10536,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / OD-04 failed WebSocket replaces operational content with unavailable text",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 1896,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4776,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / untrusted rationale and identifier are rendered as text, never HTML",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 2248,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 compact qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8837,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 9267,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11B-T05 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4973,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / the dashboard exposes replay inspection but no mission-control request",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 9206,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8542,
+      "duration_ms": 8604,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11B-T05 compact qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4477,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4374,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4263,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 7326,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 6817,
+      "duration_ms": 4995,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / independent logistics outcomes remain visible after aircraft recovery",
       "status": "passed",
       "passed": true,
-      "duration_ms": 18383,
+      "duration_ms": 25027,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / medical workflow shows request, manifest, map, custody, and accepted receipt",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 9441,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 9454,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 compact qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4583,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / T-05 does not report an off-origin package return or deadline countdown as slack",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 5186,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / compact dashboard has no horizontal content clipping",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8729,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 compact qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8432,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / completed replay offers Restart and transitions through Play and Pause",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 5856,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8492,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / recorded source labels distinguish PX4 and synthetic evidence",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8139,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / OD-01 keeps mission, assurance, health, energy, evidence, and time visible",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8653,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / OD-02 explains unknown and stale critical data without color",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4468,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / presentation mode uses native Open MCT pane collapse and is reversible",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8328,
       "error": null
     }
   ]

@@ -16,7 +16,8 @@ medical-workflow qualification.
 - Evidence includes delivery events, the resolved mission contract, and a deterministic
   after-action summary.
 - The dashboard provides a telemetry-driven local-NED map, request/manifest view,
-  coordinated timeline, outcome strip, replay controls, and Explain this moment.
+  coordinated timeline, outcome strip, Play/Pause/Restart controls, source labels,
+  reversible presentation mode, and Explain this moment.
 - `scripts/mission.ps1` provides an interactive catalogue plus direct Synthetic, Replay,
   and explicitly authorized SITL modes.
 - The PX4 integration now lands at the receiving station before modeled unload/receipt,
@@ -26,14 +27,16 @@ medical-workflow qualification.
 
 - The immutable v1.0 campaign, browser evidence, and PX4 runs remain the historical
   baseline for the behavior they recorded.
-- The controlled `CAMPAIGN-20260922-FINAL-V11` campaign passed 15/15 scenarios with
+- The controlled `CAMPAIGN-20260922-PRESENTATION-V11` campaign passed 15/15 scenarios with
   complete bundle integrity.
-- Automated v1.1 display qualification passed 23/23 checks and generated 12 new desktop
-  and compact screenshots while retaining the historical screenshots.
+- Automated v1.1 display qualification passed 27/27 checks and generated 12 synthetic
+  desktop/compact screenshots plus four captures from qualified PX4 replays.
 - Stock-X500 v1.1 qualification passed for smoke `LFL-SMOKE-PX4-20260922T121905Z-6518`,
-  nominal T-01 `LFL-T01-PX4-20260922T120613Z-A800`, and compound-fault T-05
-  `LFL-T05-PX4-20260922T121017Z-B4A3`; each public bundle is sanitized, provenance-linked,
+  nominal T-01 `LFL-T01-PX4-20260922T120613Z-A800`, and corrected compound-fault T-05
+  `LFL-T05-PX4-20260922T185205Z-CDF9`; each public bundle is sanitized, provenance-linked,
   hash-complete, and distinct from preserved v1.0 evidence.
+- The earlier v1.1 T-05 bundle ending `B4A3` remains immutable historical evidence but is
+  superseded for custody interpretation because it mislabeled an off-origin landing as a return.
 
 ## Sensible next extensions
 

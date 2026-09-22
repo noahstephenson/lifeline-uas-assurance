@@ -73,6 +73,30 @@ def test_arrival_without_landing_never_becomes_delivery():
     )
     assert terminal.outcome == DeliveryOutcome.NOT_COMPLETED
     assert terminal.receipt_status == ReceiptStatus.PENDING
+    assert terminal.custody == PackageCustodyState.AIRCRAFT
+
+
+def test_off_origin_contingency_landing_does_not_imply_package_return():
+    thread = DeliveryThread(load_mission_contract())
+    thread.update(
+        sim_time_s=2,
+        dispatched=True,
+        at_delivery_zone=False,
+        landed=False,
+        disarmed=False,
+        terminal=False,
+    )
+    terminal = thread.update(
+        sim_time_s=23,
+        dispatched=True,
+        at_delivery_zone=False,
+        landed=True,
+        disarmed=True,
+        terminal=True,
+    )
+    assert terminal.outcome == DeliveryOutcome.NOT_COMPLETED
+    assert terminal.custody == PackageCustodyState.AIRCRAFT
+    assert terminal.receipt_status == ReceiptStatus.PENDING
 
 
 def test_absent_receipt_keeps_delivery_unconfirmed_despite_station_custody():

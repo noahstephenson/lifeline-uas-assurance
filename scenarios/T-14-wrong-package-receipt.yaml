@@ -14,5 +14,5 @@ expect:
   prohibited_actions: [CONTROLLED_LAND, ABORT_RUN]
   required_decision_codes: [NOMINAL]
 trace:
-  requirements: [M-04, M-05, M-06, EV-05]
-  hazards: [H-10, H-11, H-12]
+  requirements: [M-04, M-05, M-06, M-07, EV-05]
+  hazards: [H-10, H-11, H-12, H-13]

@@ -1,0 +1,141 @@
+{
+  "artifact_sha256": {
+    "after_action": "1c58faa7065743e3135b50c7838418fae5adecdf798e102e5400bf6b9920c787",
+    "api_log": "5c63a4acfd01c69666830dca6ef02b09524190ec03d831c0b6a3502b6e7af50b",
+    "assertions": "5371c32ab819fdff3981f66793191e2becc3d5d7d0d504ed0fde4e07a848cfc9",
+    "commands": "455d1f370fc928770313a34115fc5475c4068dd19d5585a2cf0d8f1991d72d75",
+    "configuration": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+    "decisions": "9a1048d681aa9567ce1ffb74162d1aaadc728811548186273e6171b3e16e786a",
+    "delivery_events": "d77c3e261646868e5970421500c1e0883590640f5a6b3a251d519eff7dfaa5d7",
+    "environment": "8b191cb003d95af865a1208896fa1521126148bb46e637209cfc340f19fa2e5d",
+    "mission_contract": "28d6615be2af43205ec7efd88c3f2ea9b39020050e05fd1325c47fae30b77dbd",
+    "public_export": "aebbf3fff73ae4b26e982acf7a02ab4011c788135ac76751c4c3516ec98dfa92",
+    "px4_log": "c043ceecd34a598f2fcfb0df3fade48f889c5c075876037fd552aae5ea9333f3",
+    "scenario": "e4228819beec02d4f9ff8229ada17a6b35b5b13d2d004c1611b6a9f08cccadad",
+    "sitl_reset_log": "1d728cd4f943a998147da077d68dda8caa84d6cf8756c49b2c7666ea47d31472",
+    "snapshots": "92ff5dbe171bb1e16da4a73113e984e221c5072c538607d1f0dffccedb4c42b9",
+    "summary": "3dbe1db53c4df0bdb93ff04c193c24843185ac76f3c0ad502af414d6c831a918",
+    "timeline": "4e69b53bacc45b861d244220e954cde2544561b4a2d4191cbec7cd890b8e4de7",
+    "timeline_svg": "ff5cbc719bf95e33f1b7ece0200e7949915eff443124c214c923ddd31fe856a0",
+    "verification_matrix": "7d7462a0f5642ec27e5a5607948e548904a5adebb4e9963b7b8b3a26e2d5e6f8"
+  },
+  "assertions": [
+    {
+      "expected": "SAFE_STOP",
+      "name": "terminal_state",
+      "observed": "SAFE_STOP",
+      "passed": true
+    },
+    {
+      "expected": "SAFE_STOP",
+      "name": "aircraft_outcome",
+      "observed": "SAFE_STOP",
+      "passed": true
+    },
+    {
+      "expected": "NOT_COMPLETED",
+      "name": "delivery_outcome",
+      "observed": "NOT_COMPLETED",
+      "passed": true
+    },
+    {
+      "expected": "UNKNOWN",
+      "name": "timeliness",
+      "observed": "UNKNOWN",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:WATCH",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_state:TERMINATE",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "absent",
+      "name": "prohibited_action:RETURN",
+      "observed": "absent",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:LINK_LOSS_DWELL",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "observed",
+      "name": "required_code:NAVIGATION_INVALID",
+      "observed": "observed",
+      "passed": true
+    },
+    {
+      "expected": "<= 23.0",
+      "name": "transition_deadline",
+      "observed": "20.076",
+      "passed": true
+    }
+  ],
+  "configuration_sha256": "9ece0448735f80215cb7ff207db92a32553d8ecff05e55296eddf2c92b5ac5bb",
+  "exploratory": false,
+  "files": {
+    "after_action": "after-action.json",
+    "api_log": "api.log",
+    "assertions": "assertions.csv",
+    "commands": "commands.jsonl",
+    "configuration": "configuration-resolved.yaml",
+    "decisions": "decisions.jsonl",
+    "delivery_events": "delivery-events.jsonl",
+    "environment": "environment.json",
+    "manifest": "manifest.json",
+    "mission_contract": "mission-contract-resolved.yaml",
+    "public_export": "public-export.json",
+    "px4_log": "px4.log",
+    "scenario": "scenario-resolved.yaml",
+    "sitl_reset_log": "sitl-reset.log",
+    "snapshots": "events.jsonl",
+    "summary": "run-summary.json",
+    "timeline": "timeline.csv",
+    "timeline_svg": "timeline.svg",
+    "verification_matrix": "verification-matrix.csv"
+  },
+  "run_id": "LFL-T05-PX4-20260922T185205Z-CDF9",
+  "scenario_id": "T-05",
+  "scenario_sha256": "6a93d21772ccde3a18dc5cc71ee7e457e94a3b34c17e077e7657118a4c7d5b52",
+  "schema_version": "1.0",
+  "software_versions": {
+    "aircraft_telemetry": "mavsdk",
+    "assurance_fault_scope": "scripted-lifeline-inputs-only; PX4 estimator unchanged",
+    "dashboard_connected_at": "2026-09-22T18:53:41.592347+00:00",
+    "dashboard_px4_time_overlap": "true",
+    "evidence_variant": "sanitized-public-export",
+    "fastapi": "0.141.1",
+    "gazebo_version": "Gazebo Sim, version 8.15.0",
+    "lifeline": "1.1.0",
+    "mavsdk": "3.17.2",
+    "mission_released_at": "2026-09-22T18:53:42.332068+00:00",
+    "openmct": "4.1.0",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "px4_commit": "d6f12ad1c4f70ad3230afd7d86e971421e02fef4",
+    "px4_tag": "v1.17.0",
+    "pydantic": "2.13.5",
+    "python": "3.12.3",
+    "pyyaml": "6.0.3",
+    "receiver_source": "modeled-receiving-station",
+    "return_mode": "mission-to-original-fictional-launch-point",
+    "site_disarm_observation": "mavsdk-armed-false",
+    "sitl_endpoint": "udpin://127.0.0.1:14540",
+    "source": "px4",
+    "source_manifest_sha256": "29e8e21233a52a5fb789cd92a71d4cac1768dcebad62b161d9ba768404fcf8d3",
+    "ubuntu_release": "24.04",
+    "uvicorn": "0.53.0",
+    "vehicle_uuid": "5283920058631409231",
+    "wsl_kernel": "6.18.33.2-microsoft-standard-WSL2"
+  },
+  "verification_status": "PASS"
+}

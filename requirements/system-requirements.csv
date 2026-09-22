@@ -5,6 +5,7 @@ M-03,Mission,Maintain mission state through a defined terminal state,State cover
 M-04,Mission,Link the fictional request package recipient aircraft mission and evidence run with stable identifiers,Schema inspection
 M-05,Mission,Confirm delivery only after a matching receiving-station receipt and required handoff conditions,Scenario test
 M-06,Mission,Report aircraft delivery timeliness assurance and evidence outcomes independently,Scenario test
+M-07,Mission,Report package custody as returned only after modeled origin handoff evidence,Scenario test
 HM-01,Health,Monitor operator link navigation confidence and energy margin,Scenario test
 HM-02,Health,Carry value source time receipt time and validity for critical inputs,Schema test
 HM-03,Health,Treat stale critical input as unknown,Stale injection

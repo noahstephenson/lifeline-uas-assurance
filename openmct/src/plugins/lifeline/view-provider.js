@@ -18,7 +18,60 @@ export function criticalDataStatus(point = {}) {
 }
 
 function aircraftOutcome(point) {
-  return { RECOVERED: "RECOVERED", SAFE_STOP: "SAFE STOP", ABORTED: "ABORTED" }[point.mission_state] || "IN PROGRESS";
+  return {
+    RECOVERED: "Recovered",
+    SAFE_STOP: "Landed and stopped",
+    ABORTED: "Run aborted"
+  }[point.mission_state] || "In progress";
+}
+
+export function humanizeState(value, fallback = "Not available") {
+  if (!value) return fallback;
+  return String(value).toLowerCase().replaceAll("_", " ").replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
+}
+
+export function actionPresentation(value) {
+  if (value === "CONTROLLED_LAND") return "Controlled landing";
+  if (value === "NONE") return "No intervention";
+  return humanizeState(value);
+}
+
+export function playbackControlLabel({ replayComplete = false, paused = false } = {}) {
+  if (replayComplete) return "Restart";
+  return paused ? "Play" : "Pause";
+}
+
+export function timelinessPresentation(point = {}, configuredDeadlineS = null) {
+  if (point.delivery_outcome === "NOT_COMPLETED") {
+    return { primary: "Not delivered", detail: "Mission ended before handoff." };
+  }
+  if (point.timeliness === "ON_TIME" || point.timeliness === "LATE") {
+    const acceptedAt = Number(point.accepted_at_s);
+    const inferredDeadline = Number(point.sim_time_s) + Number(point.deadline_remaining_s);
+    const deadline = Number.isFinite(inferredDeadline) ? inferredDeadline : Number(configuredDeadlineS);
+    const margin = deadline - acceptedAt;
+    const detail = Number.isFinite(margin)
+      ? (margin >= 0 ? margin.toFixed(1) + " s before deadline" : Math.abs(margin).toFixed(1) + " s after deadline")
+      : "Acceptance recorded; deadline margin unavailable.";
+    return { primary: point.timeliness === "ON_TIME" ? "On time" : "Late", detail };
+  }
+  if (point.timeliness === "PENDING" && point.deadline_remaining_s != null) {
+    return {
+      primary: "Pending",
+      detail: Number(point.deadline_remaining_s).toFixed(1) + " s until delivery deadline"
+    };
+  }
+  if (point.timeliness === "NOT_MODELED") {
+    return { primary: "Not modeled", detail: "No delivery deadline model." };
+  }
+  return { primary: "Unknown", detail: "No supported timeliness disposition." };
+}
+
+export function sourcePresentation(source, connectionState = "") {
+  const live = String(connectionState).startsWith("LIVE");
+  if (source === "px4") return live ? "PX4 SITL · Live" : "PX4 SITL · Recorded replay";
+  if (source === "fake") return live ? "Synthetic · Live" : "Synthetic · Recorded replay";
+  return live ? "Simulation · Live" : "Simulation · Recorded replay";
 }
 
 function mapPosition(north = 0, east = 0) {
@@ -43,8 +96,8 @@ function momentExplanation(point = {}) {
       "; navigation " + Number(point.navigation_confidence || 0).toFixed(2) +
       "; modeled energy margin " + Number(point.energy_margin_wh || 0).toFixed(1) + " Wh.",
     unavailable: stale.length ? stale.join(", ") : "No critical input was stale.",
-    action: point.recommended_action || "NONE",
-    rejected: (point.rejected_actions || []).join(", ") || "None recorded",
+    action: actionPresentation(point.recommended_action || "NONE"),
+    rejected: (point.rejected_actions || []).map((item) => actionPresentation(item)).join(", ") || "None recorded",
     delivery: "Delivery " + (point.delivery_outcome || "NOT_MODELED") +
       "; custody " + (point.package_custody || "NOT_MODELED") +
       "; receipt " + (point.receipt_status || "NOT_MODELED") + ".",
@@ -87,6 +140,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
       let paused = false;
       let history = [];
       let sourceUnavailable = false;
+      let presentationMode = false;
 
       const bindInteractions = () => {
         if (!container?.querySelectorAll) return;
@@ -105,6 +159,21 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         });
         const pauseButton = container.querySelector("#lifeline-pause");
         if (pauseButton) pauseButton.addEventListener("click", () => {
+          if (replayComplete) {
+            socket?.close();
+            replayComplete = false;
+            paused = false;
+            lastSequence = -1;
+            lastPoint = {};
+            selectedMoment = null;
+            eventRows = [];
+            breadcrumb = [];
+            history = [];
+            connectionState = "REPLAY RESTARTING";
+            render();
+            connectStream();
+            return;
+          }
           paused = !paused;
           if (paused) {
             connectionState = "REPLAY PAUSED";
@@ -119,7 +188,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const speedSelector = container.querySelector("#lifeline-speed");
         if (speedSelector) speedSelector.addEventListener("change", () => {
           playbackSpeed = Number(speedSelector.value);
-          if (!paused) {
+          if (!paused && !replayComplete) {
             socket?.close();
             connectStream();
           }
@@ -127,6 +196,26 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const seek = container.querySelector("#lifeline-seek");
         if (seek) seek.addEventListener("input", () => {
           selectedMoment = history[Number(seek.value)] || lastPoint;
+          render(lastPoint);
+        });
+        const presentationButton = container.querySelector("#lifeline-presentation");
+        if (presentationButton) presentationButton.addEventListener("click", () => {
+          presentationMode = !presentationMode;
+          if (!presentationMode) {
+            globalThis.document?.querySelector(
+              ".l-shell__pane-tree.l-pane--collapsed > .l-pane__expand-button"
+            )?.click();
+            globalThis.document?.querySelector(
+              ".l-shell__pane-inspector.l-pane--collapsed > .l-pane__expand-button"
+            )?.click();
+            render(lastPoint);
+            return;
+          }
+          const [path, query = ""] = globalThis.location.hash.split("?");
+          const params = new URLSearchParams(query);
+          params.set("hideTree", "true");
+          params.set("hideInspector", "true");
+          globalThis.location.hash = path + (params.size ? "?" + params.toString() : "");
           render(lastPoint);
         });
       };
@@ -138,7 +227,9 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const nav = Number(point.navigation_confidence ?? 0);
         const energy = Number(point.energy_margin_wh ?? 0);
         const critical = criticalDataStatus(point);
-        const evidenceStatus = point.verification_status || "PENDING";
+        const verificationStatus = point.verification_status || "PENDING";
+        const integrityStatus = point.integrity_status ||
+          (point.evidence_complete === true ? "VERIFIED" : point.evidence_complete === false ? "INCOMPLETE" : "PENDING");
         const vehicle = mapPosition(point.north_m, point.east_m);
         const deliverySite = mapPosition(240, 80);
         const packagePosition = point.package_custody === "RECEIVING_STATION" ? deliverySite : vehicle;
@@ -146,6 +237,12 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const packageInfo = contract?.package || {};
         const manifest = packageInfo.manifest || [];
         const selectedSequence = Number(point.sequence ?? Number.MAX_SAFE_INTEGER);
+        const selectedRun = runCatalog.find((item) => item.run_id === point.run_id);
+        const sourceLabel = sourcePresentation(selectedRun?.source, connectionState);
+        const timeliness = timelinessPresentation(point, contract?.delivery_deadline_s);
+        const actionLabel = actionPresentation(point.recommended_action);
+        const integrityIssues = Number(point.evidence_issue_count || 0);
+        const presentationLabel = presentationMode ? "Exit presentation" : "Presentation mode";
         const breadcrumbPoints = history
           .filter((item) => Number(item.sequence) <= selectedSequence)
           .map((item) => mapPosition(item.north_m, item.east_m))
@@ -154,7 +251,8 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
           .join(" ");
         const runs = runCatalog.slice(0, 40).map((item) =>
           "<option value='" + e(item.run_id) + "' " + (item.run_id === point.run_id ? "selected" : "") + ">" +
-          e(item.scenario_id) + " · " + e(item.source) + " · " + e(item.delivery_outcome) + "</option>"
+          e(item.scenario_id) + " · " + e(item.source === "px4" ? "PX4 SITL" : item.source === "fake" ? "Synthetic" : "Simulation") +
+          " · " + e(String(item.run_id).split("-").at(-1)) + "</option>"
         ).join("");
         const manifestRows = manifest.map((item) =>
           "<li><b>" + Number(item.quantity) + " " + e(item.unit) + "</b> " + e(item.description) + "</li>"
@@ -162,38 +260,37 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         const visibleEventRows = eventRows.filter((row) => Number(row.point.sequence) <= selectedSequence);
         const timelineRows = visibleEventRows.slice(-10).map((row) => {
           const actualIndex = eventRows.indexOf(row);
-          return "<button data-moment='" + actualIndex + "' class='moment-row'><time>T+" +
+          const selected = row.point.sequence === point.sequence ? " is-selected" : "";
+          return "<button data-moment='" + actualIndex + "' class='moment-row" + selected + "'><time>T+" +
             Number(row.point.sim_time_s).toFixed(1) + "</time><span>" + e(row.point.mission_state) +
             "</span><span>" + e(row.point.package_custody || "NOT_MODELED") + "</span><b>" +
             e(row.point.decision_code) + "</b></button>";
         }).join("");
-        const deadline = point.deadline_remaining_s == null
-          ? "No modeled deadline"
-          : Number(point.deadline_remaining_s).toFixed(1) + " s slack";
-
         container.innerHTML =
-          "<section class='lifeline-shell'>" +
+          "<section class='lifeline-shell" + (presentationMode ? " is-presentation" : "") + "'>" +
             "<header class='mission-header'><div><span class='eyebrow'>SIMULATION · MEDICAL RESUPPLY MISSION LAB</span>" +
-              "<h1>" + e(contract?.mission_id || "Project Lifeline") + "</h1><p>" +
+              "<h1>" + e(contract?.recipient?.name ? contract.recipient.name + " Resupply" : "Project Lifeline") + "</h1><p>" +
               e(contract?.origin?.name || "Logistics Point Alpha") + " → " +
-              e(contract?.recipient?.name || "Echo Aid Station") + "</p></div>" +
+              e(contract?.recipient?.name || "Echo Aid Station") + " · <span class='machine-id'>" +
+              e(contract?.mission_id || point.mission_id) + "</span></p></div>" +
               "<div class='mission-meta'><label>Recorded mission<select id='lifeline-run-selector' aria-label='Select recorded mission'>" +
               (runs || "<option>" + e(point.run_id) + "</option>") + "</select></label><b>T+" +
-              Number(point.sim_time_s || 0).toFixed(1) + " s</b><span>" + e(point.run_id) + "</span></div></header>" +
-            "<div class='connection-banner'>" + e(connectionState) + "</div>" +
+              Number(point.sim_time_s || 0).toFixed(1) + " s</b><span class='run-id'>" + e(point.run_id) + "</span></div></header>" +
+            "<div class='connection-banner'><strong>" + e(sourceLabel) + "</strong><span>" + e(connectionState) + "</span></div>" +
             "<nav class='replay-controls' aria-label='Replay controls'><button id='lifeline-pause' type='button'>" +
-              (paused ? "Resume" : "Pause") + "</button><label>Speed<select id='lifeline-speed'>" +
+              playbackControlLabel({ replayComplete, paused }) + "</button><label>Speed<select id='lifeline-speed'>" +
               [0.5, 1, 2, 4].map((value) => "<option value='" + value + "' " + (value === playbackSpeed ? "selected" : "") + ">" + value + "×</option>").join("") +
               "</select></label><label class='seek-label'>Inspect recorded moment<input id='lifeline-seek' type='range' min='0' max='" +
-              Math.max(0, history.length - 1) + "' value='" + Math.max(0, selectedMoment ? history.indexOf(selectedMoment) : history.length - 1) + "'></label></nav>" +
+              Math.max(0, history.length - 1) + "' value='" + Math.max(0, selectedMoment ? history.indexOf(selectedMoment) : history.length - 1) + "'></label>" +
+              "<button id='lifeline-presentation' type='button'>" + e(presentationLabel) + "</button></nav>" +
             (point.exploratory ? "<div class='exploratory'>EXPLORATORY — NOT CONTROLLED VERIFICATION EVIDENCE</div>" : "") +
             (critical.healthy ? "" : "<div class='critical-stale'>CRITICAL DATA STALE OR INVALID: " + e(critical.failed.join(", ")) + "</div>") +
             "<div class='outcome-strip'>" +
-              "<article><label>Aircraft</label><strong>" + e(aircraftOutcome(point)) + "</strong><small>" + e(point.mission_state) + "</small></article>" +
-              "<article class='" + stateClass(point.delivery_outcome) + "'><label>Delivery</label><strong>" + e(point.delivery_outcome || "NOT MODELED") + "</strong><small>" + e(point.package_custody || "No custody model") + "</small></article>" +
-              "<article class='" + stateClass(point.timeliness) + "'><label>Timeliness</label><strong>" + e(point.timeliness || "UNKNOWN") + "</strong><small>" + e(deadline) + "</small></article>" +
-              "<article class='" + stateClass(point.assurance_state) + "'><label>Assurance</label><strong>" + e(point.assurance_state) + "</strong><small>" + e(point.recommended_action) + "</small></article>" +
-              "<article class='verification-" + String(evidenceStatus).toLowerCase() + "'><label>Evidence</label><strong>" + e(evidenceStatus) + "</strong><small>" + (point.evidence_complete ? "HASH-COMPLETE" : Number(point.evidence_issue_count || 0) + " ISSUE(S)") + "</small></article>" +
+              "<article><label>Aircraft</label><strong>" + e(aircraftOutcome(point)) + "</strong><small>Recorded state: " + e(point.mission_state) + "</small></article>" +
+              "<article class='" + stateClass(point.delivery_outcome) + "'><label>Delivery</label><strong>" + e(humanizeState(point.delivery_outcome, "Not modeled")) + "</strong><small>Custody: " + e(humanizeState(point.package_custody, "Not modeled")) + "</small></article>" +
+              "<article class='" + stateClass(point.timeliness) + "'><label>Timeliness</label><strong>" + e(timeliness.primary) + "</strong><small>" + e(timeliness.detail) + "</small></article>" +
+              "<article class='" + stateClass(point.assurance_state) + "'><label>Assurance response</label><strong>" + e(actionLabel) + "</strong><small>Supervisor state: " + e(humanizeState(point.assurance_state)) + "</small></article>" +
+              "<article class='verification-" + String(verificationStatus).toLowerCase() + "'><label>Evidence integrity</label><strong>" + e(humanizeState(integrityStatus)) + "</strong><small>Behavior verification: " + e(humanizeState(verificationStatus)) + (integrityIssues ? " · " + integrityIssues + " integrity issue(s)" : "") + "</small></article>" +
             "</div>" +
             "<div class='mission-grid'>" +
               "<article class='panel map-panel'><div class='panel-heading'><div><span>LOCAL NED · FICTIONAL COORDINATES</span><h2>Mission map</h2></div><b>" +
@@ -225,13 +322,13 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
                 "<div class='energy-row'><div><small>Available</small><b>" + Number(point.energy_available_wh || 0).toFixed(1) + " Wh</b></div><div><small>Recovery demand</small><b>" + Number(point.energy_recovery_wh || 0).toFixed(1) +
                 " Wh</b></div><div><small>Reserve</small><b>" + Number(point.energy_reserve_wh || 0).toFixed(1) + " Wh</b></div><div><small>Margin</small><b>" + energy.toFixed(1) + " Wh</b></div></div>" +
                 "<p class='provenance'>Energy feasibility and confidence are Lifeline models; position, altitude, battery, and mode are simulator telemetry in SITL runs.</p></article>" +
-              "<article class='panel decision-panel'><div class='panel-heading'><div><span>CONSTRAINED POLICY</span><h2>Current decision</h2></div><b class='decision-code'>" + e(point.decision_code) + "</b></div>" +
-                "<div class='action-callout'><span>Selected action</span><strong>" + e(point.recommended_action) + "</strong></div><p>" + e(point.decision_summary) + "</p>" +
-                "<dl><dt>Rejected</dt><dd>" + e((point.rejected_actions || []).join(", ") || "None") + "</dd><dt>Requirements</dt><dd>" + e((point.requirement_ids || []).join(", ")) +
+              "<article class='panel decision-panel'><div class='panel-heading'><div><span>CONSTRAINED POLICY</span><h2>Explain this moment</h2></div><b class='decision-code'>" + e(point.decision_code) + "</b></div>" +
+                "<div class='action-callout'><span>Selected action</span><strong>" + e(actionLabel) + "</strong><small>Supervisor state: " + e(humanizeState(point.assurance_state)) + "</small></div><p>" + e(point.decision_summary) + "</p>" +
+                "<dl><dt>Observed aircraft</dt><dd>" + e(humanizeState(point.mission_state)) + "</dd><dt>Rejected</dt><dd>" + e((point.rejected_actions || []).map((item) => humanizeState(item)).join(", ") || "None") + "</dd><dt>Requirements</dt><dd>" + e((point.requirement_ids || []).join(", ")) +
                 "</dd><dt>Hazards</dt><dd>" + e((point.hazard_ids || []).join(", ")) + "</dd></dl></article>" +
             "</div>" +
             "<div class='lower-grid'><article class='panel timeline-panel'><div class='panel-heading'><div><span>SELECT AN EVENT</span><h2>Coordinated mission timeline</h2></div><b>" + visibleEventRows.length + " transitions</b></div><div class='events'>" + timelineRows + "</div></article>" +
-              "<article class='panel explain-panel'><div class='panel-heading'><div><span>SIGNATURE FEATURE</span><h2>Explain this moment</h2></div></div><h3>" + e(moment.title) + "</h3>" +
+              "<article class='panel explain-panel'><div class='panel-heading'><div><span>TECHNICAL DETAIL</span><h2>Decision context</h2></div></div><h3>" + e(moment.title) + "</h3>" +
               "<dl><dt>System knew</dt><dd>" + e(moment.known) + "</dd><dt>Unavailable</dt><dd>" + e(moment.unavailable) + "</dd><dt>Allowed action</dt><dd>" + e(moment.action) +
               "</dd><dt>Rejected</dt><dd>" + e(moment.rejected) + "</dd><dt>Resupply objective</dt><dd>" + e(moment.delivery) + "</dd><dt>Trace</dt><dd>" + e(moment.trace) + "</dd></dl></article></div>" +
           "</section>";
@@ -321,6 +418,10 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
       return {
         show(element) {
           container = element;
+          const hashQuery = globalThis.location?.hash?.split("?")[1] || "";
+          const hashParams = new URLSearchParams(hashQuery);
+          presentationMode = hashParams.get("hideTree") === "true" &&
+            hashParams.get("hideInspector") === "true";
           render();
           void loadReferenceData();
           connectStream();

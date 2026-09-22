@@ -17,5 +17,5 @@ expect:
   required_decision_codes: [LINK_LOSS_DWELL, NAVIGATION_INVALID]
   transition_deadline_s: 23
 trace:
-  requirements: [A-02, A-03, A-08, M-06]
-  hazards: [H-02, H-04]
+  requirements: [A-02, A-03, A-08, M-06, M-07]
+  hazards: [H-02, H-04, H-13]

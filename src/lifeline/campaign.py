@@ -186,7 +186,7 @@ def _audit_display_qualification() -> dict[str, Any]:
         screenshots = report.get("screenshots", {})
         expected_runs = {
             "DISPLAY-V11-T01",
-            "DISPLAY-V11-T05",
+            "DISPLAY-V11B-T05",
             "DISPLAY-V11-T11",
             "DISPLAY-V11-T13",
             "DISPLAY-V11-T14",
@@ -205,7 +205,7 @@ def _audit_display_qualification() -> dict[str, Any]:
             report.get("verification_status") == "PASS"
             and report.get("qualification_method") == "automated browser display qualification"
             and report.get("human_usability_study") is False
-            and len(assertions) == 23
+            and len(assertions) == 27
             and all(item.get("passed") for item in assertions)
             and len(screenshots) == 12
             and hashes_match

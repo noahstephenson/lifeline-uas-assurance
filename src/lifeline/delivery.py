@@ -229,8 +229,6 @@ class DeliveryThread:
         if terminal and outcome == DeliveryOutcome.PENDING:
             outcome = DeliveryOutcome.NOT_COMPLETED
             timeliness = TimelinessOutcome.UNKNOWN
-            if custody == PackageCustodyState.AIRCRAFT:
-                custody = PackageCustodyState.RETURNED
             self._emit_once(sim_time_s, "DELIVERY_NOT_COMPLETED", {})
 
         self._status = DeliveryStatus(

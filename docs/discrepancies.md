@@ -166,3 +166,21 @@ Scenario expectations remain controlled inputs. No expected result was changed t
 - **Decision:** Capture the original fictional launch coordinates during outbound mission upload. Implement Lifeline RETURN in SITL as a stock one-item PX4 mission that lands at that captured point, and extend only T-01's execution envelope from 120 to 190 seconds after the 160-second trial reached the recovery point during final descent. The mission, delivery, timeliness, action, and terminal expectations remain unchanged.
 - **Verification:** Require observed second takeoff, accepted return-mission upload/start, movement to the original local-NED recovery zone, and observed final landing/disarm before RECOVERED.
 - **Scenario impact:** T-01 timing only; no scenario was added or relabeled.
+
+## D-21 — Off-origin contingency landing was mislabeled as returned custody
+
+- **Observed:** Qualified run `LFL-T05-PX4-20260922T121017Z-B4A3` correctly recorded a
+  pre-handoff compound fault, rejected RETURN, and observed a controlled landing, but the
+  delivery evaluator changed package custody from AIRCRAFT to RETURNED solely because the
+  mission reached a terminal state.
+- **Risk:** The dashboard could imply that a package reached the origin even though the
+  aircraft stopped at an uncharacterized off-origin location. That contradicted the map and
+  overstated the logistics outcome.
+- **Decision:** Require modeled origin-handoff evidence before reporting RETURNED custody.
+  Preserve the original bundle unchanged, add M-07 and H-13, and supersede the earlier run
+  only for custody interpretation.
+- **Verification:** Unit regression for off-origin terminal landing; corrected PX4 run
+  `LFL-T05-PX4-20260922T185205Z-CDF9`; full 15-scenario campaign; and automated
+  dashboard checks showing NOT_COMPLETED with AIRCRAFT custody.
+- **Scenario impact:** T-05 and T-14 gain M-07/H-13 trace links. Expected mission, assurance,
+  delivery, action, and receipt outcomes are unchanged.
