@@ -3,8 +3,8 @@
   "qualification_method": "automated browser display qualification",
   "human_usability_study": false,
   "verification_status": "PASS",
-  "generated_at": "2026-09-22T19:18:00.266Z",
-  "commit": "15798978ef2028672e1e0e7935b2f3ebd6f9e0b6",
+  "generated_at": "2026-09-22T19:48:36.376Z",
+  "commit": "f459ae520abe1011953f9868d2a03abc4423e821",
   "playwright_version": "1.55.1",
   "browser": {
     "name": "chromium",
@@ -41,189 +41,189 @@
       "name": " /  / display-qualification.spec.js / OD-03 shows the T-05 decision basis and rejected RETURN",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8998,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 10443,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 10358,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / replay seeking and Explain this moment do not leak later receipt or terminal outcomes",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 10536,
+      "duration_ms": 7734,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-04 failed WebSocket replaces operational content with unavailable text",
       "status": "passed",
       "passed": true,
-      "duration_ms": 1896,
+      "duration_ms": 2526,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 compact qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 10576,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 10686,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / replay seeking and Explain this moment do not leak later receipt or terminal outcomes",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 10726,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-05 reaches the recorded terminal state and labels replay complete",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4776,
+      "duration_ms": 4518,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / untrusted rationale and identifier are rendered as text, never HTML",
       "status": "passed",
       "passed": true,
-      "duration_ms": 2248,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 8837,
+      "duration_ms": 3090,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9267,
+      "duration_ms": 9089,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11B-T05 desktop qualification screenshot",
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T01 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4973,
+      "duration_ms": 13504,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / the dashboard exposes replay inspection but no mission-control request",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9206,
+      "duration_ms": 8259,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T14 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8604,
+      "duration_ms": 8952,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11B-T05 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 4536,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11B-T05 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4477,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 desktop qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 4995,
+      "duration_ms": 4936,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / independent logistics outcomes remain visible after aircraft recovery",
       "status": "passed",
       "passed": true,
-      "duration_ms": 25027,
+      "duration_ms": 23414,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / medical workflow shows request, manifest, map, custody, and accepted receipt",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9441,
+      "duration_ms": 10055,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 9454,
+      "duration_ms": 9363,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 compact qualification screenshot",
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 desktop qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4583,
+      "duration_ms": 5562,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / T-05 does not report an off-origin package return or deadline countdown as slack",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5186,
+      "duration_ms": 5249,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / compact dashboard has no horizontal content clipping",
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T11 compact qualification screenshot",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8729,
-      "error": null
-    },
-    {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 compact qualification screenshot",
-      "status": "passed",
-      "passed": true,
-      "duration_ms": 8432,
+      "duration_ms": 5420,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / completed replay offers Restart and transitions through Play and Pause",
       "status": "passed",
       "passed": true,
-      "duration_ms": 5856,
+      "duration_ms": 5683,
       "error": null
     },
     {
-      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 desktop qualification screenshot",
+      "name": " /  / display-qualification.spec.js / compact dashboard has no horizontal content clipping",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8492,
+      "duration_ms": 8959,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T15 compact qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8721,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / recorded source labels distinguish PX4 and synthetic evidence",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8139,
+      "duration_ms": 7734,
+      "error": null
+    },
+    {
+      "name": " /  / display-qualification.spec.js / DISPLAY-V11-T13 desktop qualification screenshot",
+      "status": "passed",
+      "passed": true,
+      "duration_ms": 8470,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-01 keeps mission, assurance, health, energy, evidence, and time visible",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8653,
+      "duration_ms": 8299,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / OD-02 explains unknown and stale critical data without color",
       "status": "passed",
       "passed": true,
-      "duration_ms": 4468,
+      "duration_ms": 3994,
       "error": null
     },
     {
       "name": " /  / display-qualification.spec.js / presentation mode uses native Open MCT pane collapse and is reversible",
       "status": "passed",
       "passed": true,
-      "duration_ms": 8328,
+      "duration_ms": 7693,
       "error": null
     }
   ]

@@ -1,7 +1,0 @@
-name,passed,expected,observed
-terminal_state,True,SAFE_STOP,SAFE_STOP
-required_state:UNKNOWN,True,observed,observed
-prohibited_action:RETURN,True,absent,absent
-prohibited_action:CONTINUE,True,absent,absent
-required_code:CRITICAL_INPUT_UNKNOWN,True,observed,observed
-transition_deadline,True,<= 24.0,22.0

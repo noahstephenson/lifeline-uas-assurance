@@ -20,7 +20,7 @@ def render_timeline_svg(run_dir: Path, run_id: str) -> Path:
             '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="180">'
             '<rect width="100%" height="100%" fill="#0b1320"/>'
             '<text x="40" y="75" fill="#ff7185" font-family="Segoe UI,Arial" font-size="24">'
-            f"Project Lifeline — {run_id}</text>"
+            f"Project Lifeline: {run_id}</text>"
             '<text x="40" y="115" fill="#e8f0fa" font-family="Segoe UI,Arial" font-size="18">'
             "Run ended before timeline telemetry was available.</text></svg>",
             encoding="utf-8",
@@ -45,7 +45,7 @@ def render_timeline_svg(run_dir: Path, run_id: str) -> Path:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="#0b1320"/>',
         "<style>text{font-family:Segoe UI,Arial,sans-serif;fill:#e8f0fa}.muted{fill:#9eb0c4}.grid{stroke:#27384b;stroke-width:1}</style>",
-        f'<text x="{left}" y="36" font-size="24" font-weight="700">Project Lifeline — {run_id}</text>',
+        f'<text x="{left}" y="36" font-size="24" font-weight="700">Project Lifeline: {run_id}</text>',
         '<text x="110" y="58" font-size="13" class="muted">Requirement-linked mission assurance timeline (simulation)</text>',
     ]
     for tick in range(0, int(max_t) + 1, 5):

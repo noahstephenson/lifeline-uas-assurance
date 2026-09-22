@@ -3,7 +3,7 @@
 | Component | Baseline |
 |---|---|
 | Windows | Windows 11 host |
-| Python | 3.11.x–3.12.x (3.12 native in Ubuntu 24.04) |
+| Python | 3.11.x through 3.12.x (3.12 native in Ubuntu 24.04) |
 | Node.js | 20.20.2 portable Windows archive for Open MCT |
 | Ubuntu | 24.04 WSL2 |
 | PX4 | v1.17.0, commit `d6f12ad` |

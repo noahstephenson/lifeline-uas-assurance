@@ -1,7 +1,0 @@
-name,passed,expected,observed
-terminal_state,True,RECOVERED,RECOVERED
-required_state:WATCH,True,observed,observed
-prohibited_action:RETURN,True,absent,absent
-prohibited_action:CONTROLLED_LAND,True,absent,absent
-required_code:LINK_LOSS_DWELL,True,observed,observed
-required_code:RECOVERY_DWELL,True,observed,observed

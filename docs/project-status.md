@@ -1,51 +1,31 @@
 # Project status
 
-Project Lifeline v1.1 is implemented as a Medical Resupply Mission Lab. Its evidence
-status includes the preserved v1.0 qualification baseline and the completed v1.1
-medical-workflow qualification.
+Project Lifeline v1.1 is a working medical resupply mission lab. It combines a deterministic assurance policy, a receiving-station model, PX4/Gazebo flight simulation, a read-only Open MCT dashboard, and replayable evidence.
 
-## Implemented v1.1 capabilities
+## What is complete
 
-- A versioned mission contract identifies the fictional request, package, origin,
-  recipient, delivery zone, landed handoff, acceptance rules, and logistics deadline.
-- The receiving-station simulator records custody and validates request, package, and
-  recipient identifiers before accepting a receipt.
-- Aircraft, delivery, and timeliness outcomes are independent.
-- Fifteen scenarios include nominal receipt, receiver absence, wrong-package rejection,
-  and accepted-but-late delivery.
-- Evidence includes delivery events, the resolved mission contract, and a deterministic
-  after-action summary.
-- The dashboard provides a telemetry-driven local-NED map, request/manifest view,
-  coordinated timeline, outcome strip, Play/Pause/Restart controls, source labels,
-  reversible presentation mode, and Explain this moment.
-- `scripts/mission.ps1` provides an interactive catalogue plus direct Synthetic, Replay,
-  and explicitly authorized SITL modes.
-- The PX4 integration now lands at the receiving station before modeled unload/receipt,
-  then explicitly rearms, takes off, and returns.
+The mission contract identifies the fictional request, package, origin, receiving station, delivery zone, acceptance rules, and deadline. The receiving-station model checks the request, package, mission, and recipient identifiers before it accepts a receipt.
 
-## Qualification status
+Aircraft, delivery, and timeliness remain separate outcomes. This lets the evidence describe cases such as a recovered aircraft with no receipt, a rejected package, or an accepted delivery that arrived late.
 
-- The immutable v1.0 campaign, browser evidence, and PX4 runs remain the historical
-  baseline for the behavior they recorded.
-- The controlled `CAMPAIGN-20260922-PRESENTATION-V11` campaign passed 15/15 scenarios with
-  complete bundle integrity.
-- Automated v1.1 display qualification passed 27/27 checks and generated 12 synthetic
-  desktop/compact screenshots plus four captures from qualified PX4 replays.
-- Stock-X500 v1.1 qualification passed for smoke `LFL-SMOKE-PX4-20260922T121905Z-6518`,
-  nominal T-01 `LFL-T01-PX4-20260922T120613Z-A800`, and corrected compound-fault T-05
-  `LFL-T05-PX4-20260922T185205Z-CDF9`; each public bundle is sanitized, provenance-linked,
-  hash-complete, and distinct from preserved v1.0 evidence.
-- The earlier v1.1 T-05 bundle ending `B4A3` remains immutable historical evidence but is
-  superseded for custody interpretation because it mislabeled an off-origin landing as a return.
+The scenario catalogue contains 15 controlled cases. T-01 covers the nominal request-to-receipt workflow. T-05 covers a pre-handoff compound fault. T-13 through T-15 check missing, mismatched, and late receipts.
 
-## Sensible next extensions
+The dashboard includes a local-NED mission map, package manifest, custody state, event timeline, replay controls, source labels, presentation mode, and "Explain this moment." The browser remains read-only.
 
-- Add randomized receiver delay and network-jitter experiments as exploratory runs.
-- Add a characterized alternate recovery location and only then consider `DIVERT`.
-- Run a separately designed human-factors study; automated display checks are not one.
-- Apply the fictional payload mass to a characterized vehicle-dynamics model.
-- Add hardware-in-the-loop as a separate evidence class without weakening SITL controls.
+## Qualification record
 
-All results remain limited to the documented simulation configuration. They do not
-establish real-flight performance, operational safety, certification, medical suitability,
-or military capability.
+- Campaign `CAMPAIGN-20260922-PRESENTATION-V11` passed all 15 scenarios with complete bundle integrity.
+- Automated display qualification passed 27/27 checks and produced 12 desktop and compact screenshots.
+- Four additional screenshots were captured from the qualified PX4 replays.
+- Stock X500 smoke qualification passed in `LFL-SMOKE-PX4-20260922T121905Z-6518`.
+- Nominal T-01 passed in `LFL-T01-PX4-20260922T120613Z-A800`.
+- Corrected compound-fault T-05 passed in `LFL-T05-PX4-20260922T185205Z-CDF9`.
+- The current checkout and a fresh Git archive both report `release_ready: true`.
+
+Earlier campaign and qualification bundles remain in Git history. The current branch keeps only the final v1.1 evidence set.
+
+## Reasonable next experiments
+
+Useful follow-on work would include randomized receiver delays, controlled network jitter, and a characterized alternate recovery site. Applying the fictional package mass to a measured vehicle model would make the energy study more meaningful. Hardware-in-the-loop and human-factors work would need separate evidence classes and acceptance criteria.
+
+The current results apply only to the documented simulation. They do not establish medical suitability, real-flight performance, operational safety, certification, military capability, or human usability.

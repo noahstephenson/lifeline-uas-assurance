@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify release evidence from a fresh git archive of HEAD")
-    parser.add_argument("--campaign", default="CAMPAIGN-20260920-C")
+    parser.add_argument("--campaign", default="CAMPAIGN-20260922-PRESENTATION-V11")
     args = parser.parse_args()
 
     with tempfile.TemporaryDirectory(prefix="lifeline-release-export-") as temporary:

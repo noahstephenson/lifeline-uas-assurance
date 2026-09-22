@@ -1,100 +1,86 @@
-# Project Lifeline — Medical Resupply Mission Lab
+# Project Lifeline
 
-Project Lifeline is a student-built systems-engineering lab for studying a complete,
-fictional medical-resupply mission: a supply request is accepted, a sealed package is
-assigned, a simulated aircraft transports it, a modeled receiving station validates the
-handoff, and the system records whether the aircraft recovered, the delivery was accepted,
-and the logistics deadline was met.
+*A medical resupply mission lab built with PX4, Gazebo, Open MCT, and a deterministic assurance engine.*
 
-> Project Lifeline is an independent educational simulation using fictional locations,
-> requests, and deadlines. It is not an operational medical system, does not support real
-> flight or care decisions, and does not establish safety, certification, or endorsement.
+Project Lifeline follows a fictional medical supply request from assignment to receipt. A PX4 X500 flies the route in Gazebo, a receiving-station model checks the package handoff, and a read-only Open MCT dashboard explains what the assurance logic knew at each point.
+
+> This is an independent student simulation. It uses fictional locations, requests, supplies, and deadlines. It does not support real flight or medical decisions, and its results are not safety validation or certification.
 
 ![Project Lifeline dashboard](evidence/demo-screenshots/px4-t05-decision.png)
 
-## Why this is more than a drone simulation
+*The T-05 replay at the moment invalid navigation rules out a return and the assurance engine selects a controlled landing.*
 
-The aircraft is one subsystem in a request-to-receipt workflow. Lifeline tracks three
-outcomes separately:
+## What the project models
 
-| Thread | Question | Example result |
+The aircraft is one part of a larger request-to-receipt workflow. The simulation tracks the supply request, package identity, aircraft state, receiving station, custody transfer, receipt, and delivery deadline.
+
+A mission moves through five observable stages:
+
+1. A fictional request is matched to a sealed package and a receiving station.
+2. The aircraft departs and travels to the delivery zone.
+3. PX4 telemetry confirms arrival, landing, and disarming.
+4. The receiving-station model completes a five-second unload dwell and checks the request, package, mission, and recipient identifiers.
+5. The evidence record reports the aircraft, delivery, and timeliness outcomes separately.
+
+Reaching a waypoint does not count as delivery. Lifeline requires an observed landing and disarm, the modeled unload dwell, and a matching receipt before it reports an accepted handoff.
+
+| Outcome | Question answered | Example |
 |---|---|---|
-| Aircraft | Did the vehicle recover or reach a safe stop? | `RECOVERED` |
-| Delivery | Did a matching receiving-station receipt confirm custody transfer? | `ACCEPTED` |
-| Timeliness | Was that accepted receipt recorded before the fictional deadline? | `ON_TIME` |
+| Aircraft | Did the vehicle recover or stop after a contingency? | `RECOVERED` |
+| Delivery | Did the receiving station accept the assigned package? | `ACCEPTED` |
+| Timeliness | Did acceptance occur before the fictional deadline? | `ON_TIME` |
 
-This prevents a common modeling mistake: reaching a waypoint is not treated as proof of
-delivery. The simulated handoff requires delivery-zone arrival, observed landing and
-disarming, a five-second unloading dwell, and a matching request/package/recipient
-receipt. A recovered aircraft can therefore coexist with `REJECTED`, `UNCONFIRMED`, or
-`LATE` delivery results.
+The package manifest uses fictional quantities of gauze, bandages, examination gloves, and adhesive tape. Its 1.8 kg mass is a planning assumption and is not applied to the stock X500 dynamics. The reasoning behind that choice is documented in [the logistics basis](docs/medical-logistics-basis.md).
 
-The package contains fictional quantities of non-cold-chain consumables: sterile gauze
-compresses, wrapped gauze bandages, powder-free nitrile examination gloves, and adhesive
-tape. The 1.8 kg package mass is a planning assumption and is not applied to the stock X500
-dynamics. See [the logistics basis](docs/medical-logistics-basis.md).
+## Two runs to open first
 
-## System architecture
+### T-01: nominal delivery and recovery
 
-```text
-Fictional request + package contract          Scripted fault scenario
-                    |                                  |
-                    v                                  v
-Modeled receiving station <-> mission coordinator -> assurance engine
-                    ^                 |                |
-                    |                 v                v
-          PX4/Gazebo or deterministic source      decision record
-                    \_________________|________________/
-                                      v
-                       hash-linked evidence + FastAPI
-                                      |
-                                      v
-                   read-only Open MCT mission dashboard
-```
+Qualified run `LFL-T01-PX4-20260922T120613Z-A800` records the complete mission thread:
 
-The assurance package remains independent of PX4, FastAPI, Open MCT, and filesystem
-adapters. Simulator actions require loopback allowlisting plus explicit opt-in; the browser
-has no mission-control endpoint.
+- travel from Logistics Point Alpha to Echo Aid Station;
+- arrival inside the delivery zone;
+- observed landing and disarming;
+- modeled unloading and a matching accepted receipt;
+- rearming, departure, return flight, and observed recovery.
 
-## Run a mission
+Its final outcomes are `RECOVERED`, `ACCEPTED`, and `ON_TIME`.
 
-The easiest launcher is the mission menu:
+![T-01 receiving-station handoff](evidence/demo-screenshots/px4-t01-handoff.png)
+
+### T-05: compound fault before handoff
+
+Qualified run `LFL-T05-PX4-20260922T185205Z-CDF9` introduces link loss followed by invalid navigation before the delivery handoff. The policy rejects `RETURN` because navigation cannot be trusted, commands a controlled landing, and waits for telemetry to confirm that the aircraft has landed.
+
+The run ends in `SAFE_STOP` with delivery `NOT_COMPLETED`. Package custody remains `AIRCRAFT` because no delivery or return handoff occurred. The injected confidence values affect Lifeline's assurance inputs only; the underlying PX4 estimator remains unchanged.
+
+![T-05 observed contingency landing](evidence/demo-screenshots/px4-t05-landed.png)
+
+## Run it
+
+The mission menu is the simplest entry point:
 
 ```powershell
 .\scripts\mission.ps1
 ```
 
-Or select a run directly:
+You can also choose a scenario and source directly:
 
 ```powershell
-# Nominal request-to-receipt mission
+# Nominal request-to-receipt simulation
 .\scripts\mission.ps1 -Scenario T-01 -Mode Synthetic
 
-# Link loss + invalid navigation; RETURN is rejected and delivery is not completed
+# Compound link and navigation fault
 .\scripts\mission.ps1 -Scenario T-05 -Mode Synthetic
 
-# Aircraft recovers, but the receiving-station receipt is absent
-.\scripts\mission.ps1 -Scenario T-13 -Mode Synthetic
-
-# Aircraft recovers, but the receipt names the wrong package
-.\scripts\mission.ps1 -Scenario T-14 -Mode Synthetic
-
-# Delivery is accepted after the fictional logistics deadline
-.\scripts\mission.ps1 -Scenario T-15 -Mode Synthetic
+# Qualified PX4 replays
+.\scripts\mission.ps1 -Scenario T-01 -Mode Replay -RunId LFL-T01-PX4-20260922T120613Z-A800
+.\scripts\mission.ps1 -Scenario T-05 -Mode Replay -RunId LFL-T05-PX4-20260922T185205Z-CDF9
 ```
 
-The launcher creates evidence, starts the local API and dashboard, and opens the selected
-mission. The dashboard supports Play, Pause, Restart, 0.5×–4× replay, recorded-moment
-seeking, coordinated map/timeline inspection, **Explain this moment**, and a reversible
-presentation mode. It remains read-only.
+The launcher creates or selects the evidence, starts the local API and Open MCT application, then opens the dashboard. Replay controls include Play, Pause, Restart, speed selection, recorded-moment seeking, and a presentation mode. "Explain this moment" reconstructs only the information available at the selected time.
 
-Replay a completed mission without PX4 or Gazebo:
-
-```powershell
-.\scripts\mission.ps1 -Scenario T-01 -Mode Replay
-```
-
-## Scenario catalogue and command line
+The command-line interface exposes the same runs and scenarios:
 
 ```text
 lifeline scenarios list
@@ -108,39 +94,57 @@ lifeline evidence --run <run-id>
 lifeline serve --host 127.0.0.1 --port 8000
 ```
 
-Every new run includes canonical snapshots, decisions, command acknowledgements, delivery
-events, the resolved mission contract, assertions, a verification matrix, an after-action
-summary, and artifact hashes.
+## Architecture
 
-## PX4/Gazebo boundary
+```text
+Fictional request and package             Scripted fault scenario
+                 |                                  |
+                 v                                  v
+Modeled receiving station <-> mission coordinator -> assurance engine
+                 ^                 |                 |
+                 |                 v                 v
+       PX4/Gazebo or deterministic source       decision record
+                 \_________________|_________________/
+                                   v
+                    hash-linked evidence + FastAPI
+                                   |
+                                   v
+                read-only Open MCT mission dashboard
+```
 
-PX4 v1.17.0 and Gazebo Harmonic provide the visible X500 aircraft simulation. The v1.1
-integration uploads an outbound mission that lands at the fictional receiving station,
-executes the modeled handoff, then explicitly rearms, takes off, and returns. Position,
-altitude, battery, mode, and flight state come from MAVSDK; confidence, energy feasibility,
-custody, receipt, and deadline status are Lifeline models.
+The assurance package has no dependency on PX4, FastAPI, Open MCT, or filesystem adapters. PX4 actions require an allowlisted loopback endpoint and explicit opt-in. The browser has no endpoint that can arm, launch, return, land, or inject a fault.
 
-The v1.1 qualification uses stock PX4/Gazebo X500 SITL. The nominal run records outbound
-travel, observed landing and disarming, modeled unloading, a matching accepted receipt,
-observed re-departure, and observed recovery. The compound-fault run records the scripted
-Lifeline input degradation separately from unchanged PX4 estimator telemetry.
+Every run records snapshots, decisions, command acknowledgements, delivery events, the resolved mission contract, assertions, an after-action summary, and artifact hashes. The dashboard uses that same data for live display and historical replay.
 
-## Current verification status
+## Verified results
 
-- The controlled v1.1 campaign passed all 15 deterministic scenarios, covering nominal
-  delivery, compound flight faults, receiver absence, identifier mismatch, and late
-  acceptance.
-- Python tests cover assurance partitions, delivery semantics, evidence integrity, API
-  behavior, launch contracts, and the PX4 safety boundary.
-- Frontend tests cover escaping, stale-data behavior, loss of service, and replay completion.
-- Historical v1.0 PX4 and display evidence is preserved unchanged.
-- New v1.1 PX4 qualification passed for smoke, nominal T-01, and compound-fault T-05.
-- Automated v1.1 browser qualification passed 27/27 checks and generated 12 synthetic
-  desktop/compact screenshots plus four captures from qualified PX4 replays. Checks include
-  temporal replay, source labeling, presentation mode, and compact-layout behavior.
-- Corrected T-05 evidence leaves package custody with the aircraft after the observed
-  off-origin controlled landing; it does not claim delivery or return.
+The final v1.1 evidence set contains:
 
-Project Lifeline is released under the MIT License. Requirements, hazards, traceability,
-CONOPS, discrepancies, and upstream component provenance are maintained as versioned
-engineering artifacts in `docs/`, `requirements/`, and `THIRD_PARTY.md`.
+- a 15-scenario deterministic campaign with 15/15 passing runs;
+- PX4/Gazebo qualifications for smoke, nominal T-01, and compound-fault T-05;
+- 59 passing Python tests with 75.24% total coverage;
+- 27/27 automated browser display checks;
+- 12 synthetic qualification screenshots and four captures from qualified PX4 replays;
+- a clean release audit and a passing fresh-archive audit.
+
+The display checks cover stale and unavailable data, temporal replay, HTML escaping, compact layouts, source labeling, presentation mode, and the absence of browser-side flight controls. They are automated checks, not a human usability study.
+
+See [project status](docs/project-status.md), [the demonstration walkthrough](docs/demo-walkthrough.md), and [the claim-evidence register](docs/claim-evidence-register.md) for the run IDs and acceptance boundaries.
+
+## Limits
+
+Project Lifeline is limited to its fictional simulation configuration. It does not establish clinical suitability, real-flight performance, operational safety, certification, military capability, or endorsement. The stock X500 dynamics do not include the modeled package mass, and the scripted T-05 fault changes Lifeline's assurance inputs rather than the PX4 estimator.
+
+## Repository map
+
+| Path | Contents |
+|---|---|
+| `src/lifeline/assurance` | Simulator-independent assurance policy |
+| `src/lifeline/delivery.py` | Receiving-station, receipt, custody, and deadline model |
+| `scenarios/` | Fifteen deterministic scenario definitions |
+| `requirements/` | Requirements, hazards, and traceability |
+| `openmct/` | Read-only mission dashboard and browser qualification |
+| `evidence/` | Final controlled campaign, display fixtures, and sanitized PX4 evidence |
+| `docs/` | Architecture, interfaces, discrepancies, and verification records |
+
+Project Lifeline is released under the MIT License. Upstream versions and licenses are listed in [THIRD_PARTY.md](THIRD_PARTY.md).

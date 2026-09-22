@@ -16,8 +16,8 @@ behavior at two viewports; it is not evidence of a human usability study.
 
 Evidence integrity has three failure classes:
 
-- **missing** — a manifest-declared artifact is absent;
-- **mismatched** — an artifact's current SHA-256 differs from the manifest;
-- **unchecked** — a legacy manifest does not declare a hash.
+- **missing:** a manifest-declared artifact is absent;
+- **mismatched:** an artifact's current SHA-256 differs from the manifest;
+- **unchecked:** a legacy manifest does not declare a hash.
 
 Any class forces the effective result to `INCOMPLETE`.

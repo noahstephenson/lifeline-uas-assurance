@@ -15,7 +15,7 @@ jobs:
       - run: python scripts/build_release_package.py
       - uses: actions/upload-artifact@v4
         with:
-          name: project-lifeline-v1.0.0-evidence
+          name: project-lifeline-v1.1.0-evidence
           path: |
-            dist/lifeline-evidence-v1.0.0.zip
+            dist/lifeline-evidence-v1.1.0.zip
             dist/SHA256SUMS

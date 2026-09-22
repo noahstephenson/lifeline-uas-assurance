@@ -1,24 +1,48 @@
-# Medical Resupply Mission Lab demonstration
+# Demonstration walkthrough
 
-## Short demonstration script
+The strongest demonstration uses two qualified PX4 replays. T-01 shows the complete delivery workflow. T-05 shows how the assurance logic responds when navigation becomes invalid before handoff.
 
-1. Start the nominal qualified replay:
+## Nominal delivery
 
-       .\scripts\mission.ps1 -Scenario T-01 -Mode Replay -RunId LFL-T01-PX4-20260922T120613Z-A800
+Start the qualified T-01 replay:
 
-2. Enable Presentation mode. In the outcome strip, explain that Aircraft, Delivery, and Timeliness are independent. Follow the outbound X500 path to Echo Aid Station.
-3. On the timeline, identify telemetry-sourced DELIVERY_ZONE_ARRIVAL, LANDING_OBSERVED, and DISARM_OBSERVED. Then identify modeled-station UNLOADING_STARTED, UNLOADING_COMPLETE, and the matched ACCEPTED receipt. A command acknowledgement is not used as observed completion.
-4. Seek to a point before the receipt and select Explain this moment. Confirm the later receipt and final recovery do not appear. Resume and show the accepted, on-time handoff, re-departure, return, and observed recovery.
-5. Start the compound-fault replay:
+    .\scripts\mission.ps1 -Scenario T-01 -Mode Replay -RunId LFL-T01-PX4-20260922T120613Z-A800
 
-       .\scripts\mission.ps1 -Scenario T-05 -Mode Replay -RunId LFL-T05-PX4-20260922T185205Z-CDF9
+1. Enable Presentation mode.
+2. Point out the separate Aircraft, Delivery, and Timeliness cards.
+3. Follow the X500 from Logistics Point Alpha to Echo Aid Station.
+4. On the timeline, find `DELIVERY_ZONE_ARRIVAL`, `LANDING_OBSERVED`, and `DISARM_OBSERVED`. These events come from simulator telemetry.
+5. Find `UNLOADING_STARTED`, `UNLOADING_COMPLETE`, and the accepted receipt. These events come from the receiving-station model.
+6. Seek to a moment before the receipt and open "Explain this moment." The later receipt and final recovery should not appear.
+7. Resume the replay and show the accepted handoff, second departure, return flight, and observed recovery.
 
-6. Seek to about 22.1 seconds. Show the link-loss WATCH transition followed by invalid navigation. The dashboard presents Controlled landing in plain language, records RETURN as rejected, and later shows Landed and stopped. Delivery remains NOT_COMPLETED and package custody remains AIRCRAFT. Explain that the degraded link/navigation values were scripted Lifeline inputs while MAVSDK continued to report the PX4 vehicle connected in MISSION mode.
-7. Briefly show the synthetic receiver outcomes: T-13 UNCONFIRMED/ABSENT, T-14 REJECTED with AIRCRAFT custody, and T-15 ACCEPTED plus LATE.
+The final outcomes are `RECOVERED`, `ACCEPTED`, and `ON_TIME`.
 
-## Reproduce qualification locally
+## Compound fault
 
-Ubuntu 24.04 WSL2, PX4 v1.17.0 at d6f12ad1c4, Gazebo Harmonic, MAVSDK 3.17.2, and explicit loopback SITL authorization are required.
+Start the corrected T-05 replay:
+
+    .\scripts\mission.ps1 -Scenario T-05 -Mode Replay -RunId LFL-T05-PX4-20260922T185205Z-CDF9
+
+1. Seek to about 22.1 seconds.
+2. Show the link-loss `WATCH` transition followed by invalid navigation.
+3. Open "Explain this moment." The selected action is Controlled landing, and `RETURN` appears as a rejected alternative.
+4. Continue to the observed landing. The Aircraft card reads Landed and stopped.
+5. Check the logistics result. Delivery remains `NOT_COMPLETED`, and package custody remains `AIRCRAFT`.
+
+The degraded link and navigation values are scripted Lifeline inputs. MAVSDK continues to report telemetry from the unchanged PX4 estimator.
+
+## Receiver cases
+
+The synthetic scenarios make the logistics boundary easy to inspect:
+
+- T-13 ends `UNCONFIRMED` because no receipt arrives.
+- T-14 ends `REJECTED` because the receipt names the wrong package. It does not satisfy the original request.
+- T-15 records both `ACCEPTED` and `LATE`.
+
+## Reproduce the qualification
+
+PX4 qualification requires Ubuntu 24.04 under WSL2, PX4 v1.17.0 at commit `d6f12ad1c4`, Gazebo Harmonic, MAVSDK 3.17.2, and explicit loopback SITL authorization.
 
     .\scripts\qualify-px4.ps1 -Scenario Smoke
     .\scripts\qualify-px4.ps1 -Scenario T-01
@@ -26,13 +50,11 @@ Ubuntu 24.04 WSL2, PX4 v1.17.0 at d6f12ad1c4, Gazebo Harmonic, MAVSDK 3.17.2, an
     .\.venv\Scripts\lifeline.exe campaign run --id CAMPAIGN-LOCAL-V11
     .\.venv\Scripts\lifeline.exe campaign audit --id CAMPAIGN-LOCAL-V11
 
-## Best dashboard captures
+## Screenshot set
 
-- Nominal handoff: ../evidence/demo-screenshots/px4-t01-handoff.png
-- Nominal recovery: ../evidence/demo-screenshots/px4-t01-recovered.png
-- Compound-fault decision: ../evidence/demo-screenshots/px4-t05-decision.png
-- Compound-fault landing: ../evidence/demo-screenshots/px4-t05-landed.png
+- [T-01 handoff](../evidence/demo-screenshots/px4-t01-handoff.png)
+- [T-01 recovery](../evidence/demo-screenshots/px4-t01-recovered.png)
+- [T-05 decision](../evidence/demo-screenshots/px4-t05-decision.png)
+- [T-05 landing](../evidence/demo-screenshots/px4-t05-landed.png)
 
-## Claims and limits
-
-The deterministic model distinguishes flight completion from logistics completion, accepts a receipt only when mission/request/package/recipient identifiers match, and produces traceable replay evidence. Results are limited to the documented fictional simulation. They do not establish clinical suitability, real-flight performance, operational safety, certification, or human usability.
+The demonstration covers a fictional simulation. It is not evidence of clinical suitability, real-flight performance, operational safety, certification, or human usability.

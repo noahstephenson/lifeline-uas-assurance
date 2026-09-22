@@ -1,4 +1,4 @@
-export const escapeHtml = (value) => String(value ?? "—")
+export const escapeHtml = (value) => String(value ?? "Unavailable")
   .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 
 export function stateClass(state) {
@@ -283,7 +283,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
               "</select></label><label class='seek-label'>Inspect recorded moment<input id='lifeline-seek' type='range' min='0' max='" +
               Math.max(0, history.length - 1) + "' value='" + Math.max(0, selectedMoment ? history.indexOf(selectedMoment) : history.length - 1) + "'></label>" +
               "<button id='lifeline-presentation' type='button'>" + e(presentationLabel) + "</button></nav>" +
-            (point.exploratory ? "<div class='exploratory'>EXPLORATORY — NOT CONTROLLED VERIFICATION EVIDENCE</div>" : "") +
+            (point.exploratory ? "<div class='exploratory'>EXPLORATORY: NOT CONTROLLED VERIFICATION EVIDENCE</div>" : "") +
             (critical.healthy ? "" : "<div class='critical-stale'>CRITICAL DATA STALE OR INVALID: " + e(critical.failed.join(", ")) + "</div>") +
             "<div class='outcome-strip'>" +
               "<article><label>Aircraft</label><strong>" + e(aircraftOutcome(point)) + "</strong><small>Recorded state: " + e(point.mission_state) + "</small></article>" +
@@ -339,7 +339,7 @@ export function createAssuranceViewProvider(apiBase, options = {}) {
         if (!container || replayComplete) return;
         sourceUnavailable = true;
         connectionState = reason;
-        container.innerHTML = "<div class='lifeline-unavailable'>" + escapeHtml(reason) + " — telemetry is not assumed healthy.</div>";
+        container.innerHTML = "<div class='lifeline-unavailable'>" + escapeHtml(reason) + ". Telemetry is not assumed healthy.</div>";
       };
       const armWatchdog = () => {
         if (watchdog) timers.clearTimeout(watchdog);

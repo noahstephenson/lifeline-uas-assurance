@@ -11,20 +11,20 @@ from pathlib import Path
 from lifeline.campaign import audit_release
 from lifeline.config import PROJECT_ROOT
 
-RELEASE_NAME = "lifeline-evidence-v1.0.0.zip"
+RELEASE_NAME = "lifeline-evidence-v1.1.0.zip"
 PUBLIC_PX4_RUNS = {
-    "LFL-SMOKE-PX4-20260921T022921Z-A837",
-    "LFL-T01-PX4-20260921T094403Z-1CE3",
-    "LFL-T05-PX4-20260921T095622Z-00F1",
+    "LFL-SMOKE-PX4-20260922T121905Z-6518",
+    "LFL-T01-PX4-20260922T120613Z-A800",
+    "LFL-T05-PX4-20260922T185205Z-CDF9",
 }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the Project Lifeline v1.0.0 evidence archive")
+    parser = argparse.ArgumentParser(description="Build the Project Lifeline v1.1.0 evidence archive")
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "dist")
     args = parser.parse_args()
 
-    audit = audit_release("CAMPAIGN-20260920-C")
+    audit = audit_release("CAMPAIGN-20260922-PRESENTATION-V11")
     if not audit["release_ready"]:
         print(json.dumps(audit, indent=2, sort_keys=True), file=sys.stderr)
         return 1
@@ -39,7 +39,7 @@ def main() -> int:
     archive_path = output / RELEASE_NAME
     metadata = {
         "schema_version": "1.0.0",
-        "release": "v1.0.0",
+        "release": "v1.1.0",
         "commit": _git_output("rev-parse", "HEAD"),
         "simulation_only": True,
         "human_usability_study": False,
